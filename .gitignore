@@ -30,3 +30,6 @@
 # Swap and Temporary Files
 *.swp
 *~
+
+# Qt Creator .user files
+*.user
