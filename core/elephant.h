@@ -15,6 +15,13 @@ public:
 
     char abbr_name() const;
     int value() const;
+    void update_moves(const abstract_piece*** b);
+
+private:
+    static const position up_left;
+    static const position up_right;
+    static const position down_left;
+    static const position down_right;
 };
 
 #endif //ELEPHANT_H

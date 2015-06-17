@@ -17,6 +17,18 @@ public:
 
     char abbr_name() const;
     int value() const;
+    void update_moves(const abstract_piece*** b);
+
+private:
+    //go left/right and up/down
+    static const position l2u1;
+    static const position l1u2;
+    static const position r2u1;
+    static const position r1u2;
+    static const position l2d1;
+    static const position l1d2;
+    static const position r2d1;
+    static const position r1d2;
 };
 
 #endif //HORSE_H

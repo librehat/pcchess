@@ -17,6 +17,13 @@ public:
 
     char abbr_name() const;
     int value() const;
+    void update_moves(const abstract_piece***);
+
+private:
+    static const position up;
+    static const position down;
+    static const position left;
+    static const position right;
 };
 
 #endif //GENERAL_H

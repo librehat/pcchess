@@ -15,6 +15,13 @@ public:
 
     char abbr_name() const;
     int value() const;
+    void update_moves(const abstract_piece***);
+
+private:
+    static const position upleft;
+    static const position upright;
+    static const position downleft;
+    static const position downright;
 };
 
 #endif //ADVISOR_H

@@ -1,0 +1,30 @@
+#include "position.h"
+
+position::position(int _file, int _rank) :
+    file(_file),
+    rank(_rank)
+{}
+
+bool position::not_in_range(int min_file, int max_file, int min_rank, int max_rank) const
+{
+    return file < min_file || file > max_file || rank < min_rank || rank > max_rank;
+}
+
+position& position::operator= (const position &b)
+{
+    if (this != &b) {//self-assignment check
+        this->file = b.file;
+        this->rank = b.rank;
+    }
+    return *this;
+}
+
+position position::operator+ (const position &b)
+{
+    return position(this->file + b.file, this->rank + b.rank);
+}
+
+position position::operator- (const position &b)
+{
+    return position(this->file - b.file, this->rank - b.rank);
+}
