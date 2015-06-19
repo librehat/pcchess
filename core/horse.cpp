@@ -19,9 +19,8 @@ int horse::value() const
     return 4;
 }
 
-void horse::update_moves(const abstract_piece*** b)
+void horse::gen_moves(const abstract_piece*** b)
 {
-    avail_moves.clear();
     if(!b[pos.file - 1][pos.rank]) {
         avail_moves.push_back(pos + l2u1);
         avail_moves.push_back(pos + l2d1);

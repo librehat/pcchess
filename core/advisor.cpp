@@ -15,9 +15,8 @@ int advisor::value() const
     return 2;
 }
 
-void advisor::update_moves(const abstract_piece***)
+void advisor::gen_moves(const abstract_piece***)
 {
-    avail_moves.clear();
     avail_moves.push_back(pos + upleft);
     avail_moves.push_back(pos + upright);
     avail_moves.push_back(pos + downleft);

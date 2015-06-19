@@ -15,9 +15,11 @@ public:
     soldier() : abstract_piece() {}
     soldier(int _file, int _rank) : abstract_piece(_file, _rank) {}
 
-    void update_moves(const abstract_piece***);
     char abbr_name() const;
     int value() const;
+    
+protected:
+    void gen_moves(const abstract_piece***);
 
 private:
     static const position up;

@@ -15,9 +15,8 @@ int general::value() const
     return 8;
 }
 
-void general::update_moves(const abstract_piece***)
+void general::gen_moves(const abstract_piece***)
 {
-    avail_moves.clear();
     avail_moves.push_back(pos + up);
     avail_moves.push_back(pos + down);
     avail_moves.push_back(pos + left);

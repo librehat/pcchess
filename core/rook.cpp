@@ -21,9 +21,8 @@ void rook::search_moves(const bool forward, const bool is_rank, const abstract_p
     }
 }
 
-void rook::update_moves(const abstract_piece*** b)
+void rook::gen_moves(const abstract_piece*** b)
 {
-    avail_moves.clear();
     search_moves(true, true, b);
     search_moves(true, false, b);
     search_moves(false, true, b);

@@ -14,9 +14,8 @@ int soldier::value() const
     return 2;
 }
 
-void soldier::update_moves(const abstract_piece***) 
+void soldier::gen_moves(const abstract_piece***) 
 {
-    avail_moves.clear();
     if (pos.rank < 5) {//in the opponent area
         avail_moves.push_back(position(pos + left));
         avail_moves.push_back(position(pos + right));

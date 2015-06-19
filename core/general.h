@@ -17,7 +17,9 @@ public:
 
     char abbr_name() const;
     int value() const;
-    void update_moves(const abstract_piece***);
+    
+protected:
+    void gen_moves(const abstract_piece***);
 
 private:
     static const position up;
