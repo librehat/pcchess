@@ -34,7 +34,7 @@ bool abstract_piece::can_i_move(const abstract_piece*** b) const
     int pieces_in_between = 0;
     bool found_one_g = false;
     bool am_i_in_between = false;
-    for (int irank = 0; irank < 9; irank++) {
+    for (int irank = 0; irank <= 9; irank++) {
         const abstract_piece *piece = b[pos.file][irank];
         if (piece) {
             if (found_one_g) {
