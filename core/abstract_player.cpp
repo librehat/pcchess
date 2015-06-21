@@ -8,6 +8,9 @@ abstract_player::abstract_player()
 
 abstract_player::~abstract_player()
 {
+    for (auto it = pieces.begin(); it != pieces.end(); ++it) {
+        delete *it;
+    }
 }
 
 void abstract_player::add(abstract_piece *p)
