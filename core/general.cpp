@@ -62,5 +62,5 @@ void general::gen_moves(const abstract_piece*** b)
         avail_moves.push_back(pos_right);
     }
     
-    remove_invalid_moves(3, 5, 7, 9);
+    remove_invalid_moves(3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
 }

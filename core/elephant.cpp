@@ -21,5 +21,5 @@ void elephant::gen_moves(const abstract_piece*** b)
     avail_moves.push_back(pos + up_right);
     avail_moves.push_back(pos + down_left);
     avail_moves.push_back(pos + down_right);
-    remove_invalid_moves(0, 8, 5, 9);//elephant can't across the river
+    remove_invalid_moves(0, 8, m_opposite ? 0 : 5, m_opposite ? 4 : 9);//elephant can't across the river
 }

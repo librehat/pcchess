@@ -21,6 +21,6 @@ void advisor::gen_moves(const abstract_piece***)
     avail_moves.push_back(pos + upright);
     avail_moves.push_back(pos + downleft);
     avail_moves.push_back(pos + downright);
-    remove_invalid_moves(3, 5, 7, 9);
+    remove_invalid_moves(3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
 }
 

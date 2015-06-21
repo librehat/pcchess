@@ -22,6 +22,7 @@ protected:
     void gen_moves(const abstract_piece***);
 
 private:
+    bool can_move_horizontally();
     static const position up;
     static const position left;
     static const position right;

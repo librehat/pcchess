@@ -19,6 +19,13 @@ public:
     abstract_piece(int _file, int _rank);
     virtual ~abstract_piece();
 
+    /*
+     * if it's in opposite side, we may need to take care of the
+     * coordinate system.
+     */
+    void set_side(bool oppo = false);
+    bool is_opposite_side() const;
+
     void move_to_pos(int newfile, int newrank);
     void move_to_pos(const position &new_pos);
     
@@ -33,6 +40,7 @@ public:
     virtual int value() const;//the "value" of this piece indicates how important it is
 
 protected:
+    bool m_opposite;
     /*
      * a piece can't move if it's the only piece separate generals
      * return false if it's such a piece hence it can't move

@@ -7,8 +7,15 @@ abstract_piece::abstract_piece() :
 {}
 
 abstract_piece::abstract_piece(int _file, int _rank) :
+    m_opposite(false),
     pos(_file, _rank)
-{}
+{
+}
+
+bool abstract_piece::is_opposite_side() const
+{
+    return m_opposite;
+}
 
 void abstract_piece::move_to_pos(int newfile, int newrank)
 {

@@ -14,12 +14,26 @@ int soldier::value() const
     return 2;
 }
 
+bool soldier::can_move_horizontally()
+{
+    if (m_opposite) {
+        return pos.rank > 4;
+    } else {
+        return pos.rank < 5;
+    }
+}
+
 void soldier::gen_moves(const abstract_piece***) 
 {
-    if (pos.rank < 5) {//in the opponent area
+    if (can_move_horizontally()) {
         avail_moves.push_back(position(pos + left));
         avail_moves.push_back(position(pos + right));
     }
-    avail_moves.push_back(position(pos + up));
+    if (m_opposite) {
+        avail_moves.push_back(position(pos - up));
+    }
+    else {
+        avail_moves.push_back(position(pos + up));
+    }
     remove_invalid_moves();
 }
