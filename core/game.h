@@ -2,7 +2,7 @@
 #define GAME_H
 
 #include "abstract_piece.h"
-#include <list>
+#include "abstract_player.h"
 
 class game
 {
@@ -16,8 +16,8 @@ private:
     abstract_piece*** board;
     abstract_piece**  board_data;
 
-    std::list<abstract_piece*> our_alive_pieces;
-    std::list<abstract_piece*> opp_alive_pieces;
+    abstract_player *our_player;
+    abstract_player *opp_player;
 };
 
 #endif //GAME_H

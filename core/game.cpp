@@ -21,12 +21,8 @@ game::~game()
 {
     delete [] board;
     delete [] board_data;
-    for (auto it = our_alive_pieces.begin(); it != our_alive_pieces.end(); ++it) {
-        delete *it;
-    }
-    for (auto it = opp_alive_pieces.begin(); it != opp_alive_pieces.end(); ++it) {
-        delete *it;
-    }
+    delete our_player;
+    delete opp_player;
 }
 
 void game::move_piece(const position &from, const position &to)
@@ -40,11 +36,10 @@ void game::move_piece(const position &from, const position &to)
     abstract_piece* target = board[to.file][to.rank];
     if (target) {//capture the target
         if (target->is_opposite_side()) {
-            opp_alive_pieces.remove(target);
+            opp_player->remove(target);
         } else {
-            our_alive_pieces.remove(target);
+            our_player->remove(target);
         }
-        delete target;
     }
 
     board[from.file][from.rank] = nullptr;
