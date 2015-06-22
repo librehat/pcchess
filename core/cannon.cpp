@@ -10,7 +10,7 @@ int cannon::value() const
     return 4;
 }
 
-void cannon::search_moves(const bool forward, const bool is_rank, const abstract_piece ***b)
+void cannon::search_moves(const bool forward, const bool is_rank, abstract_piece ***b)
 {
     bool mount_found = false;
     for (position p = pos; !p.not_in_range(0, 8, 0, 9);
@@ -33,7 +33,7 @@ void cannon::search_moves(const bool forward, const bool is_rank, const abstract
     }
 }
 
-void cannon::gen_moves(const abstract_piece ***b)
+void cannon::gen_moves(abstract_piece ***b)
 {
     search_moves(true, true, b);
     search_moves(true, false, b);

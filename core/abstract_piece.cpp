@@ -3,18 +3,23 @@
 using namespace std;
 
 abstract_piece::abstract_piece() :
-    abstract_piece(0, 0)
+    abstract_piece(0, 0, false)
 {}
 
-abstract_piece::abstract_piece(int _file, int _rank) :
-    m_opposite(false),
+abstract_piece::abstract_piece(int _file, int _rank, bool oppo) :
+    m_opposite(oppo),
     pos(_file, _rank)
 {
 }
 
-bool abstract_piece::is_opposite_side() const
+const bool abstract_piece::is_opposite_side() const
 {
     return m_opposite;
+}
+
+position abstract_piece::get_position() const
+{
+    return pos;
 }
 
 void abstract_piece::move_to_pos(int newfile, int newrank)
@@ -28,7 +33,7 @@ void abstract_piece::move_to_pos(const position &new_pos)
     pos = new_pos;
 }
 
-void abstract_piece::update_moves(const abstract_piece*** board)
+void abstract_piece::update_moves(abstract_piece*** board)
 {
     avail_moves.clear();
     if (can_i_move(board)) {
@@ -36,7 +41,7 @@ void abstract_piece::update_moves(const abstract_piece*** board)
     }
 }
 
-bool abstract_piece::can_i_move(const abstract_piece*** b) const
+bool abstract_piece::can_i_move(abstract_piece*** b) const
 {
     int pieces_in_between = 0;
     bool found_one_g = false;
@@ -76,4 +81,9 @@ void abstract_piece::remove_invalid_moves(int min_file, int max_file, int min_ra
 const list<position>& abstract_piece::get_avail_moves() const
 {
     return avail_moves;
+}
+
+bool abstract_piece::is_movable() const
+{
+    return !avail_moves.empty();
 }

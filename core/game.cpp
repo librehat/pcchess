@@ -1,5 +1,7 @@
 #include "game.h"
+#include "random_player.h"
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -15,6 +17,9 @@ game::game()
     for (int i = 0; i < 9; i++) {
         board[i] = board_data + i * 10;
     }
+
+    opp_player = new random_player(board);
+    our_player = new random_player(board);//FIXME
 }
 
 game::~game()
@@ -31,6 +36,10 @@ void game::move_piece(const position &from, const position &to)
     if (!piece){
         cerr << "Error: The piece to move is nullptr on the board." << endl;
         return;
+    }
+
+    if (!our_player || ! opp_player) {
+        throw runtime_error("Error. Player pointer is NULL!");
     }
 
     abstract_piece* target = board[to.file][to.rank];

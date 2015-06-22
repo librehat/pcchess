@@ -10,7 +10,7 @@ int rook::value() const
     return 6;
 }
 
-void rook::search_moves(const bool forward, const bool is_rank, const abstract_piece ***b)
+void rook::search_moves(const bool forward, const bool is_rank, abstract_piece ***b)
 {
     for (position p = pos; !p.not_in_range(0, 8, 0, 9);
          is_rank ? (p.rank += forward ? 1 : -1) : (p.file += forward ? 1 : -1)
@@ -21,7 +21,7 @@ void rook::search_moves(const bool forward, const bool is_rank, const abstract_p
     }
 }
 
-void rook::gen_moves(const abstract_piece*** b)
+void rook::gen_moves(abstract_piece*** b)
 {
     search_moves(true, true, b);
     search_moves(true, false, b);

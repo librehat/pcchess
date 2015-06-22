@@ -19,7 +19,7 @@ int horse::value() const
     return 4;
 }
 
-void horse::gen_moves(const abstract_piece*** b)
+void horse::gen_moves(abstract_piece*** b)
 {
     if(!b[pos.file - 1][pos.rank]) {
         avail_moves.push_back(pos + l2u1);

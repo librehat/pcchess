@@ -13,13 +13,13 @@ class soldier : public abstract_piece
 {
 public:
     soldier() : abstract_piece() {}
-    soldier(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    soldier(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece***);
+    void gen_moves(abstract_piece***);
 
 private:
     bool can_move_horizontally();

@@ -13,13 +13,13 @@ class horse : public abstract_piece
 {
 public:
     horse() : abstract_piece() {}
-    horse(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    horse(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece*** b);
+    void gen_moves(abstract_piece*** b);
 
 private:
     //go left/right and up/down

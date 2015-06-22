@@ -15,7 +15,7 @@ int elephant::value() const
     return 2;
 }
 
-void elephant::gen_moves(const abstract_piece*** b)
+void elephant::gen_moves(abstract_piece*** b)
 {
     avail_moves.push_back(pos + up_left);
     avail_moves.push_back(pos + up_right);

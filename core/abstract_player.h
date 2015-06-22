@@ -8,7 +8,7 @@
 class abstract_player
 {
 public:
-    abstract_player();
+    abstract_player(abstract_piece*** _board);
     virtual ~abstract_player();
 
     void add(abstract_piece *p);
@@ -24,6 +24,8 @@ public:
 
 protected:
     std::list<abstract_piece*> pieces;
+    bool checkmate;//if our general is checked
+    abstract_piece*** board;
 };
 
 #endif //ABSTRACT_PlAYER_H

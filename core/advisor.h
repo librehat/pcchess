@@ -11,13 +11,13 @@ class advisor : public abstract_piece
 {
 public:
     advisor() : abstract_piece() {}
-    advisor(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    advisor(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece***);
+    void gen_moves(abstract_piece***);
 
 private:
     static const position upleft;

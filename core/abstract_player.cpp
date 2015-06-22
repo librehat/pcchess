@@ -2,7 +2,9 @@
 
 using namespace std;
 
-abstract_player::abstract_player()
+abstract_player::abstract_player(abstract_piece*** _board) :
+    board(_board),
+    checkmate(false)
 {
 }
 

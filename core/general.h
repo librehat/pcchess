@@ -13,13 +13,13 @@ class general : public abstract_piece
 {
 public:
     general() : abstract_piece() {}
-    general(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    general(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece***);
+    void gen_moves(abstract_piece***);
 
 private:
     static const position up;

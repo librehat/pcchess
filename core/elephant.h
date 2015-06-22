@@ -11,13 +11,13 @@ class elephant : public abstract_piece
 {
 public:
     elephant() : abstract_piece() {}
-    elephant(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    elephant(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece*** b);
+    void gen_moves(abstract_piece*** b);
 
 private:
     static const position up_left;

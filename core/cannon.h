@@ -11,16 +11,16 @@ class cannon : public abstract_piece
 {
 public:
     cannon() : abstract_piece() {}
-    cannon(int _file, int _rank) : abstract_piece(_file, _rank) {}
+    cannon(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
     int value() const;
     
 protected:
-    void gen_moves(const abstract_piece ***b);
+    void gen_moves(abstract_piece ***b);
 
 private:
-    void search_moves(const bool forward, const bool is_rank, const abstract_piece ***b);
+    void search_moves(const bool forward, const bool is_rank, abstract_piece ***b);
 };
 
 #endif //CANNON_H
