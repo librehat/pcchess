@@ -4,7 +4,8 @@
 using namespace std;
 
 random_player::random_player(abstract_piece*** _board) :
-    abstract_player(_board)
+    abstract_player(_board),
+    generator(device())
 {
 }
 
@@ -33,4 +34,5 @@ bool random_player::think_next_move(position *from, position *to)
 
     *from = piece->get_position();
     *to   = *move_it;
+    return true;
 }

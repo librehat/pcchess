@@ -12,6 +12,7 @@ public:
     bool think_next_move(position *from, position *to);
 
 private:
+    std::random_device device;
     std::default_random_engine generator;
 };
 

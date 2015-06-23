@@ -1,7 +1,10 @@
 project(pcchess CXX)
 cmake_minimum_required(VERSION 2.8)
 aux_source_directory(core CORESRC_LIST)
+aux_source_directory(main EXECSRC_LIST)
 add_library(pcchess_core SHARED ${CORESRC_LIST})
+add_executable(pcchess ${EXECSRC_LIST})
+target_link_libraries(pcchess pcchess_core)
 #this requires cmake >= 3.1.0
 #target_compile_features(pcchess_core PUBLIC cxx_nullptr cxx_range_for cxx_auto_type)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 

@@ -15,6 +15,17 @@ public:
     void remove(abstract_piece *p);
 
     /*
+     * initialise the pieces list to a normal beginning situation
+     * no need to call add function multiple times
+     * opposite: whether this player is opposite player
+     */
+    void init_pieces(bool opposite = false);
+
+    bool is_checked() const;
+    bool is_checkmated() const;
+    const std::list<abstract_piece*>& get_pieces() const;
+
+    /*
      * sub-class has to implement this pure virtual function
      * return true if a move is proposed and store the results
      * in arguments.
@@ -24,7 +35,8 @@ public:
 
 protected:
     std::list<abstract_piece*> pieces;
-    bool checkmate;//if our general is checked
+    bool checked;//if our general is checked
+    bool checkmated;//if our general is dead
     abstract_piece*** board;
 };
 

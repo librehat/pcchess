@@ -17,7 +17,6 @@ class abstract_piece
 public:
     abstract_piece();
     abstract_piece(int _file, int _rank, bool oppo);
-    virtual ~abstract_piece();
 
     /*
      * if it's in opposite side, we may need to take care of the
@@ -38,8 +37,8 @@ public:
     const std::list<position>& get_avail_moves() const;
     bool is_movable() const;//check if avail_moves is empty
 
-    virtual char abbr_name() const;
-    virtual int value() const;//the "value" of this piece indicates how important it is
+    virtual char abbr_name() const = 0;
+    virtual int value() const = 0;//the "value" of this piece indicates how important it is
 
 protected:
     const bool m_opposite;
