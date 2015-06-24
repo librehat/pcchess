@@ -1,5 +1,7 @@
 #include "general.h"
 
+using namespace std;
+
 const position general::up = position(0, -1);
 const position general::down = position(0, 1);
 const position general::left = position(-1, 0);
@@ -8,6 +10,11 @@ const position general::right = position(1, 0);
 char general::abbr_name() const
 {
     return 'G';
+}
+
+string general::chinese_name() const
+{
+    return string("將");
 }
 
 int general::value() const

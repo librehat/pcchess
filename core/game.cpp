@@ -95,21 +95,29 @@ abstract_piece*** game::get_board() const
     return board;
 }
 
-void game::print_board() const
+void game::print_board(bool chinese_char) const
 {
     for(int j = 0; j <= 9 ; ++j) {//rank
         for (int i = 0; i <= 8; ++i) {//file
             if (board[i][j]) {
-                cout << board[i][j]->abbr_name();
+                if (chinese_char) {
+                    cout << board[i][j]->chinese_name();
+                } else {
+                    cout << board[i][j]->abbr_name();
+                }
             } else {
-                cout << "+";
+                cout << (chinese_char ? "＋" : "+");
             }
             if (i != 8) {
-                cout << "-";
+                cout << (chinese_char ? "－" : "-");
             }
         }
         if (j != 9) {
-            cout << "\n| | | | | | | | |\n";
+            if (chinese_char) {
+                cout << "\n｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
+            } else {
+                cout << "\n| | | | | | | | |\n";
+            }
         }
     }
     cout << endl;

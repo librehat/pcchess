@@ -1,5 +1,7 @@
 #include "elephant.h"
 
+using namespace std;
+
 const position elephant::up_left = position(-2, -2);
 const position elephant::up_right = position(2, -2);
 const position elephant::down_left = position(-2, 2);
@@ -8,6 +10,11 @@ const position elephant::down_right = position(2, 2);
 char elephant::abbr_name() const
 {
     return 'E';
+}
+
+string elephant::chinese_name() const
+{
+    return string("象");
 }
 
 int elephant::value() const

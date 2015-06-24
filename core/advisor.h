@@ -14,6 +14,7 @@ public:
     advisor(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
 
     char abbr_name() const;
+    std::string chinese_name() const;
     int value() const;
     
 protected:

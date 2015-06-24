@@ -32,7 +32,7 @@ int main(int argc, char** argv)
         }
     }
 
-    g.print_board();
+    g.print_board(true);
 
     return 0;
 }

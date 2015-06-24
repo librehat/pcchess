@@ -20,7 +20,7 @@ public:
 
     void move_piece(const position &from, const position &to);
     abstract_piece*** get_board() const;
-    void print_board() const;//print current chess board into stdout
+    void print_board(bool chinese_char = false) const;//print current chess board into stdout
     bool is_over() const;
 
 private:

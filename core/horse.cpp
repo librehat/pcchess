@@ -1,5 +1,7 @@
 #include "horse.h"
 
+using namespace std;
+
 const position horse::l2u1 = position(-2, -1);
 const position horse::l1u2 = position(-1, -2);
 const position horse::r2u1 = position( 2, -1);
@@ -12,6 +14,11 @@ const position horse::r1d2 = position( 1,  2);
 char horse::abbr_name() const
 {
     return 'H';
+}
+
+string horse::chinese_name() const
+{
+    return string("馬");
 }
 
 int horse::value() const

@@ -1,5 +1,7 @@
 #include "advisor.h"
 
+using namespace std;
+
 const position advisor::upleft = position(-1, 1);
 const position advisor::upright = position(1, 1);
 const position advisor::downleft = position(-1, -1);
@@ -8,6 +10,11 @@ const position advisor::downright = position(1, -1);
 char advisor::abbr_name() const
 {
      return 'A';
+}
+
+string advisor::chinese_name() const
+{
+    return string("士");
 }
 
 int advisor::value() const

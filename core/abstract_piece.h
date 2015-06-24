@@ -11,6 +11,7 @@
 
 #include "position.h"
 #include <list>
+#include <string>
 
 class abstract_piece
 {
@@ -38,6 +39,7 @@ public:
     bool is_movable() const;//check if avail_moves is empty
 
     virtual char abbr_name() const = 0;
+    virtual std::string chinese_name() const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
 
 protected:

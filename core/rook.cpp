@@ -1,8 +1,15 @@
 #include "rook.h"
 
+using namespace std;
+
 char rook::abbr_name() const
 {
     return 'R';
+}
+
+string rook::chinese_name() const
+{
+    return string("車");
 }
 
 int rook::value() const

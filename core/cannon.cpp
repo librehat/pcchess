@@ -1,8 +1,15 @@
 #include "cannon.h"
 
+using namespace std;
+
 char cannon::abbr_name() const
 {
     return 'C';
+}
+
+string cannon::chinese_name() const
+{
+    return string("炮");
 }
 
 int cannon::value() const

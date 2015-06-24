@@ -1,5 +1,7 @@
 #include "soldier.h"
 
+using namespace std;
+
 const position soldier::up = position(0, -1);
 const position soldier::left = position(-1, 0);
 const position soldier::right = position(1, 0);
@@ -7,6 +9,11 @@ const position soldier::right = position(1, 0);
 char soldier::abbr_name() const
 {
     return 'S';
+}
+
+string soldier::chinese_name() const
+{
+    return string("卒");
 }
 
 int soldier::value() const
