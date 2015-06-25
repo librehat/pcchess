@@ -82,11 +82,6 @@ board &game::get_board_ref()
     return m_board;
 }
 
-abstract_piece*** &game::get_board_data()
-{
-    return m_board.data_ref();
-}
-
 void game::print_board(bool chinese_char) const
 {
     for(int j = 0; j <= 9 ; ++j) {//rank
