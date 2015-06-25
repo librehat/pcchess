@@ -1,4 +1,7 @@
 #include "board.h"
+#include <stdexcept>
+
+using namespace std;
 
 board::board()
 {
@@ -27,5 +30,9 @@ p_piece** &board::data_ref()
 
 p_piece board::at(const int &file, const int &rank) const
 {
-    return data[file][rank];
+    int dis = file * 10 + rank;
+    if (dis >= 90) {
+        throw runtime_error("Error. Accessing an element in board out of range.");
+    }
+    return data_2[dis];
 }

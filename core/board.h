@@ -24,7 +24,7 @@ public:
 
     inline p_piece  &operator [] (const position &pos)
     {
-        return data[pos.file][pos.rank];
+        return data_2[pos.file * 10 + pos.rank];
     }
 
 private:
