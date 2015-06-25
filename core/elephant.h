@@ -18,7 +18,7 @@ public:
     int value() const;
     
 protected:
-    void gen_moves(abstract_piece*** b);
+    void gen_moves(board &);
 
 private:
     static const position up_left;

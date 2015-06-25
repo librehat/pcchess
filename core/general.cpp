@@ -22,7 +22,7 @@ int general::value() const
     return 8;
 }
 
-void general::gen_moves(abstract_piece*** b)
+void general::gen_moves(board &b)
 {
     avail_moves.push_back(pos + up);
     avail_moves.push_back(pos + down);

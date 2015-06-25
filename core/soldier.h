@@ -20,7 +20,7 @@ public:
     int value() const;
     
 protected:
-    void gen_moves(abstract_piece***);
+    void gen_moves(board &);
 
 private:
     bool can_move_horizontally();

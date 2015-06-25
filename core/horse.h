@@ -20,7 +20,7 @@ public:
     int value() const;
     
 protected:
-    void gen_moves(abstract_piece*** b);
+    void gen_moves(board &bd);
 
 private:
     //go left/right and up/down

@@ -32,21 +32,21 @@ void abstract_piece::move_to_pos(const position &new_pos)
     pos = new_pos;
 }
 
-void abstract_piece::update_moves(abstract_piece*** board)
+void abstract_piece::update_moves(board &bd)
 {
     avail_moves.clear();
-    if (can_i_move(board)) {
-        gen_moves(board);
+    if (can_i_move(bd)) {
+        gen_moves(bd);
     }
 }
 
-bool abstract_piece::can_i_move(abstract_piece*** b) const
+bool abstract_piece::can_i_move(board &bd) const
 {
     int pieces_in_between = 0;
     bool found_one_g = false;
     bool am_i_in_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        const abstract_piece *piece = b[pos.file][irank];
+        const p_piece piece = bd.at(pos.file, irank);
         if (piece) {
             if (found_one_g) {
                 if (piece->abbr_name() == 'G') {//another General

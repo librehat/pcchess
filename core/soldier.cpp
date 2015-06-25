@@ -30,7 +30,7 @@ bool soldier::can_move_horizontally()
     }
 }
 
-void soldier::gen_moves(abstract_piece***) 
+void soldier::gen_moves(board &)
 {
     if (can_move_horizontally()) {
         avail_moves.push_back(position(pos + left));

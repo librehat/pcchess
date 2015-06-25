@@ -10,6 +10,7 @@
 #define ABSTRACT_PIECE_H
 
 #include "position.h"
+#include "board.h"
 #include <list>
 #include <string>
 
@@ -34,7 +35,7 @@ public:
      * re-generate avail_moves
      * give the board data to this function
      */
-    void update_moves(abstract_piece*** board);
+    void update_moves(board &bd);
     const std::list<position>& get_avail_moves() const;
     bool is_movable() const;//check if avail_moves is empty
 
@@ -49,9 +50,9 @@ protected:
      * return false if it's such a piece hence it can't move
      * return true if it can move freely
      */
-    bool can_i_move(abstract_piece*** board) const;
+    bool can_i_move(board &bd) const;
     
-    virtual void gen_moves(abstract_piece*** board) = 0;
+    virtual void gen_moves(board &bd) = 0;
     void remove_invalid_moves(int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);//invalid: out of the given scope, default to the board
 
     position pos;

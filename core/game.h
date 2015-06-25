@@ -3,6 +3,7 @@
 
 #include "abstract_piece.h"
 #include "abstract_player.h"
+#include "board.h"
 
 class game
 {
@@ -19,14 +20,13 @@ public:
     void setup_players(abstract_player* our, abstract_player *opp);
 
     void move_piece(const position &from, const position &to);
-    abstract_piece*** get_board() const;
+    board& get_board_ref();
+    abstract_piece*** &get_board_data();
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
     bool is_over() const;
 
 private:
-    abstract_piece*** board;
-    abstract_piece**  board_data;
-
+    board m_board;
     abstract_player *our_player;
     abstract_player *opp_player;
 

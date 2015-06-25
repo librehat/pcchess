@@ -11,8 +11,8 @@
 
 using namespace std;
 
-abstract_player::abstract_player(abstract_piece*** _board) :
-    board(_board),
+abstract_player::abstract_player(board &bd) :
+    m_board(bd),
     checked(false),
     checkmated(false)
 {
@@ -25,12 +25,12 @@ abstract_player::~abstract_player()
     }
 }
 
-void abstract_player::add(abstract_piece *p)
+void abstract_player::add(p_piece p)
 {
     pieces.push_back(p);
 }
 
-void abstract_player::remove(abstract_piece *p)
+void abstract_player::remove(p_piece p)
 {
     if (p->abbr_name() == 'G') {
         checkmated = true;
@@ -45,7 +45,7 @@ void abstract_player::init_pieces(bool opposite)
         throw runtime_error("Error. pieces list is not empty when init_pieces is called.");
     }
 
-    abstract_piece *p;
+    p_piece p;
 
     //soldiers (pawns)
     p = new soldier(0, opposite ? 3 : 6, opposite);
@@ -104,7 +104,7 @@ bool abstract_player::is_checkmated() const
     return checkmated;
 }
 
-const list<abstract_piece*>& abstract_player::get_pieces() const
+const list<p_piece>& abstract_player::get_pieces() const
 {
     return pieces;
 }

@@ -8,8 +8,8 @@
 int main(int argc, char** argv)
 {
     game g;
-    auto our = new random_player(g.get_board());
-    auto opp = new random_player(g.get_board());
+    auto our = new random_player(g.get_board_ref());
+    auto opp = new random_player(g.get_board_ref());
     our->init_pieces(false);
     opp->init_pieces(true);
     g.setup_players(our, opp);

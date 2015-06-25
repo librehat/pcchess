@@ -3,8 +3,8 @@
 
 using namespace std;
 
-random_player::random_player(abstract_piece*** _board) :
-    abstract_player(_board),
+random_player::random_player(board &bd) :
+    abstract_player(bd),
     generator(device())
 {
 }
@@ -13,7 +13,7 @@ bool random_player::think_next_move(position *from, position *to)
 {
     vector<const abstract_piece*> movable_pieces;
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
-        (*it)->update_moves(board);
+        (*it)->update_moves(m_board);
         if ((*it)->is_movable()) {
             movable_pieces.push_back(*it);
         }

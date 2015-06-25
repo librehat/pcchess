@@ -8,23 +8,10 @@ game::game() :
     our_player(nullptr),
     opp_player(nullptr),
     game_over(false)
-{
-    board = new abstract_piece**[9];
-    board_data = new abstract_piece*[90];
-
-    for (int i = 0; i < 90; i++) {
-        board_data[i] = nullptr;
-    }
-
-    for (int i = 0; i < 9; i++) {
-        board[i] = board_data + i * 10;
-    }
-}
+{}
 
 game::~game()
 {
-    delete [] board;
-    delete [] board_data;
     if (our_player) {
         delete our_player;
     }
@@ -47,24 +34,24 @@ void game::setup_players(abstract_player *our, abstract_player *opp)
 
     for (auto&& it : our_pieces) {//access by reference
         position ipos = it->get_position();
-        if(board[ipos.file][ipos.rank]) {
+        if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
         }
-        board[ipos.file][ipos.rank] = it;
+        m_board[ipos] = it;
     }
 
     for (auto&& it : opp_pieces) {//access by reference
         position ipos = it->get_position();
-        if(board[ipos.file][ipos.rank]) {
+        if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
         }
-        board[ipos.file][ipos.rank] = it;
+        m_board[ipos] = it;
     }
 }
 
 void game::move_piece(const position &from, const position &to)
 {
-    abstract_piece* piece = board[from.file][from.rank];
+    abstract_piece* piece = m_board[from];
     if (!piece){
         cerr << "Error: The piece to move is nullptr on the board." << endl;
         return;
@@ -74,7 +61,7 @@ void game::move_piece(const position &from, const position &to)
         throw runtime_error("Error. Player pointer is NULL!");
     }
 
-    abstract_piece* target = board[to.file][to.rank];
+    abstract_piece* target = m_board[to];
     if (target) {//capture the target
         if (target->is_opposite_side()) {
             opp_player->remove(target);
@@ -83,27 +70,32 @@ void game::move_piece(const position &from, const position &to)
         }
     }
 
-    board[from.file][from.rank] = nullptr;
-    board[to.file][to.rank] = piece;
+    m_board[from] = nullptr;
+    m_board[to] = piece;
     piece->move_to_pos(to);
 
     game_over = our_player->is_checkmated() || opp_player->is_checkmated();
 }
 
-abstract_piece*** game::get_board() const
+board &game::get_board_ref()
 {
-    return board;
+    return m_board;
+}
+
+abstract_piece*** &game::get_board_data()
+{
+    return m_board.data_ref();
 }
 
 void game::print_board(bool chinese_char) const
 {
     for(int j = 0; j <= 9 ; ++j) {//rank
         for (int i = 0; i <= 8; ++i) {//file
-            if (board[i][j]) {
+            if (m_board.at(i, j)) {
                 if (chinese_char) {
-                    cout << board[i][j]->chinese_name();
+                    cout << m_board.at(i, j)->chinese_name();
                 } else {
-                    cout << board[i][j]->abbr_name();
+                    cout << m_board.at(i, j)->abbr_name();
                 }
             } else {
                 cout << (chinese_char ? "＋" : "+");

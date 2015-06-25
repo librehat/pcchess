@@ -20,10 +20,10 @@ public:
     int value() const;
     
 protected:
-    void gen_moves(abstract_piece*** b);
+    void gen_moves(board &bd);
 
 private:
-    void search_moves(const bool forward, const bool is_rank, abstract_piece ***b);
+    void search_moves(const bool forward, const bool is_rank, board &b);
 };
 
 #endif //ROOK_H
