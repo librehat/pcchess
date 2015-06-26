@@ -13,27 +13,9 @@ public:
     position& operator= (const position &b);
     position operator+ (const position &b);
     position operator- (const position &b);
+    bool operator< (const position &b);
+    bool operator!= (const position &b);
+    bool operator== (const position &b);
 };
-
-inline bool operator< (const position &a, const position &b)
-{
-    if (a.file < b.file) {
-        return true;
-    } else if (a.file == b.file) {
-        return a.rank < b.rank;
-    } else {
-        return false;
-    }
-}
-
-inline bool operator!= (const position &a, const position &b)
-{
-    return (a.file != b.file) || (a.rank != b.rank);
-}
-
-inline bool operator== (const position &a, const position &b)
-{
-    return !(a != b);
-}
 
 #endif //POSITION_H
