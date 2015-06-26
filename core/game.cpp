@@ -4,33 +4,44 @@
 
 using namespace std;
 
-game::game() :
-    our_player(nullptr),
-    opp_player(nullptr),
-    game_over(false)
-{}
-
-game::~game()
+game::game(abstract_player* our, abstract_player* opp, board &_board) :
+    m_board(_board),
+    our_player(our),
+    opp_player(opp)
 {
-    if (our_player) {
-        delete our_player;
-    }
-    if (opp_player) {
-        delete opp_player;
-    }
+    setup_players();
 }
 
-void game::setup_players(abstract_player *our, abstract_player *opp)
+game::~game()
+{}
+
+abstract_player* game::playout()
 {
-    if (our_player || opp_player) {
-        throw runtime_error("Error. Players are already initialised.");
+    pos_move next_move;
+    bool movable = false;
+
+    for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
+        movable = our_player->think_next_move(next_move);
+        if (!movable || our_player->is_checkmated()) {
+            return opp_player;
+        } else {
+            move_piece(next_move);
+        }
+        movable = opp_player->think_next_move(next_move);
+        if (!movable || opp_player->is_checkmated()) {
+            return our_player;
+        } else {
+            move_piece(next_move);
+        }
     }
 
-    our_player = our;
-    opp_player = opp;
+    return nullptr;
+}
 
-    auto our_pieces = our->get_pieces();
-    auto opp_pieces = opp->get_pieces();
+void game::setup_players()
+{
+    auto our_pieces = our_player->get_pieces();
+    auto opp_pieces = opp_player->get_pieces();
 
     for (auto&& it : our_pieces) {//access by reference
         position ipos = it->get_position();
@@ -73,18 +84,11 @@ void game::move_piece(const position &from, const position &to)
     m_board[from] = nullptr;
     m_board[to] = piece;
     piece->move_to_pos(to);
-
-    game_over = our_player->is_checkmated() || opp_player->is_checkmated();
 }
 
 void game::move_piece(const pos_move &_move)
 {
     move_piece(_move[0], _move[1]);
-}
-
-board &game::get_board_ref()
-{
-    return m_board;
 }
 
 void game::print_board(bool chinese_char) const
@@ -113,9 +117,4 @@ void game::print_board(bool chinese_char) const
         }
     }
     cout << endl;
-}
-
-bool game::is_over() const
-{
-    return game_over;
 }

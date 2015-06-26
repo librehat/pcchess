@@ -9,29 +9,25 @@
 class game
 {
 public:
-    game();
+    game(abstract_player* our, abstract_player* opp, board &_board);
     ~game();
 
-    /*
-     * this function should be called and only be called once to setup players
-     * players have to be valid during the game (using new to create such a player)
-     * this game instance will then take control of players' memory
-     * therefore don't delete them explicitly outside game
-     */
-    void setup_players(abstract_player* our, abstract_player *opp);
-
-    void move_piece(const position &from, const position &to);
-    void move_piece(const pos_move &_move);
-    board& get_board_ref();
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
-    bool is_over() const;
+
+    /*
+     * play the game till the end and return the winner
+     * if the game result is draw, then a nullptr will be returned
+     */
+    abstract_player* playout();
 
 private:
-    board m_board;
+    void setup_players();
+    void move_piece(const position &from, const position &to);
+    void move_piece(const pos_move &_move);
+
+    board &m_board;
     abstract_player *our_player;
     abstract_player *opp_player;
-
-    bool game_over;
 };
 
 #endif //GAME_H
