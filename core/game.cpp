@@ -64,12 +64,7 @@ void game::move_piece(const position &from, const position &to)
 {
     abstract_piece* piece = m_board[from];
     if (!piece){
-        cerr << "Error: The piece to move is nullptr on the board." << endl;
-        return;
-    }
-
-    if (!our_player || ! opp_player) {
-        throw runtime_error("Error. Player pointer is NULL!");
+        throw runtime_error("Error. The piece to move is nullptr on the board.");
     }
 
     abstract_piece* target = m_board[to];
