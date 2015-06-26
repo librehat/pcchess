@@ -9,7 +9,7 @@ class random_player : public abstract_player
 public:
     random_player(board &bd);
 
-    bool think_next_move(position *from, position *to);
+    bool think_next_move(position &from, position &to);
 
 private:
     std::random_device device;
