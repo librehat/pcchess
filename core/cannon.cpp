@@ -46,5 +46,5 @@ void cannon::gen_moves()
     search_moves(true, false);
     search_moves(false, true);
     search_moves(false, false);
-    remove_invalid_moves();//TODO this looks unnecessary for cannon
+    remove_invalid_moves();
 }

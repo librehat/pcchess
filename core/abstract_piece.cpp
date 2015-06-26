@@ -66,7 +66,20 @@ bool abstract_piece::can_i_move() const
 void abstract_piece::remove_invalid_moves(int min_file, int max_file, int min_rank, int max_rank)
 {
     for (auto it = avail_moves.begin(); it != avail_moves.end();) {
+        bool invalid = false;
         if (it->not_in_range(min_file, max_file, min_rank, max_rank)) {
+            invalid = true;
+        } else {
+            auto target_piece = m_board[*it];
+            if (target_piece) {
+                //can't capture same-side pieces
+                if (target_piece->is_opposite_side() == this->m_opposite) {
+                    invalid = true;
+                }
+            }
+        }
+
+        if (invalid) {
             it = avail_moves.erase(it);
         } else {
             ++it;
