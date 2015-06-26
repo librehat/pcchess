@@ -12,15 +12,14 @@
 class general : public abstract_piece
 {
 public:
-    general() : abstract_piece() {}
-    general(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    general(int _file, int _rank, bool oppo, board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves(board &b);
+    void gen_moves();
 
 private:
     static const position up;

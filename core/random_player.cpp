@@ -13,7 +13,7 @@ bool random_player::think_next_move(position *from, position *to)
 {
     vector<const abstract_piece*> movable_pieces;
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
-        (*it)->update_moves(m_board);
+        (*it)->update_moves();
         if ((*it)->is_movable()) {
             movable_pieces.push_back(*it);
         }

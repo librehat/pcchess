@@ -48,49 +48,49 @@ void abstract_player::init_pieces(bool opposite)
     p_piece p;
 
     //soldiers (pawns)
-    p = new soldier(0, opposite ? 3 : 6, opposite);
+    p = new soldier(0, opposite ? 3 : 6, opposite, m_board);
     pieces.push_back(p);
-    p = new soldier(2, opposite ? 3 : 6, opposite);
+    p = new soldier(2, opposite ? 3 : 6, opposite, m_board);
     pieces.push_back(p);
-    p = new soldier(4, opposite ? 3 : 6, opposite);
+    p = new soldier(4, opposite ? 3 : 6, opposite, m_board);
     pieces.push_back(p);
-    p = new soldier(6, opposite ? 3 : 6, opposite);
+    p = new soldier(6, opposite ? 3 : 6, opposite, m_board);
     pieces.push_back(p);
-    p = new soldier(8, opposite ? 3 : 6, opposite);
+    p = new soldier(8, opposite ? 3 : 6, opposite, m_board);
     pieces.push_back(p);
 
     //cannons
-    p = new cannon(1, opposite ? 2 : 7, opposite);
+    p = new cannon(1, opposite ? 2 : 7, opposite, m_board);
     pieces.push_back(p);
-    p = new cannon(7, opposite ? 2 : 7, opposite);
+    p = new cannon(7, opposite ? 2 : 7, opposite, m_board);
     pieces.push_back(p);
 
     //rooks
-    p = new rook(0, opposite ? 0 : 9, opposite);
+    p = new rook(0, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
-    p = new rook(8, opposite ? 0 : 9, opposite);
+    p = new rook(8, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
 
     //horses
-    p = new horse(1, opposite ? 0 : 9, opposite);
+    p = new horse(1, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
-    p = new horse(7, opposite ? 0 : 9, opposite);
+    p = new horse(7, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
 
     //elephants
-    p = new elephant(2, opposite ? 0 : 9, opposite);
+    p = new elephant(2, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
-    p = new elephant(6, opposite ? 0 : 9, opposite);
+    p = new elephant(6, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
 
     //advisors
-    p = new advisor(3, opposite ? 0 : 9, opposite);
+    p = new advisor(3, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
-    p = new advisor(5, opposite ? 0 : 9, opposite);
+    p = new advisor(5, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
 
     //general
-    p = new general(4, opposite ? 0 : 9, opposite);
+    p = new general(4, opposite ? 0 : 9, opposite, m_board);
     pieces.push_back(p);
 }
 

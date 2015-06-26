@@ -17,14 +17,14 @@ int cannon::value() const
     return 4;
 }
 
-void cannon::search_moves(const bool forward, const bool is_rank, board &b)
+void cannon::search_moves(const bool forward, const bool is_rank)
 {
     bool mount_found = false;
     for (position p = pos; !p.not_in_range(0, 8, 0, 9);
          is_rank ? (p.rank += forward ? 1 : -1) : (p.file += forward ? 1 : -1)
     ) {
         if (p == pos)   continue;
-        if(b[p]) {//a piece in the way
+        if(m_board[p]) {//a piece in the way
             if (mount_found) {//a piece that can be taken
                 avail_moves.push_back(p);
                 break;//cannon can't go further
@@ -40,11 +40,11 @@ void cannon::search_moves(const bool forward, const bool is_rank, board &b)
     }
 }
 
-void cannon::gen_moves(board &bd)
+void cannon::gen_moves()
 {
-    search_moves(true, true, bd);
-    search_moves(true, false, bd);
-    search_moves(false, true, bd);
-    search_moves(false, false, bd);
+    search_moves(true, true);
+    search_moves(true, false);
+    search_moves(false, true);
+    search_moves(false, false);
     remove_invalid_moves();//TODO this looks unnecessary for cannon
 }

@@ -22,7 +22,7 @@ int general::value() const
     return 8;
 }
 
-void general::gen_moves(board &b)
+void general::gen_moves()
 {
     avail_moves.push_back(pos + up);
     avail_moves.push_back(pos + down);
@@ -38,11 +38,11 @@ void general::gen_moves(board &b)
     bool found_general = false;
     bool other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        if (b[pos_left.file][irank]) {
+        if (m_board[pos_left.file][irank]) {
             if (found_general) {
                 other_piece_between = true;
                 break;
-            } else if (b[pos_left.file][irank]->abbr_name() == 'G') {
+            } else if (m_board[pos_left.file][irank]->abbr_name() == 'G') {
                 found_general = true;
             }
         }
@@ -55,11 +55,11 @@ void general::gen_moves(board &b)
     found_general = false;
     other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        if (b[pos_right.file][irank]) {
+        if (m_board[pos_right.file][irank]) {
             if (found_general) {
                 other_piece_between = true;
                 break;
-            } else if (b[pos_right.file][irank]->abbr_name() == 'G') {
+            } else if (m_board[pos_right.file][irank]->abbr_name() == 'G') {
                 found_general = true;
             }
         }

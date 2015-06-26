@@ -12,18 +12,17 @@
 class rook : public abstract_piece
 {
 public:
-    rook() : abstract_piece() {}
-    rook(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    rook(int _file, int _rank, bool oppo, board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves(board &bd);
+    void gen_moves();
 
 private:
-    void search_moves(const bool forward, const bool is_rank, board &b);
+    void search_moves(const bool forward, const bool is_rank);
 };
 
 #endif //ROOK_H

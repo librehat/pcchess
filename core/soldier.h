@@ -12,15 +12,14 @@
 class soldier : public abstract_piece
 {
 public:
-    soldier() : abstract_piece() {}
-    soldier(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    soldier(int _file, int _rank, bool oppo,  board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves(board &);
+    void gen_moves();
 
 private:
     bool can_move_horizontally();

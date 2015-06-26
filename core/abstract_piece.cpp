@@ -2,11 +2,8 @@
 
 using namespace std;
 
-abstract_piece::abstract_piece() :
-    abstract_piece(0, 0, false)
-{}
-
-abstract_piece::abstract_piece(int _file, int _rank, bool oppo) :
+abstract_piece::abstract_piece(int _file, int _rank, bool oppo, board &_board) :
+    m_board(_board),
     m_opposite(oppo),
     pos(_file, _rank)
 {}
@@ -32,21 +29,21 @@ void abstract_piece::move_to_pos(const position &new_pos)
     pos = new_pos;
 }
 
-void abstract_piece::update_moves(board &bd)
+void abstract_piece::update_moves()
 {
     avail_moves.clear();
-    if (can_i_move(bd)) {
-        gen_moves(bd);
+    if (can_i_move()) {
+        gen_moves();
     }
 }
 
-bool abstract_piece::can_i_move(board &bd) const
+bool abstract_piece::can_i_move() const
 {
     int pieces_in_between = 0;
     bool found_one_g = false;
     bool am_i_in_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        const p_piece piece = bd.at(pos.file, irank);
+        const p_piece piece = m_board.at(pos.file, irank);
         if (piece) {
             if (found_one_g) {
                 if (piece->abbr_name() == 'G') {//another General

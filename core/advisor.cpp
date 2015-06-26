@@ -22,7 +22,7 @@ int advisor::value() const
     return 2;
 }
 
-void advisor::gen_moves(board &)
+void advisor::gen_moves()
 {
     avail_moves.push_back(pos + upleft);
     avail_moves.push_back(pos + upright);
