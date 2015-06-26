@@ -1,6 +1,8 @@
 #ifndef POSITION_H
 #define POSITION_H
 
+#include <array>
+
 class position
 {
 public:
@@ -17,5 +19,7 @@ public:
     bool operator!= (const position &b);
     bool operator== (const position &b);
 };
+
+typedef std::array<position, 2> pos_move;//moving a piece from move[0] to move[1]
 
 #endif //POSITION_H

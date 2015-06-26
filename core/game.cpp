@@ -77,6 +77,11 @@ void game::move_piece(const position &from, const position &to)
     game_over = our_player->is_checkmated() || opp_player->is_checkmated();
 }
 
+void game::move_piece(const pos_move &_move)
+{
+    move_piece(_move[0], _move[1]);
+}
+
 board &game::get_board_ref()
 {
     return m_board;
