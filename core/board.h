@@ -12,11 +12,9 @@ class board
 {
 public:
     board();
-    board(const board&);
     ~board();
 
     p_piece at(const int &file, const int &rank) const;
-    board& operator =(const board&);
 
     inline p_piece* operator [] (const int &file)
     {

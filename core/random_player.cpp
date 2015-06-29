@@ -6,8 +6,12 @@ using namespace std;
 random_player::random_player(board &bd) :
     abstract_player(bd),
     generator(device())
-{
-}
+{}
+
+random_player::random_player(const abstract_player &b, board &new_board) :
+    abstract_player(b, new_board),
+    generator(device())
+{}
 
 bool random_player::think_next_move(position &from, position &to)
 {
