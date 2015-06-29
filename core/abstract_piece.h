@@ -18,6 +18,8 @@ class abstract_piece
 {
 public:
     abstract_piece(int _file, int _rank, bool oppo, board &_board);
+    abstract_piece(const abstract_piece &b, board &new_board);
+    virtual ~abstract_piece();
 
     /*
      * if it's in opposite side, we may need to take care of the
@@ -41,6 +43,9 @@ public:
     virtual char abbr_name() const = 0;
     virtual std::string chinese_name() const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
+
+    bool operator ==(const abstract_piece &b);
+    bool operator !=(const abstract_piece &b);
 
 protected:
     board &m_board;

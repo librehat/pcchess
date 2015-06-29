@@ -39,13 +39,3 @@ bool position::operator <(const position &b)
         return false;
     }
 }
-
-bool position::operator !=(const position &b)
-{
-    return (file != b.file) || (rank != b.rank);
-}
-
-bool position::operator ==(const position &b)
-{
-    return !(*this != b);
-}

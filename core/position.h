@@ -16,9 +16,17 @@ public:
     position operator+ (const position &b);
     position operator- (const position &b);
     bool operator< (const position &b);
-    bool operator!= (const position &b);
-    bool operator== (const position &b);
 };
+
+inline bool operator !=(const position &a, const position &b)
+{
+    return (a.file != b.file) || (a.rank != b.rank);
+}
+
+inline bool operator ==(const position &a, const position &b)
+{
+    return !(a != b);
+}
 
 typedef std::array<position, 2> pos_move;//moving a piece from move[0] to move[1]
 

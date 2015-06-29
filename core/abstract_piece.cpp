@@ -1,4 +1,5 @@
 #include "abstract_piece.h"
+#include <iostream>
 
 using namespace std;
 
@@ -7,6 +8,20 @@ abstract_piece::abstract_piece(int _file, int _rank, bool oppo, board &_board) :
     m_opposite(oppo),
     pos(_file, _rank)
 {}
+
+abstract_piece::abstract_piece(const abstract_piece &b, board &new_board) :
+    m_board(new_board),
+    m_opposite(b.m_opposite),
+    pos(b.pos),
+    avail_moves(b.avail_moves)
+{}
+
+abstract_piece::~abstract_piece()
+{
+#ifdef _DEBUG
+    cout << "A piece is deleted" << endl;
+#endif
+}
 
 const bool abstract_piece::is_opposite_side() const
 {
@@ -51,7 +66,7 @@ bool abstract_piece::can_i_move() const
                 }
                 
                 pieces_in_between++;
-                if (piece == this) {
+                if (*piece == *this) {
                     am_i_in_between = true;
                 }
             } else if (piece->abbr_name() == 'G') {
@@ -95,4 +110,14 @@ const list<position>& abstract_piece::get_avail_moves() const
 bool abstract_piece::is_movable() const
 {
     return !avail_moves.empty();
+}
+
+bool abstract_piece::operator ==(const abstract_piece &b)
+{
+    return !(*this != b);
+}
+
+bool abstract_piece::operator !=(const abstract_piece &b)
+{
+    return m_board != b.m_board && m_opposite != b.m_opposite && pos != b.pos && avail_moves != b.avail_moves;
 }

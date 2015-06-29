@@ -32,8 +32,13 @@ p_piece board::at(const int &file, const int &rank) const
     return data[dis];
 }
 
-board &board::operator = (const board &b)
+board &board::operator =(const board &b)
 {
     memcpy(data, b.data, 90 * sizeof(p_piece));
     return *this;
+}
+
+bool board::operator !=(const board &b)
+{
+    return data != b.data;
 }

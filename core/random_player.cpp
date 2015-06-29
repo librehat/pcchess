@@ -11,7 +11,7 @@ random_player::random_player(board &bd) :
 
 bool random_player::think_next_move(position &from, position &to)
 {
-    vector<const abstract_piece*> movable_pieces;
+    vector<p_piece> movable_pieces;
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
         (*it)->update_moves();
         if ((*it)->is_movable()) {
@@ -25,7 +25,7 @@ bool random_player::think_next_move(position &from, position &to)
     }
 
     uniform_int_distribution<int> piece_distribution(0, movables - 1);
-    const abstract_piece* piece = movable_pieces.at(piece_distribution(generator));
+    p_piece piece = movable_pieces.at(piece_distribution(generator));
     const list<position>& avail_moves = piece->get_avail_moves();
     uniform_int_distribution<int> move_distribution(0, avail_moves.size() - 1);
     auto move_it = avail_moves.cbegin();

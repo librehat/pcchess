@@ -62,12 +62,12 @@ void game::setup_players()
 
 void game::move_piece(const position &from, const position &to)
 {
-    abstract_piece* piece = m_board[from];
+    p_piece piece = m_board[from];
     if (!piece){
         throw runtime_error("Error. The piece to move is nullptr on the board.");
     }
 
-    abstract_piece* target = m_board[to];
+    p_piece target = m_board[to];
     if (target) {//capture the target
         if (target->is_opposite_side()) {
             opp_player->remove(target);

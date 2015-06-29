@@ -9,6 +9,7 @@ class abstract_player
 {
 public:
     abstract_player(board &bd);
+    abstract_player(const abstract_player &b, board &new_board);
     virtual ~abstract_player();
 
     void add(p_piece p);
