@@ -46,6 +46,7 @@ void abstract_player::remove(p_piece p)
         checkmated = true;
     }
     pieces.remove(p);
+    delete p;
 }
 
 void abstract_player::init_pieces(bool opposite)
