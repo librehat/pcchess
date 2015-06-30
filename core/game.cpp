@@ -15,27 +15,42 @@ game::game(abstract_player* our, abstract_player* opp, board &_board) :
 game::~game()
 {}
 
-abstract_player* game::playout()
+abstract_player* game::playout(bool we_first)
 {
     pos_move next_move;
     bool movable = false;
 
+    abstract_player* first = we_first ? our_player : opp_player;
+    abstract_player* second = we_first ? opp_player : our_player;
+
     for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
-        movable = our_player->think_next_move(next_move);
-        if (!movable || our_player->is_checkmated()) {
-            return opp_player;
+        movable = first->think_next_move(next_move);
+        if (!movable || first->is_checkmated()) {
+            return first;
         } else {
             move_piece(next_move);
         }
-        movable = opp_player->think_next_move(next_move);
-        if (!movable || opp_player->is_checkmated()) {
-            return our_player;
+        movable = second->think_next_move(next_move);
+        if (!movable || second->is_checkmated()) {
+            return second;
         } else {
             move_piece(next_move);
         }
     }
 
     return nullptr;
+}
+
+bool game::play_single_move(const pos_move &_move, bool we)
+{
+	auto second = we ? opp_player : our_player;
+	move_piece(_move);
+	pos_move next_move;
+	bool s_moved = second->think_next_move(next_move);
+	if (s_moved) {
+		move_piece(next_move);
+	}
+	return s_moved;
 }
 
 void game::setup_players()

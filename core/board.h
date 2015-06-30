@@ -6,7 +6,7 @@
 
 class abstract_piece;
 
-typedef std::shared_ptr<abstract_piece> p_piece;//shared pointer to abstract_piece
+typedef abstract_piece* p_piece;//normal pointer to abstract_piece
 
 class board
 {

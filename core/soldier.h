@@ -13,6 +13,9 @@ class soldier : public abstract_piece
 {
 public:
     soldier(int _file, int _rank, bool oppo,  board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
+    soldier(const soldier &b, board &new_board) : abstract_piece(b, new_board) {}
+
+    abstract_piece* make_copy_with_new_board(board &bd) const;
 
     char abbr_name() const;
     std::string chinese_name() const;

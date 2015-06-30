@@ -11,6 +11,11 @@ const position horse::l1d2 = position(-1,  2);
 const position horse::r2d1 = position( 2,  1);
 const position horse::r1d2 = position( 1,  2);
 
+abstract_piece* horse::make_copy_with_new_board(board &bd) const
+{
+	return new horse(*this, bd);
+}
+
 char horse::abbr_name() const
 {
     return 'H';

@@ -2,6 +2,11 @@
 
 using namespace std;
 
+abstract_piece* rook::make_copy_with_new_board(board &bd) const
+{
+	return new rook(*this, bd);
+}
+
 char rook::abbr_name() const
 {
     return 'R';

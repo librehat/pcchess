@@ -7,6 +7,11 @@ const position general::down = position(0, 1);
 const position general::left = position(-1, 0);
 const position general::right = position(1, 0);
 
+abstract_piece* general::make_copy_with_new_board(board &bd) const
+{
+	return new general(*this, bd);
+}
+
 char general::abbr_name() const
 {
     return 'G';

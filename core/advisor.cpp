@@ -7,6 +7,11 @@ const position advisor::upright = position(1, 1);
 const position advisor::downleft = position(-1, -1);
 const position advisor::downright = position(1, -1);
 
+abstract_piece* advisor::make_copy_with_new_board(board &bd) const
+{
+	return new advisor(*this, bd);
+}
+
 char advisor::abbr_name() const
 {
      return 'A';

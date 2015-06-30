@@ -1,4 +1,5 @@
 #include "node.h"
+#include "board.h"
 #include "game.h"
 #include "random_player.h"
 #include <stdexcept>
@@ -14,21 +15,20 @@ node::node(node *_parent) :
         throw runtime_error("Error. Null parent pointer is used for node constructor.");
     }
 
-    our = new random_player(*(parent->our), t_board);
-    opp = new random_player(*(parent->opp), t_board);
+    our = parent->our;
+    opp = parent->opp;
 }
 
 node::node(const abstract_player *_our, const abstract_player *_opp) :
     parent(nullptr),
+	our(_our),
+	opp(_opp),
     visits(0),
     scores(0)
 {
     if (!_our || !_opp) {
         throw runtime_error("Error. Null player pointer is used for node constructor.");
     }
-
-    our = new random_player(*_our, t_board);
-    opp = new random_player(*_opp, t_board);
 }
 
 node::~node()
@@ -61,16 +61,37 @@ node* node::get_best_child() const
     return best;
 }
 
-void node::play_random_game()
+void node::play_random_game(const std::list<pos_move> &moves)
 {
-    game sim_game(our, opp, t_board);
-    abstract_player* winner = sim_game.playout();
+	board t_board;
+	random_player *t_our = new random_player(*our, t_board);
+	random_player *t_opp = new random_player(*opp, t_board);
+    game sim_game(t_our, t_opp, t_board);
+
+    bool can_continue;
+    for(auto it = moves.begin(); it != moves.end(); ++it) {
+    	can_continue = sim_game.play_single_move(*it, true);
+    	if (!can_continue) {
+    		break;
+    	}
+    }
+
+    abstract_player* winner;
+    if (can_continue) {
+    	winner = sim_game.playout();
+    } else {
+    	winner = t_our;
+    }
+
     int res = 0;
-    if (winner == our) {
+    if (winner == t_our) {
         res = 1;
-    } else if (winner == opp) {
+    } else if (winner == t_opp) {
         res = -1;
     }
+
+    delete t_our;
+    delete t_opp;
 
     backpropagate(res);
 }

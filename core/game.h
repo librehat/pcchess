@@ -18,7 +18,8 @@ public:
      * play the game till the end and return the winner
      * if the game result is draw, then a nullptr will be returned
      */
-    abstract_player* playout();
+    abstract_player* playout(bool we_first = true);
+    bool play_single_move(const pos_move &_move, bool we);//true if both players moved
 
 private:
     void setup_players();

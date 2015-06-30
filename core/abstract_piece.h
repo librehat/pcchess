@@ -44,6 +44,8 @@ public:
     virtual std::string chinese_name() const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
 
+    virtual abstract_piece* make_copy_with_new_board(board &bd) const = 0;
+
     bool operator ==(const abstract_piece &b);
     bool operator !=(const abstract_piece &b);
 

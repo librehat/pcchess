@@ -18,14 +18,22 @@ abstract_player::abstract_player(board &bd) :
 {}
 
 abstract_player::abstract_player(const abstract_player &b, board &new_board) :
-    pieces(b.pieces),
     checked(b.checked),
     checkmated(b.checkmated),
     m_board(new_board)
-{}
+{
+	for (auto &&it : b.pieces) {
+		p_piece p = it->make_copy_with_new_board(new_board);
+		pieces.push_back(p);
+	}
+}
 
 abstract_player::~abstract_player()
-{}
+{
+	for (auto &&it : pieces) {
+		delete it;
+	}
+}
 
 void abstract_player::add(p_piece p)
 {

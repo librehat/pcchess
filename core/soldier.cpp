@@ -6,6 +6,11 @@ const position soldier::up = position(0, -1);
 const position soldier::left = position(-1, 0);
 const position soldier::right = position(1, 0);
 
+abstract_piece* soldier::make_copy_with_new_board(board &bd) const
+{
+	return new soldier(*this, bd);
+}
+
 char soldier::abbr_name() const
 {
     return 'S';

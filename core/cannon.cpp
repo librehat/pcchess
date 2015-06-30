@@ -2,6 +2,11 @@
 
 using namespace std;
 
+abstract_piece* cannon::make_copy_with_new_board(board &bd) const
+{
+	return new cannon(*this, bd);
+}
+
 char cannon::abbr_name() const
 {
     return 'C';

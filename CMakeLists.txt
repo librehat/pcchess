@@ -7,4 +7,4 @@ add_executable(pcchess_main ${MAINSRC_LIST})
 target_link_libraries(pcchess_main pcchess_core)
 #this requires cmake >= 3.1.0
 #target_compile_features(pcchess_core PUBLIC cxx_nullptr cxx_range_for cxx_auto_type)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x") 

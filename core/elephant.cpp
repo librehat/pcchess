@@ -7,6 +7,11 @@ const position elephant::up_right = position(2, -2);
 const position elephant::down_left = position(-2, 2);
 const position elephant::down_right = position(2, 2);
 
+abstract_piece* elephant::make_copy_with_new_board(board &bd) const
+{
+	return new elephant(*this, bd);
+}
+
 char elephant::abbr_name() const
 {
     return 'E';

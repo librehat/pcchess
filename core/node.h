@@ -3,7 +3,6 @@
 
 #include <list>
 #include "position.h"
-#include "board.h"
 #include "abstract_player.h"
 
 class node
@@ -22,7 +21,8 @@ public:
      */
     node* get_best_child() const;
 
-    void play_random_game();
+    //moves: all moves it has to play (from the root to this node)
+    void play_random_game(const std::list<pos_move> &moves);
     void backpropagate(const int &score);
     void detach();
 
@@ -30,9 +30,8 @@ protected:
     node* parent;
     std::list<node *> children;
 
-    board t_board;
-    abstract_player* our;
-    abstract_player* opp;
+    const abstract_player* our;
+    const abstract_player* opp;
 
     pos_move m_move;
 
