@@ -11,23 +11,30 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    board bd;
-    random_player our(bd);
-    random_player opp(bd);
-    our.init_pieces(false);
-    opp.init_pieces(true);
-    game g(&our, &opp, bd);
-    abstract_player* winner = g.playout();
+    int we_win = 0;
+    int we_draw = 0;
+    int we_lose = 0;
+    for (int i = 0; i < 200; ++i) {
+        board bd;
+        random_player our(bd);
+        random_player opp(bd);
+        our.init_pieces(false);
+        opp.init_pieces(true);
+        game g(&our, &opp, bd);
+        abstract_player* winner = g.playout();
 
-    g.print_board(true);
-
-    if (winner == &our) {
-        cout << "We won" << endl;
-    } else if (winner == &opp) {
-        cout << "Opp won" << endl;
-    } else {
-        cout << "Draw" << endl;
+        if (winner == &our) {
+            we_win++;
+        } else if (winner == &opp) {
+            we_lose++;
+        } else {
+            we_draw++;
+        }
     }
+
+    cout << "WIN:\t" << we_win << endl
+         << "DRAW:\t" << we_draw << endl
+         << "LOSE:\t" << we_lose << endl;
 
     return 0;
 }
