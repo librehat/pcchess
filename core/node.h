@@ -14,6 +14,7 @@ public:
 
     int get_visits() const;
     int get_scores() const;
+    pos_move get_move() const;
 
     /*
      * select child according to the visit times

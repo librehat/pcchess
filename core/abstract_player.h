@@ -32,8 +32,7 @@ public:
      * in arguments.
      * otherwise, return false if no move can be made
      */
-    virtual bool think_next_move(position &from, position &to) = 0;
-    bool think_next_move(pos_move &m);
+    virtual bool think_next_move(pos_move &m) = 0;
 
 protected:
     std::list<p_piece> pieces;

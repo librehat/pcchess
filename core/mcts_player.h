@@ -14,7 +14,7 @@ public:
     mcts_player(int depth, const abstract_player *opp, board &bd);
     ~mcts_player();
 
-    bool think_next_move(position &from, position &to);
+    bool think_next_move(pos_move &_move);
 
 private:
     int search_depth;

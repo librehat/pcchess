@@ -10,7 +10,7 @@ public:
     random_player(board &bd);
     random_player(const abstract_player &b, board &new_board);
 
-    bool think_next_move(position &from, position &to);
+    bool think_next_move(pos_move &_move);
 
 private:
     std::random_device device;

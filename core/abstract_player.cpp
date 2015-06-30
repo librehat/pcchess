@@ -118,7 +118,3 @@ const list<p_piece>& abstract_player::get_pieces() const
     return pieces;
 }
 
-bool abstract_player::think_next_move(pos_move &m)
-{
-    return think_next_move(m[0], m[1]);
-}

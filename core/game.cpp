@@ -26,13 +26,13 @@ abstract_player* game::playout(bool we_first)
     for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
         movable = first->think_next_move(next_move);
         if (!movable || first->is_checkmated()) {
-            return first;
+            return second;
         } else {
             move_piece(next_move);
         }
         movable = second->think_next_move(next_move);
         if (!movable || second->is_checkmated()) {
-            return second;
+            return first;
         } else {
             move_piece(next_move);
         }

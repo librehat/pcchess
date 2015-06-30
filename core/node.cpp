@@ -48,6 +48,11 @@ int node::get_scores() const
     return scores;
 }
 
+pos_move node::get_move() const
+{
+    return m_move;
+}
+
 node* node::get_best_child() const
 {
     node* best = nullptr;

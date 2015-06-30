@@ -13,7 +13,7 @@ random_player::random_player(const abstract_player &b, board &new_board) :
     generator(device())
 {}
 
-bool random_player::think_next_move(position &from, position &to)
+bool random_player::think_next_move(pos_move &_move)
 {
     vector<p_piece> movable_pieces;
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
@@ -36,7 +36,7 @@ bool random_player::think_next_move(position &from, position &to)
 
     for (int random_move = move_distribution(generator); random_move > 0; --random_move, ++move_it);
 
-    from = piece->get_position();
-    to   = *move_it;
+    _move[0] = piece->get_position();
+    _move[1] = *move_it;
     return true;
 }
