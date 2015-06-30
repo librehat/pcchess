@@ -33,3 +33,5 @@
 
 # Qt Creator .user files
 *.user
+/build/
+/nbproject/
