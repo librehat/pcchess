@@ -64,9 +64,9 @@ node* node::get_best_child() const
 void node::play_random_game(const std::list<pos_move> &moves)
 {
 	board t_board;
-	random_player *t_our = new random_player(*our, t_board);
-	random_player *t_opp = new random_player(*opp, t_board);
-    game sim_game(t_our, t_opp, t_board);
+	random_player t_our(*our, t_board);
+	random_player t_opp(*opp, t_board);
+    game sim_game(&t_our, &t_opp, t_board);
 
     bool can_continue;
     for(auto it = moves.begin(); it != moves.end(); ++it) {
@@ -80,18 +80,15 @@ void node::play_random_game(const std::list<pos_move> &moves)
     if (can_continue) {
     	winner = sim_game.playout();
     } else {
-    	winner = t_our;
+    	winner = &t_our;
     }
 
     int res = 0;
-    if (winner == t_our) {
+    if (winner == &t_our) {
         res = 1;
-    } else if (winner == t_opp) {
+    } else if (winner == &t_opp) {
         res = -1;
     }
-
-    delete t_our;
-    delete t_opp;
 
     backpropagate(res);
 }
