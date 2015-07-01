@@ -94,6 +94,11 @@ void game::move_piece(const position &from, const position &to)
     m_board[from] = nullptr;
     m_board[to] = piece;
     piece->move_to_pos(to);
+    if (piece->is_opposite_side()) {
+    	opp_player->add_history(from, to);
+    } else {
+    	our_player->add_history(from, to);
+    }
 }
 
 void game::move_piece(const pos_move &_move)

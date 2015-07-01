@@ -16,12 +16,12 @@ random_player::random_player(const abstract_player &b, board &new_board) :
 bool random_player::think_next_move(pos_move &_move)
 {
     vector<pos_move> all_avail_moves;
-    for (auto it = pieces.begin(); it != pieces.end(); ++it) {
-        (*it)->update_moves();
-        if ((*it)->is_movable()) {
-        	for (auto &&m : (*it)->get_avail_moves()) {
+    for (auto &&p : pieces) {
+        p->update_moves();
+        if (p->is_movable()) {
+        	for (auto &&m : p->get_avail_moves()) {
         		pos_move mov;
-        		mov[0] = (*it)->get_position();
+        		mov[0] = p->get_position();
         		mov[1] = m;
         		all_avail_moves.push_back(mov);
         	}

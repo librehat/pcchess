@@ -7,7 +7,6 @@
 #include "advisor.h"
 #include "general.h"
 #include <stdexcept>
-#include <memory>
 
 using namespace std;
 
@@ -18,6 +17,7 @@ abstract_player::abstract_player(board &bd) :
 {}
 
 abstract_player::abstract_player(const abstract_player &b, board &new_board) :
+    move_history(b.move_history),
     checked(b.checked),
     checkmated(b.checkmated),
     m_board(new_board)
@@ -47,6 +47,29 @@ void abstract_player::remove(p_piece p)
     }
     pieces.remove(p);
     delete p;
+}
+
+void abstract_player::add_history(const position &from, const position &to)
+{
+	pos_move m;
+	m[0] = from;
+	m[1] = to;
+	add_history(m);
+}
+
+void abstract_player::add_history(const pos_move &m)
+{
+	move_history.push_front(m);
+}
+
+const list<pos_move>& abstract_player::get_history() const
+{
+	return move_history;
+}
+
+void abstract_player::clear_history()
+{
+    move_history.clear();
 }
 
 void abstract_player::init_pieces(bool opposite)

@@ -3,24 +3,16 @@
 #include "game.h"
 #include "random_player.h"
 #include <stdexcept>
+#include <cmath>
+#include <iostream>
 
 using namespace std;
 
-node::node(node *_parent) :
+const double node::uct_constant = 0.7;
+
+node::node(const abstract_player *_our, const abstract_player *_opp, bool _my_turn, node *_parent) :
+	my_turn(_my_turn),
     parent(_parent),
-    visits(0),
-    scores(0)
-{
-    if (!_parent) {
-        throw runtime_error("Error. Null parent pointer is used for node constructor.");
-    }
-
-    our = parent->our;
-    opp = parent->opp;
-}
-
-node::node(const abstract_player *_our, const abstract_player *_opp) :
-    parent(nullptr),
 	our(_our),
 	opp(_opp),
     visits(0),
@@ -48,9 +40,103 @@ int node::get_scores() const
     return scores;
 }
 
-pos_move node::get_move() const
+double node::get_value() const
 {
-    return m_move;
+    return static_cast<double>(scores) / static_cast<double>(visits);
+}
+
+const pos_move& node::get_our_move() const
+{
+    return our_move;
+}
+
+const pos_move& node::get_opp_move() const
+{
+    return opp_move;
+}
+
+double node::get_uct_val() const
+{
+	if (parent) {
+		return get_value() + uct_constant * sqrt(log(parent->get_visits()) / visits);
+	} else {
+		return 0;
+	}
+}
+
+void node::set_our_move(const pos_move &m)
+{
+    our_move = m;
+}
+
+void node::set_opp_move(const pos_move &m)
+{
+    opp_move = m;
+}
+
+void node::select()
+{
+#ifdef _DEBUG
+	cout << "SELECTION step" << endl;
+#endif
+}
+
+void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int &score)
+{
+#ifdef _DEBUG
+	cout << "EXPANSION step" << endl;
+#endif
+
+	visits++;
+	scores += score;
+
+	pos_move next_move;
+	if (my_turn) {
+	    if (our_hist.empty()) {
+	        return;
+	    }
+	    next_move = our_hist.back();
+	    our_hist.pop_back();
+	} else {
+	    if (opp_hist.empty()) {
+	        return;
+	    }
+	    next_move = opp_hist.back();
+	    opp_hist.pop_back();
+	}
+
+	node* child = find_child(next_move);
+	if (!child) {
+	    child = new node(our, opp, !my_turn, this);
+	    child->set_our_move(my_turn ? next_move : our_move);
+	    child->set_opp_move(my_turn ? opp_move : next_move);
+	}
+	child->expand(our_hist, opp_hist, score);
+}
+
+int node::simulate()
+{
+#ifdef _DEBUG
+	cout << "SIMULATION step" << endl;
+#endif
+	board t_board;
+	random_player t_our(*our, t_board);
+	random_player t_opp(*opp, t_board);
+
+	//need to clear the history so the history would contains only the simulation part
+	t_our.clear_history();
+	t_opp.clear_history();
+
+	game sim_game(&t_our, &t_opp, t_board);
+	auto winner = sim_game.playout(my_turn);
+	int result = winner == &t_our ? 1 : winner == &t_opp ? -1 : 0;
+
+	//we need to make copies here because expand will modify the argument variables
+	list<pos_move> our_hist = t_our.get_history();
+	list<pos_move> opp_hist = t_opp.get_history();
+	expand(our_hist, opp_hist, result);//this very node is definitely the parental node
+
+	return result;
 }
 
 node* node::get_best_child() const
@@ -66,38 +152,6 @@ node* node::get_best_child() const
     return best;
 }
 
-void node::play_random_game(const std::list<pos_move> &moves)
-{
-	board t_board;
-	random_player t_our(*our, t_board);
-	random_player t_opp(*opp, t_board);
-    game sim_game(&t_our, &t_opp, t_board);
-
-    bool can_continue;
-    for(auto it = moves.begin(); it != moves.end(); ++it) {
-    	can_continue = sim_game.play_single_move(*it, true);
-    	if (!can_continue) {
-    		break;
-    	}
-    }
-
-    abstract_player* winner;
-    if (can_continue) {
-    	winner = sim_game.playout();
-    } else {
-    	winner = &t_our;
-    }
-
-    int res = 0;
-    if (winner == &t_our) {
-        res = 1;
-    } else if (winner == &t_opp) {
-        res = -1;
-    }
-
-    backpropagate(res);
-}
-
 void node::backpropagate(const int &score)
 {
     if (parent) {
@@ -110,4 +164,20 @@ void node::detach()
 {
     parent->children.remove(this);
     parent = nullptr;
+}
+
+node* node::find_child(const pos_move &m)
+{
+    for (auto &&child : children) {
+        if (my_turn) {
+            if (child->our_move == m) {
+                return child;
+            }
+        } else {
+            if (child->opp_move == m) {
+                return child;
+            }
+        }
+    }
+    return nullptr;
 }

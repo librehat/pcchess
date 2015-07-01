@@ -8,13 +8,23 @@
 class node
 {
 public:
-    node(node *_parent);
-    node(const abstract_player* _our, const abstract_player* _opp);//this is only for root node
+    node(const abstract_player* _our, const abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
     ~node();
 
     int get_visits() const;
     int get_scores() const;
-    pos_move get_move() const;
+    double get_value() const;
+    const pos_move& get_our_move() const;
+    const pos_move& get_opp_move() const;
+    double get_uct_val() const;
+
+    void set_our_move(const pos_move &m);
+    void set_opp_move(const pos_move &m);
+
+    //three steps for MCTS
+    void select();
+    void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
+    int simulate();
 
     /*
      * select child according to the visit times
@@ -22,22 +32,28 @@ public:
      */
     node* get_best_child() const;
 
-    //moves: all moves it has to play (from the root to this node)
-    void play_random_game(const std::list<pos_move> &moves);
     void backpropagate(const int &score);
     void detach();
 
 protected:
+    bool my_turn;
+
     node* parent;
     std::list<node *> children;
 
     const abstract_player* our;
     const abstract_player* opp;
 
-    pos_move m_move;
+    pos_move our_move;
+    pos_move opp_move;
 
     int visits;
-    int scores;
+    int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
+
+    //find the children with same moves. return nullptr if no such child
+    node* find_child(const pos_move &m);
+
+    static const double uct_constant;
 };
 
 #endif // NODE_H

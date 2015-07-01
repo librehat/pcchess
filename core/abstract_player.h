@@ -14,6 +14,10 @@ public:
 
     void add(p_piece p);
     void remove(p_piece p);
+    void add_history(const position &from, const position &to);
+    void add_history(const pos_move &m);
+    const std::list<pos_move>& get_history() const;
+    void clear_history();
 
     /*
      * initialise the pieces list to a normal beginning situation
@@ -36,6 +40,7 @@ public:
 
 protected:
     std::list<p_piece> pieces;
+    std::list<pos_move> move_history;//front: latest move, back: the first move
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
     board &m_board;
