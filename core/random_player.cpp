@@ -15,28 +15,25 @@ random_player::random_player(const abstract_player &b, board &new_board) :
 
 bool random_player::think_next_move(pos_move &_move)
 {
-    vector<p_piece> movable_pieces;
+    vector<pos_move> all_avail_moves;
     for (auto it = pieces.begin(); it != pieces.end(); ++it) {
         (*it)->update_moves();
         if ((*it)->is_movable()) {
-            movable_pieces.push_back(*it);
+        	for (auto &&m : (*it)->get_avail_moves()) {
+        		pos_move mov;
+        		mov[0] = (*it)->get_position();
+        		mov[1] = m;
+        		all_avail_moves.push_back(mov);
+        	}
         }
     }
 
-    int movables = movable_pieces.size();
-    if (movables == 0) {
+    int moves = all_avail_moves.size();
+    if (moves == 0) {
         return false;
     }
 
-    uniform_int_distribution<int> piece_distribution(0, movables - 1);
-    p_piece piece = movable_pieces.at(piece_distribution(generator));
-    const list<position>& avail_moves = piece->get_avail_moves();
-    uniform_int_distribution<int> move_distribution(0, avail_moves.size() - 1);
-    auto move_it = avail_moves.cbegin();
-
-    for (int random_move = move_distribution(generator); random_move > 0; --random_move, ++move_it);
-
-    _move[0] = piece->get_position();
-    _move[1] = *move_it;
+    uniform_int_distribution<int> m_distribution(0, moves - 1);
+    _move = all_avail_moves.at(m_distribution(generator));
     return true;
 }
