@@ -12,17 +12,17 @@
 class soldier : public abstract_piece
 {
 public:
-    soldier(int _file, int _rank, bool oppo,  board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
-    soldier(const soldier &b, board &new_board) : abstract_piece(b, new_board) {}
+    soldier(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    soldier(const soldier &b) : abstract_piece(b) {}
 
-    abstract_piece* make_copy_with_new_board(board &bd) const;
+    abstract_piece* make_a_copy() const;
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves();
+    void gen_moves(const board &m_board);
 
 private:
     bool can_move_horizontally();

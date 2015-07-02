@@ -4,8 +4,7 @@
 
 using namespace std;
 
-game::game(abstract_player* our, abstract_player* opp, board &_board) :
-    m_board(_board),
+game::game(abstract_player* our, abstract_player* opp) :
     our_player(our),
     opp_player(opp)
 {
@@ -24,14 +23,14 @@ abstract_player* game::playout(bool we_first)
     abstract_player* second = we_first ? opp_player : our_player;
 
     for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
-        movable = first->think_next_move(next_move);
+        movable = first->think_next_move(next_move, m_board);
         if (!movable || first->is_checkmated()) {
             return second;
         } else {
             move_piece(next_move);
             second->opponent_moved(next_move);
         }
-        movable = second->think_next_move(next_move);
+        movable = second->think_next_move(next_move, m_board);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
@@ -50,7 +49,7 @@ bool game::play_single_move(const pos_move &_move, bool we)
 	move_piece(_move);
 	pos_move next_move;
     second->opponent_moved(_move);
-	bool s_moved = second->think_next_move(next_move);
+    bool s_moved = second->think_next_move(next_move, m_board);
 	if (s_moved) {
 		move_piece(next_move);
         who->opponent_moved(next_move);

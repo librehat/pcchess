@@ -12,10 +12,10 @@
 class horse : public abstract_piece
 {
 public:
-    horse(int _file, int _rank, bool oppo, board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
-    horse(const horse &b, board &new_board) : abstract_piece(b, new_board) {}
+    horse(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    horse(const horse &b) : abstract_piece(b) {}
 
-    abstract_piece* make_copy_with_new_board(board &bd) const;
+    abstract_piece* make_a_copy() const;
 
 
     char abbr_name() const;
@@ -23,7 +23,7 @@ public:
     int value() const;
     
 protected:
-    void gen_moves();
+    void gen_moves(const board &m_board);
 
 private:
     //go left/right and up/down

@@ -7,9 +7,9 @@ const position advisor::upright = position(1, 1);
 const position advisor::downleft = position(-1, -1);
 const position advisor::downright = position(1, -1);
 
-abstract_piece* advisor::make_copy_with_new_board(board &bd) const
+abstract_piece* advisor::make_a_copy() const
 {
-	return new advisor(*this, bd);
+    return new advisor(*this);
 }
 
 char advisor::abbr_name() const
@@ -27,12 +27,12 @@ int advisor::value() const
     return 2;
 }
 
-void advisor::gen_moves()
+void advisor::gen_moves(const board &m_board)
 {
     avail_moves.push_back(pos + upleft);
     avail_moves.push_back(pos + upright);
     avail_moves.push_back(pos + downleft);
     avail_moves.push_back(pos + downright);
-    remove_invalid_moves(3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
+    remove_invalid_moves(m_board, 3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
 }
 

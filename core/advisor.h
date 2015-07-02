@@ -10,17 +10,17 @@
 class advisor : public abstract_piece
 {
 public:
-    advisor(int _file, int _rank, bool oppo, board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
-    advisor(const advisor &b, board &new_board) : abstract_piece(b, new_board) {}
+    advisor(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    advisor(const advisor &b) : abstract_piece(b) {}
 
-    abstract_piece* make_copy_with_new_board(board &bd) const;
+    abstract_piece* make_a_copy() const;
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves();
+    void gen_moves(const board &m_board);
 
 private:
     static const position upleft;

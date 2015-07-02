@@ -17,8 +17,8 @@
 class abstract_piece
 {
 public:
-    abstract_piece(int _file, int _rank, bool oppo, board &_board);
-    abstract_piece(const abstract_piece &b, board &new_board);
+    abstract_piece(int _file, int _rank, bool oppo);
+    abstract_piece(const abstract_piece &b);
     virtual ~abstract_piece();
 
     /*
@@ -36,7 +36,7 @@ public:
      * re-generate avail_moves
      * give the board data to this function
      */
-    void update_moves();
+    void update_moves(const board &m_board);
     const std::list<position>& get_avail_moves() const;
     bool is_movable() const;//check if avail_moves is empty
 
@@ -44,23 +44,23 @@ public:
     virtual std::string chinese_name() const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
 
-    virtual abstract_piece* make_copy_with_new_board(board &bd) const = 0;
+    virtual abstract_piece* make_a_copy() const = 0;
 
     bool operator ==(const abstract_piece &b);
     bool operator !=(const abstract_piece &b);
 
 protected:
-    board &m_board;
     const bool m_opposite;
     /*
      * a piece can't move if it's the only piece separate generals
      * return false if it's such a piece hence it can't move
      * return true if it can move freely
      */
-    bool can_i_move() const;
+    bool can_i_move(const board &m_board) const;
     
-    virtual void gen_moves() = 0;
-    void remove_invalid_moves(int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);//invalid: out of the given scope, default to the board
+    virtual void gen_moves(const board &m_board) = 0;
+    //invalid: out of the given scope, default to the board
+    void remove_invalid_moves(const board &m_board, int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);
 
     position pos;
     std::list<position> avail_moves;

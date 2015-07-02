@@ -10,20 +10,20 @@
 class cannon : public abstract_piece
 {
 public:
-    cannon(int _file, int _rank, bool oppo, board &_board) : abstract_piece(_file, _rank, oppo, _board) {}
-    cannon(const cannon &b, board &new_board) : abstract_piece(b, new_board) {}
+    cannon(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    cannon(const cannon &b) : abstract_piece(b) {}
 
-    abstract_piece* make_copy_with_new_board(board &bd) const;
+    abstract_piece* make_a_copy() const;
 
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
     
 protected:
-    void gen_moves();
+    void gen_moves(const board &m_board);
 
 private:
-    void search_moves(const bool forward, const bool is_rank);
+    void search_moves(const bool forward, const bool is_rank, const board &m_board);
 };
 
 #endif //CANNON_H

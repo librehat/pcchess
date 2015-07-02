@@ -16,13 +16,13 @@ abstract_player::abstract_player() :
     checkmated(false)
 {}
 
-abstract_player::abstract_player(const abstract_player &b, board &new_board) :
+abstract_player::abstract_player(const abstract_player &b) :
     move_history(b.move_history),
     checked(b.checked),
     checkmated(b.checkmated)
 {
 	for (auto &&it : b.pieces) {
-		p_piece p = it->make_copy_with_new_board(new_board);
+        p_piece p = it->make_a_copy();
 		pieces.push_back(p);
 	}
 }
@@ -79,7 +79,7 @@ void abstract_player::clear_history()
     move_history.clear();
 }
 
-void abstract_player::init_pieces(board &bd, bool opposite)
+void abstract_player::init_pieces(bool opposite)
 {
     if (!pieces.empty()) {
         throw runtime_error("Error. pieces list is not empty when init_pieces is called.");
@@ -88,49 +88,49 @@ void abstract_player::init_pieces(board &bd, bool opposite)
     p_piece p;
 
     //soldiers (pawns)
-    p = p_piece(new soldier(0, opposite ? 3 : 6, opposite, bd));
+    p = p_piece(new soldier(0, opposite ? 3 : 6, opposite));
     pieces.push_back(p);
-    p = p_piece(new soldier(2, opposite ? 3 : 6, opposite, bd));
+    p = p_piece(new soldier(2, opposite ? 3 : 6, opposite));
     pieces.push_back(p);
-    p = p_piece(new soldier(4, opposite ? 3 : 6, opposite, bd));
+    p = p_piece(new soldier(4, opposite ? 3 : 6, opposite));
     pieces.push_back(p);
-    p = p_piece(new soldier(6, opposite ? 3 : 6, opposite, bd));
+    p = p_piece(new soldier(6, opposite ? 3 : 6, opposite));
     pieces.push_back(p);
-    p = p_piece(new soldier(8, opposite ? 3 : 6, opposite, bd));
+    p = p_piece(new soldier(8, opposite ? 3 : 6, opposite));
     pieces.push_back(p);
 
     //cannons
-    p = p_piece(new cannon(1, opposite ? 2 : 7, opposite, bd));
+    p = p_piece(new cannon(1, opposite ? 2 : 7, opposite));
     pieces.push_back(p);
-    p = p_piece(new cannon(7, opposite ? 2 : 7, opposite, bd));
+    p = p_piece(new cannon(7, opposite ? 2 : 7, opposite));
     pieces.push_back(p);
 
     //rooks
-    p = p_piece(new rook(0, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new rook(0, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
-    p = p_piece(new rook(8, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new rook(8, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
 
     //horses
-    p = p_piece(new horse(1, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new horse(1, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
-    p = p_piece(new horse(7, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new horse(7, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
 
     //elephants
-    p = p_piece(new elephant(2, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new elephant(2, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
-    p = p_piece(new elephant(6, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new elephant(6, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
 
     //advisors
-    p = p_piece(new advisor(3, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new advisor(3, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
-    p = p_piece(new advisor(5, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new advisor(5, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
 
     //general
-    p = p_piece(new general(4, opposite ? 0 : 9, opposite, bd));
+    p = p_piece(new general(4, opposite ? 0 : 9, opposite));
     pieces.push_back(p);
 }
 

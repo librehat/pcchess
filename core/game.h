@@ -9,7 +9,7 @@
 class game
 {
 public:
-    game(abstract_player* our, abstract_player* opp, board &_board);
+    game(abstract_player* our, abstract_player* opp);
     ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
@@ -26,7 +26,7 @@ private:
     void move_piece(const position &from, const position &to);
     void move_piece(const pos_move &_move);
 
-    board &m_board;
+    board m_board;
     abstract_player *our_player;
     abstract_player *opp_player;
 };

@@ -2,9 +2,9 @@
 
 using namespace std;
 
-abstract_piece* cannon::make_copy_with_new_board(board &bd) const
+abstract_piece* cannon::make_a_copy() const
 {
-	return new cannon(*this, bd);
+    return new cannon(*this);
 }
 
 char cannon::abbr_name() const
@@ -22,14 +22,14 @@ int cannon::value() const
     return 4;
 }
 
-void cannon::search_moves(const bool forward, const bool is_rank)
+void cannon::search_moves(const bool forward, const bool is_rank, const board &m_board)
 {
     bool mount_found = false;
     for (position p = pos; !p.not_in_range(0, 8, 0, 9);
          is_rank ? (p.rank += forward ? 1 : -1) : (p.file += forward ? 1 : -1)
     ) {
         if (p == pos)   continue;
-        if(m_board[p]) {//a piece in the way
+        if(m_board.at(p)) {//a piece in the way
             if (mount_found) {//a piece that can be taken
                 avail_moves.push_back(p);
                 break;//cannon can't go further
@@ -45,11 +45,11 @@ void cannon::search_moves(const bool forward, const bool is_rank)
     }
 }
 
-void cannon::gen_moves()
+void cannon::gen_moves(const board &m_board)
 {
-    search_moves(true, true);
-    search_moves(true, false);
-    search_moves(false, true);
-    search_moves(false, false);
-    remove_invalid_moves();
+    search_moves(true, true, m_board);
+    search_moves(true, false, m_board);
+    search_moves(false, true, m_board);
+    search_moves(false, false, m_board);
+    remove_invalid_moves(m_board);
 }

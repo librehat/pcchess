@@ -9,7 +9,7 @@ class abstract_player
 {
 public:
     abstract_player();
-    abstract_player(const abstract_player &b, board &new_board);
+    abstract_player(const abstract_player &b);
     virtual ~abstract_player();
 
     void add(p_piece p);
@@ -24,7 +24,7 @@ public:
      * no need to call add function multiple times
      * opposite: whether this player is opposite player
      */
-    void init_pieces(board &bd, bool opposite = false);
+    void init_pieces(bool opposite = false);
 
     bool is_checked() const;
     bool is_checkmated() const;
@@ -36,7 +36,7 @@ public:
      * in arguments.
      * otherwise, return false if no move can be made
      */
-    virtual bool think_next_move(pos_move &m) = 0;
+    virtual bool think_next_move(pos_move &m, const board &bd) = 0;
 
     /*
      * the sub-class player might want to change some strategies

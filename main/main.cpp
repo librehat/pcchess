@@ -40,7 +40,6 @@ int main(int argc, char** argv)
     int we_draw = 0;
     int we_lose = 0;
     for (int i = 0; i < rounds; ++i) {
-        board bd;
         abstract_player *our, *opp;
         opp = new random_player;
         if (all_random) {
@@ -48,9 +47,9 @@ int main(int argc, char** argv)
         } else {
             our = new mcts_player(2, true, opp);
         }
-        our->init_pieces(bd, false);
-        opp->init_pieces(bd, true);
-        game g(our, opp, bd);
+        our->init_pieces(false);
+        opp->init_pieces(true);
+        game g(our, opp);
         abstract_player* winner = g.playout();
 
         if (enable_print) {

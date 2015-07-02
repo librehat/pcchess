@@ -8,9 +8,9 @@ class random_player : public abstract_player
 {
 public:
     random_player();
-    random_player(const abstract_player &b, board &new_board);
+    random_player(const abstract_player &b);
 
-    bool think_next_move(pos_move &_move);
+    bool think_next_move(pos_move &_move, const board &bd);
 
 private:
     std::random_device device;

@@ -15,6 +15,7 @@ public:
     ~board();
 
     p_piece at(const int &file, const int &rank) const;
+    p_piece at(const position &pos) const;
 
     inline p_piece* operator [] (const int &file)
     {

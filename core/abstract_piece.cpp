@@ -2,14 +2,12 @@
 
 using namespace std;
 
-abstract_piece::abstract_piece(int _file, int _rank, bool oppo, board &_board) :
-    m_board(_board),
+abstract_piece::abstract_piece(int _file, int _rank, bool oppo) :
     m_opposite(oppo),
     pos(_file, _rank)
 {}
 
-abstract_piece::abstract_piece(const abstract_piece &b, board &new_board) :
-    m_board(new_board),
+abstract_piece::abstract_piece(const abstract_piece &b) :
     m_opposite(b.m_opposite),
     pos(b.pos),
     avail_moves(b.avail_moves)
@@ -39,15 +37,15 @@ void abstract_piece::move_to_pos(const position &new_pos)
     pos = new_pos;
 }
 
-void abstract_piece::update_moves()
+void abstract_piece::update_moves(const board &m_board)
 {
     avail_moves.clear();
-    if (can_i_move()) {
-        gen_moves();
+    if (can_i_move(m_board)) {
+        gen_moves(m_board);
     }
 }
 
-bool abstract_piece::can_i_move() const
+bool abstract_piece::can_i_move(const board &m_board) const
 {
     int pieces_in_between = 0;
     bool found_one_g = false;
@@ -73,14 +71,14 @@ bool abstract_piece::can_i_move() const
     return !am_i_in_between || pieces_in_between != 1;
 }
 
-void abstract_piece::remove_invalid_moves(int min_file, int max_file, int min_rank, int max_rank)
+void abstract_piece::remove_invalid_moves(const board &m_board, int min_file, int max_file, int min_rank, int max_rank)
 {
     for (auto it = avail_moves.begin(); it != avail_moves.end();) {
         bool invalid = false;
         if (it->not_in_range(min_file, max_file, min_rank, max_rank)) {
             invalid = true;
         } else {
-            auto target_piece = m_board[*it];
+            auto target_piece = m_board.at(*it);
             if (target_piece) {
                 //can't capture same-side pieces
                 if (target_piece->is_opposite_side() == this->m_opposite) {

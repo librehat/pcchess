@@ -26,6 +26,11 @@ p_piece board::at(const int &file, const int &rank) const
     return data[dis];
 }
 
+p_piece board::at(const position &pos) const
+{
+    return this->at(pos.file, pos.rank);
+}
+
 bool board::operator !=(const board &b)
 {
     return data != b.data;

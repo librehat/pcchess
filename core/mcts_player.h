@@ -15,7 +15,7 @@ public:
     mcts_player(double _think_time, bool first_hand, const abstract_player* const _opp);//think_time: seconds
     ~mcts_player();
 
-    bool think_next_move(pos_move &_move);
+    bool think_next_move(pos_move &_move, const board &m_board);
     void opponent_moved(const pos_move &m);
 
 private:

@@ -7,9 +7,9 @@ const position general::down = position(0, 1);
 const position general::left = position(-1, 0);
 const position general::right = position(1, 0);
 
-abstract_piece* general::make_copy_with_new_board(board &bd) const
+abstract_piece* general::make_a_copy() const
 {
-	return new general(*this, bd);
+    return new general(*this);
 }
 
 char general::abbr_name() const
@@ -27,7 +27,7 @@ int general::value() const
     return 8;
 }
 
-void general::gen_moves()
+void general::gen_moves(const board &m_board)
 {
     avail_moves.push_back(pos + up);
     avail_moves.push_back(pos + down);
@@ -43,11 +43,11 @@ void general::gen_moves()
     bool found_general = false;
     bool other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        if (m_board[pos_left.file][irank]) {
+        if (m_board.at(pos_left.file, irank)) {
             if (found_general) {
                 other_piece_between = true;
                 break;
-            } else if (m_board[pos_left.file][irank]->abbr_name() == 'G') {
+            } else if (m_board.at(pos_left.file, irank)->abbr_name() == 'G') {
                 found_general = true;
             }
         }
@@ -60,11 +60,11 @@ void general::gen_moves()
     found_general = false;
     other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        if (m_board[pos_right.file][irank]) {
+        if (m_board.at(pos_right.file, irank)) {
             if (found_general) {
                 other_piece_between = true;
                 break;
-            } else if (m_board[pos_right.file][irank]->abbr_name() == 'G') {
+            } else if (m_board.at(pos_right.file, irank)->abbr_name() == 'G') {
                 found_general = true;
             }
         }
@@ -74,5 +74,5 @@ void general::gen_moves()
         avail_moves.push_back(pos_right);
     }
     
-    remove_invalid_moves(3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
+    remove_invalid_moves(m_board, 3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
 }

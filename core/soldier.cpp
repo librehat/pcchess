@@ -6,9 +6,9 @@ const position soldier::up = position(0, -1);
 const position soldier::left = position(-1, 0);
 const position soldier::right = position(1, 0);
 
-abstract_piece* soldier::make_copy_with_new_board(board &bd) const
+abstract_piece* soldier::make_a_copy() const
 {
-	return new soldier(*this, bd);
+    return new soldier(*this);
 }
 
 char soldier::abbr_name() const
@@ -35,7 +35,7 @@ bool soldier::can_move_horizontally()
     }
 }
 
-void soldier::gen_moves()
+void soldier::gen_moves(const board &m_board)
 {
     if (can_move_horizontally()) {
         avail_moves.push_back(position(pos + left));
@@ -47,5 +47,5 @@ void soldier::gen_moves()
     else {
         avail_moves.push_back(position(pos + up));
     }
-    remove_invalid_moves();
+    remove_invalid_moves(m_board);
 }

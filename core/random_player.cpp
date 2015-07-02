@@ -8,16 +8,16 @@ random_player::random_player() :
     generator(device())
 {}
 
-random_player::random_player(const abstract_player &b, board &new_board) :
-    abstract_player(b, new_board),
+random_player::random_player(const abstract_player &b) :
+    abstract_player(b),
     generator(device())
 {}
 
-bool random_player::think_next_move(pos_move &_move)
+bool random_player::think_next_move(pos_move &_move, const board &bd)
 {
     vector<pos_move> all_avail_moves;
     for (auto &&p : pieces) {
-        p->update_moves();
+        p->update_moves(bd);
         if (p->is_movable()) {
         	for (auto &&m : p->get_avail_moves()) {
         		pos_move mov;

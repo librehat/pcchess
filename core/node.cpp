@@ -122,25 +122,10 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 
 	node* child = find_child(next_move);
 	if (!child) {
-        board tb;
-        random_player* n_our = new random_player(*our_curr, tb);
-        random_player* n_opp = new random_player(*opp_curr, tb);
+        random_player* n_our = new random_player(*our_curr);
+        random_player* n_opp = new random_player(*opp_curr);
 
-        p_piece piece = tb[next_move[0]];
-        if (!piece){
-            throw runtime_error("Error. The piece to move is nullptr on the board.");
-        }
-        p_piece target = tb[next_move[1]];
-        if (target) {//capture the target
-            if (my_turn) {
-                n_opp->remove(target);
-            } else {
-                n_our->remove(target);
-            }
-        }
-        tb[next_move[0]] = nullptr;
-        tb[next_move[1]] = piece;
-        piece->move_to_pos(next_move[1]);
+        //TODO make a move
 
         child = new node(n_our, n_opp, !my_turn, this);
 	    child->set_our_move(my_turn ? next_move : our_move);
@@ -158,15 +143,14 @@ void node::simulate()
 #ifdef _DEBUG
 	cout << "SIMULATION step" << endl;
 #endif
-	board t_board;
-    abstract_player* t_our = new random_player(*our_curr, t_board);
-    abstract_player* t_opp = new random_player(*opp_curr, t_board);
+    abstract_player* t_our = new random_player(*our_curr);
+    abstract_player* t_opp = new random_player(*opp_curr);
 
 	//need to clear the history so the history would contains only the simulation part
     t_our->clear_history();
     t_opp->clear_history();
 
-    game sim_game(t_our, t_opp, t_board);
+    game sim_game(t_our, t_opp);
     abstract_player* winner = sim_game.playout(my_turn);
     int result = 0;
     if (winner == t_our) {

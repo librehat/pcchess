@@ -10,8 +10,7 @@ mcts_player::mcts_player(double _think_time, bool first_hand, const abstract_pla
     opp(_opp)
 {
     think_time = duration<double>(_think_time);
-    board tb;//would be a dangling reference but we don't use this board anyway
-    root = new node(new random_player(*this, tb), new random_player(*opp, tb), first_hand);
+    root = new node(new random_player(*this), new random_player(*opp), first_hand);
 }
 
 mcts_player::~mcts_player()
@@ -19,7 +18,7 @@ mcts_player::~mcts_player()
     delete root;
 }
 
-bool mcts_player::think_next_move(pos_move &_move)
+bool mcts_player::think_next_move(pos_move &_move, const board &m_board)
 {
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
     for (duration<double> elapsed = steady_clock::now() - start;
@@ -52,8 +51,7 @@ void mcts_player::opponent_moved(const pos_move &m)
     if (new_root) {
         new_root->detach();
     } else {
-        board tb;
-        new_root = new node(new random_player(*this, tb), new random_player(*opp, tb), true);
+        new_root = new node(new random_player(*this), new random_player(*opp), true);
     }
     delete root;
     root = new_root;

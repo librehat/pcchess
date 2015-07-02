@@ -12,9 +12,9 @@ const position elephant::up_right_centre = position(1, -1);
 const position elephant::down_left_centre = position(-1, 1);
 const position elephant::down_right_centre = position(1, 1);
 
-abstract_piece* elephant::make_copy_with_new_board(board &bd) const
+abstract_piece* elephant::make_a_copy() const
 {
-	return new elephant(*this, bd);
+    return new elephant(*this);
 }
 
 char elephant::abbr_name() const
@@ -32,19 +32,19 @@ int elephant::value() const
     return 2;
 }
 
-void elephant::gen_moves()
+void elephant::gen_moves(const board &m_board)
 {
-    if (!m_board[pos + up_left_centre]) {
+    if (!m_board.at(pos + up_left_centre)) {
         avail_moves.push_back(pos + up_left);
     }
-    if (!m_board[pos + up_right_centre]) {
+    if (!m_board.at(pos + up_right_centre)) {
         avail_moves.push_back(pos + up_right);
     }
-    if (!m_board[pos + down_left_centre]) {
+    if (!m_board.at(pos + down_left_centre)) {
         avail_moves.push_back(pos + down_left);
     }
-    if (!m_board[pos + down_right_centre]) {
+    if (!m_board.at(pos + down_right_centre)) {
         avail_moves.push_back(pos + down_right);
     }
-    remove_invalid_moves(0, 8, m_opposite ? 0 : 5, m_opposite ? 4 : 9);//elephant can't across the river
+    remove_invalid_moves(m_board, 0, 8, m_opposite ? 0 : 5, m_opposite ? 4 : 9);//elephant can't across the river
 }
