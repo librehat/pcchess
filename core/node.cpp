@@ -153,24 +153,32 @@ void node::simulate()
 	cout << "SIMULATION step" << endl;
 #endif
 	board t_board;
-    random_player t_our(*our_curr, t_board);
-    random_player t_opp(*opp_curr, t_board);
+    abstract_player* t_our = new random_player(*our_curr, t_board);
+    abstract_player* t_opp = new random_player(*opp_curr, t_board);
 
 	//need to clear the history so the history would contains only the simulation part
-	t_our.clear_history();
-	t_opp.clear_history();
+    t_our->clear_history();
+    t_opp->clear_history();
 
-	game sim_game(&t_our, &t_opp, t_board);
-	auto winner = sim_game.playout(my_turn);
-	int result = winner == &t_our ? 1 : winner == &t_opp ? -1 : 0;
+    game sim_game(t_our, t_opp, t_board);
+    abstract_player* winner = sim_game.playout(my_turn);
+    int result = 0;
+    if (winner == t_our) {
+        result = 1;
+    } else if (winner == t_opp){
+        result = -1;
+    }
 
 #ifdef _DEBUG
     cout << "SIMULATION result: " << result << endl;
 #endif
 
 	//we need to make copies here because expand will modify the argument variables
-	list<pos_move> our_hist = t_our.get_history();
-	list<pos_move> opp_hist = t_opp.get_history();
+    list<pos_move> our_hist = t_our->get_history();
+    list<pos_move> opp_hist = t_opp->get_history();
+    delete t_our;
+    delete t_opp;
+
 	expand(our_hist, opp_hist, result);//this very node is definitely the parental node
 }
 
