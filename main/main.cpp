@@ -6,16 +6,37 @@
 #include "../core/game.h"
 #include "../core/random_player.h"
 #include "../core/mcts_player.h"
+#include "unistd.h"
 #include <iostream>
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
+    int opt, rounds = 1;
+    bool enable_print = false, chinese_print = false;
+
+    while((opt = getopt(argc, argv, "r:pc")) != -1) {
+        switch(opt) {
+        case 'r':
+            rounds = atoi(optarg);
+            break;
+        case 'p':
+            enable_print = true;
+            break;
+        case 'c':
+            chinese_print = true;
+            break;
+        default:
+            ;//TODO
+            return 1;
+        }
+    }
+
     int we_win = 0;
     int we_draw = 0;
     int we_lose = 0;
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < rounds; ++i) {
         board bd;
         random_player opp;
         mcts_player our(2, true, &opp);
@@ -23,6 +44,10 @@ int main(int argc, char** argv)
         opp.init_pieces(bd, true);
         game g(&our, &opp, bd);
         abstract_player* winner = g.playout();
+
+        if (enable_print) {
+            g.print_board(chinese_print);
+        }
 
         if (winner == &our) {
             we_win++;
