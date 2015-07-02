@@ -24,13 +24,14 @@ public:
     //three steps for MCTS
     void select();
     void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
-    int simulate();
+    void simulate();
 
     /*
      * select child according to the visit times
      * be aware of the return value could be nullptr (if children is empty)
      */
-    node* get_best_child() const;
+    node* get_best_child() const;//best child which has highest visits
+    node* get_best_child_uct() const;//return best child which has maximum value of get_uct_val()
 
     void backpropagate(const int &score);
     void detach();
@@ -53,6 +54,7 @@ protected:
     //find the children with same moves. return nullptr if no such child
     node* find_child(const pos_move &m);
 
+    static const int select_threshold;
     static const double uct_constant;
 };
 

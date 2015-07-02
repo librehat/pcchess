@@ -8,7 +8,8 @@
 
 using namespace std;
 
-const double node::uct_constant = 0.7;
+const int node::select_threshold = 100;
+const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
 node::node(const abstract_player *_our, const abstract_player *_opp, bool _my_turn, node *_parent) :
 	my_turn(_my_turn),
@@ -79,6 +80,12 @@ void node::select()
 #ifdef _DEBUG
 	cout << "SELECTION step" << endl;
 #endif
+
+    if (visits > select_threshold && !children.empty()) {
+        get_best_child_uct()->select();
+    } else {
+        simulate();
+    }
 }
 
 void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int &score)
@@ -114,7 +121,7 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	child->expand(our_hist, opp_hist, score);
 }
 
-int node::simulate()
+void node::simulate()
 {
 #ifdef _DEBUG
 	cout << "SIMULATION step" << endl;
@@ -135,8 +142,6 @@ int node::simulate()
 	list<pos_move> our_hist = t_our.get_history();
 	list<pos_move> opp_hist = t_opp.get_history();
 	expand(our_hist, opp_hist, result);//this very node is definitely the parental node
-
-	return result;
 }
 
 node* node::get_best_child() const
@@ -150,6 +155,26 @@ node* node::get_best_child() const
         }
     }
     return best;
+}
+
+node* node::get_best_child_uct() const
+{
+    if (children.empty()) {
+        return nullptr;
+    }
+
+    node* best_child = children.front();
+    auto best_uct = children.front()->get_uct_val();
+    auto it = children.cbegin();
+    it++;
+    for (; it != children.end(); ++it) {
+        auto uct = (*it)->get_uct_val();
+        if (uct > best_uct) {
+            best_child = *it;
+            best_uct = uct;
+        }
+    }
+    return best_child;
 }
 
 void node::backpropagate(const int &score)
