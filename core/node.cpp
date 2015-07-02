@@ -102,12 +102,18 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	pos_move next_move;
 	if (my_turn) {
 	    if (our_hist.empty()) {
+#ifdef _DEBUG
+            cout << "our_hist is empty" << endl;
+#endif
 	        return;
 	    }
 	    next_move = our_hist.back();
 	    our_hist.pop_back();
 	} else {
 	    if (opp_hist.empty()) {
+#ifdef _DEBUG
+            cout << "opp_hist is empty" << endl;
+#endif
 	        return;
 	    }
 	    next_move = opp_hist.back();
