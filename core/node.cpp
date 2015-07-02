@@ -140,6 +140,9 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
+#ifdef _DEBUG
+        cout << "A new child node is created" << endl;
+#endif
 	}
 	child->expand(our_hist, opp_hist, score);
 }
@@ -160,6 +163,10 @@ void node::simulate()
 	game sim_game(&t_our, &t_opp, t_board);
 	auto winner = sim_game.playout(my_turn);
 	int result = winner == &t_our ? 1 : winner == &t_opp ? -1 : 0;
+
+#ifdef _DEBUG
+    cout << "SIMULATION result: " << result << endl;
+#endif
 
 	//we need to make copies here because expand will modify the argument variables
 	list<pos_move> our_hist = t_our.get_history();
@@ -227,5 +234,8 @@ node* node::find_child(const pos_move &m)
             }
         }
     }
+#ifdef _DEBUG
+    cout << "Can't find a child with given pos_move" << endl;
+#endif
     return nullptr;
 }

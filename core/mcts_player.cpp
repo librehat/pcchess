@@ -1,5 +1,6 @@
 #include "mcts_player.h"
 #include "random_player.h"
+#include <iostream>
 
 using namespace std;
 using namespace chrono;
@@ -39,6 +40,9 @@ bool mcts_player::think_next_move(pos_move &_move)
         _move = root->get_our_move();
         return true;
     }
+#ifdef _DEBUG
+    cout << "The get_best_child() function returned nullptr" << endl;
+#endif
     return false;
 }
 
