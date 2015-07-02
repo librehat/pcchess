@@ -8,7 +8,8 @@
 class node
 {
 public:
-    node(const abstract_player* _our, const abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
+    //WARN: the node will take memory control of _our and _opp pointers!
+    node(abstract_player* _our, abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
     ~node();
 
     int get_visits() const;
@@ -36,23 +37,27 @@ public:
     void backpropagate(const int &score);
     void detach();
 
+    /*
+     * find the children with same moves (our_move or opp_move, up to the parental my_turn value).
+     * return nullptr if no such child
+     */
+    node* find_child(const pos_move &m);
+
 protected:
     bool my_turn;
 
     node* parent;
     std::list<node *> children;
 
-    const abstract_player* our;
-    const abstract_player* opp;
+    //"current": the state in this node
+    abstract_player* our_curr;
+    abstract_player* opp_curr;
 
     pos_move our_move;
     pos_move opp_move;
 
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
-
-    //find the children with same moves. return nullptr if no such child
-    node* find_child(const pos_move &m);
 
     static const int select_threshold;
     static const double uct_constant;

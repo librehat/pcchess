@@ -1,5 +1,4 @@
 #include "abstract_piece.h"
-#include <iostream>
 
 using namespace std;
 
@@ -17,11 +16,7 @@ abstract_piece::abstract_piece(const abstract_piece &b, board &new_board) :
 {}
 
 abstract_piece::~abstract_piece()
-{
-#ifdef _DEBUG
-    cout << "A piece is deleted" << endl;
-#endif
-}
+{}
 
 const bool abstract_piece::is_opposite_side() const
 {
@@ -119,5 +114,5 @@ bool abstract_piece::operator ==(const abstract_piece &b)
 
 bool abstract_piece::operator !=(const abstract_piece &b)
 {
-    return m_board != b.m_board && m_opposite != b.m_opposite && pos != b.pos && avail_moves != b.avail_moves;
+    return m_opposite != b.m_opposite && pos != b.pos && avail_moves != b.avail_moves;
 }

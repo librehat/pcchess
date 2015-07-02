@@ -8,7 +8,7 @@
 class abstract_player
 {
 public:
-    abstract_player(board &bd);
+    abstract_player();
     abstract_player(const abstract_player &b, board &new_board);
     virtual ~abstract_player();
 
@@ -24,7 +24,7 @@ public:
      * no need to call add function multiple times
      * opposite: whether this player is opposite player
      */
-    void init_pieces(bool opposite = false);
+    void init_pieces(board &bd, bool opposite = false);
 
     bool is_checked() const;
     bool is_checkmated() const;
@@ -38,12 +38,18 @@ public:
      */
     virtual bool think_next_move(pos_move &m) = 0;
 
+    /*
+     * the sub-class player might want to change some strategies
+     * after the opponent moved.
+     * this function does nothing by default
+     */
+    virtual void opponent_moved(const pos_move &) {}
+
 protected:
     std::list<p_piece> pieces;
     std::list<pos_move> move_history;//front: latest move, back: the first move
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
-    board &m_board;
 };
 
 #endif //ABSTRACT_PlAYER_H

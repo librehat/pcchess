@@ -11,11 +11,11 @@ using namespace std;
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
-node::node(const abstract_player *_our, const abstract_player *_opp, bool _my_turn, node *_parent) :
+node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_parent) :
 	my_turn(_my_turn),
     parent(_parent),
-	our(_our),
-	opp(_opp),
+    our_curr(_our),
+    opp_curr(_opp),
     visits(0),
     scores(0)
 {
@@ -29,6 +29,8 @@ node::~node()
     for(auto &&child : children) {
         delete child;
     }
+    delete our_curr;
+    delete opp_curr;
 }
 
 int node::get_visits() const
@@ -114,7 +116,27 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 
 	node* child = find_child(next_move);
 	if (!child) {
-	    child = new node(our, opp, !my_turn, this);
+        board tb;
+        random_player* n_our = new random_player(*our_curr, tb);
+        random_player* n_opp = new random_player(*opp_curr, tb);
+
+        p_piece piece = tb[next_move[0]];
+        if (!piece){
+            throw runtime_error("Error. The piece to move is nullptr on the board.");
+        }
+        p_piece target = tb[next_move[1]];
+        if (target) {//capture the target
+            if (my_turn) {
+                n_opp->remove(target);
+            } else {
+                n_our->remove(target);
+            }
+        }
+        tb[next_move[0]] = nullptr;
+        tb[next_move[1]] = piece;
+        piece->move_to_pos(next_move[1]);
+
+        child = new node(n_our, n_opp, !my_turn, this);
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
 	}
@@ -127,8 +149,8 @@ void node::simulate()
 	cout << "SIMULATION step" << endl;
 #endif
 	board t_board;
-	random_player t_our(*our, t_board);
-	random_player t_opp(*opp, t_board);
+    random_player t_our(*our_curr, t_board);
+    random_player t_opp(*opp_curr, t_board);
 
 	//need to clear the history so the history would contains only the simulation part
 	t_our.clear_history();

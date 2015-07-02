@@ -16,10 +16,9 @@ int main(int argc, char** argv)
     int we_lose = 0;
     for (int i = 0; i < 200; ++i) {
         board bd;
-        random_player our(bd);
-        random_player opp(bd);
-        our.init_pieces(false);
-        opp.init_pieces(true);
+        random_player our, opp;
+        our.init_pieces(bd, false);
+        opp.init_pieces(bd, true);
         game g(&our, &opp, bd);
         abstract_player* winner = g.playout();
 

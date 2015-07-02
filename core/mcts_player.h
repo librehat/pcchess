@@ -7,17 +7,20 @@
 
 #include "abstract_player.h"
 #include "node.h"
+#include <chrono>
 
 class mcts_player : public abstract_player
 {
 public:
-    mcts_player(int depth, const abstract_player *opp, board &bd);
+    mcts_player(double _think_time, bool first_hand, const abstract_player* const _opp);//think_time: seconds
     ~mcts_player();
 
     bool think_next_move(pos_move &_move);
+    void opponent_moved(const pos_move &m);
 
 private:
-    int search_depth;
+    std::chrono::duration<double> think_time;//the maximum period for each move
+    const abstract_player* const opp;
     node *root;
 };
 

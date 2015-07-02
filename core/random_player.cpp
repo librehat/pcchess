@@ -3,8 +3,8 @@
 
 using namespace std;
 
-random_player::random_player(board &bd) :
-    abstract_player(bd),
+random_player::random_player() :
+    abstract_player(),
     generator(device())
 {}
 

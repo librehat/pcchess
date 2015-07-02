@@ -29,12 +29,14 @@ abstract_player* game::playout(bool we_first)
             return second;
         } else {
             move_piece(next_move);
+            second->opponent_moved(next_move);
         }
         movable = second->think_next_move(next_move);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
             move_piece(next_move);
+            first->opponent_moved(next_move);
         }
     }
 
@@ -43,12 +45,15 @@ abstract_player* game::playout(bool we_first)
 
 bool game::play_single_move(const pos_move &_move, bool we)
 {
+    auto who = we ? our_player : opp_player;
 	auto second = we ? opp_player : our_player;
 	move_piece(_move);
 	pos_move next_move;
+    second->opponent_moved(_move);
 	bool s_moved = second->think_next_move(next_move);
 	if (s_moved) {
 		move_piece(next_move);
+        who->opponent_moved(next_move);
 	}
 	return s_moved;
 }

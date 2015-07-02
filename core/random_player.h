@@ -7,7 +7,7 @@
 class random_player : public abstract_player
 {
 public:
-    random_player(board &bd);
+    random_player();
     random_player(const abstract_player &b, board &new_board);
 
     bool think_next_move(pos_move &_move);
