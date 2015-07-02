@@ -5,6 +5,7 @@
 
 #include "../core/game.h"
 #include "../core/random_player.h"
+#include "../core/mcts_player.h"
 #include <iostream>
 
 using namespace std;
@@ -16,7 +17,8 @@ int main(int argc, char** argv)
     int we_lose = 0;
     for (int i = 0; i < 200; ++i) {
         board bd;
-        random_player our, opp;
+        random_player opp;
+        mcts_player our(2, true, &opp);
         our.init_pieces(bd, false);
         opp.init_pieces(bd, true);
         game g(&our, &opp, bd);
