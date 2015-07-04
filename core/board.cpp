@@ -1,5 +1,6 @@
 #include "board.h"
 #include <stdexcept>
+#include <iostream>
 
 using namespace std;
 
@@ -21,6 +22,9 @@ p_piece board::at(const int &file, const int &rank) const
 {
     int dis = file * 10 + rank;
     if (dis >= 90) {
+#ifdef _DEBUG
+        cerr << "Trying to access file " << file << " rank " << rank << endl;
+#endif
         throw runtime_error("Error. Accessing an element in board out of range.");
     }
     return data[dis];

@@ -25,6 +25,11 @@ abstract_player::abstract_player(const abstract_player &b) :
         p_piece p = it->make_a_copy();
 		pieces.push_back(p);
 	}
+#ifdef _DEBUG
+    if (pieces.empty()) {
+        cout << "New player's pieces list is empty after copy construction.";
+    }
+#endif
 }
 
 abstract_player::~abstract_player()

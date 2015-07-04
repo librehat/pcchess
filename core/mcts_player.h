@@ -21,6 +21,7 @@ public:
 private:
     std::chrono::duration<double> think_time;//the maximum period for each move
     const abstract_player* const opp;
+    const bool firsthand;
     node *root;
 };
 

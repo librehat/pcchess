@@ -166,6 +166,16 @@ void node::simulate()
 	//we need to make copies here because expand will modify the argument variables
     list<pos_move> our_hist = t_our->get_history();
     list<pos_move> opp_hist = t_opp->get_history();
+
+#ifdef _DEBUG
+    if (our_hist.empty()) {
+        cout << "our_hist is empty after simulation";
+    }
+    if (opp_hist.empty()) {
+        cout << "opp_hist is empty after simulation";
+    }
+#endif
+
     delete t_our;
     delete t_opp;
 

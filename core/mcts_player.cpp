@@ -7,19 +7,26 @@ using namespace chrono;
 
 mcts_player::mcts_player(double _think_time, bool first_hand, const abstract_player* const _opp) :
     abstract_player(),
-    opp(_opp)
+    opp(_opp),
+    firsthand(first_hand),
+    root(nullptr)
 {
     think_time = duration<double>(_think_time);
-    root = new node(new random_player(*this), new random_player(*opp), first_hand);
 }
 
 mcts_player::~mcts_player()
 {
-    delete root;
+    if (root) {
+        delete root;
+    }
 }
 
-bool mcts_player::think_next_move(pos_move &_move, const board &m_board)
+bool mcts_player::think_next_move(pos_move &_move, const board &)
 {
+    if (!root) {
+        root = new node(new random_player(*this), new random_player(*opp), firsthand);
+    }
+
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
     for (duration<double> elapsed = steady_clock::now() - start;
          elapsed < think_time;
