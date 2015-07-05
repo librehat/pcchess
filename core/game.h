@@ -27,8 +27,8 @@ private:
     void move_piece(const pos_move &_move);
 
     board m_board;
-    abstract_player *our_player;
-    abstract_player *opp_player;
+    abstract_player *const our_player;
+    abstract_player *const opp_player;
 };
 
 #endif //GAME_H
