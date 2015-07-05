@@ -20,7 +20,7 @@ public:
     inline p_piece* operator [] (const int &file)
     {
         if (file >= FILE_NUM) {
-            throw std::range_error("board file index out of range");
+            throw std::out_of_range("board file index out of range");
         }
         return data + file * RANK_NUM;
     }
@@ -29,7 +29,7 @@ public:
     {
         int loc = pos.file * RANK_NUM + pos.rank;
         if (loc >= NUM) {
-            throw std::range_error("board position index out of range");
+            throw std::out_of_range("board position index out of range");
         }
         return data[pos.file * RANK_NUM + pos.rank];
     }

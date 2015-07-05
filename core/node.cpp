@@ -20,7 +20,7 @@ node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_p
     scores(0)
 {
     if (!_our || !_opp) {
-        throw runtime_error("Error. Null player pointer is used for node constructor.");
+        throw invalid_argument("Error. Null player pointer is used for node constructor.");
     }
 }
 
@@ -144,19 +144,19 @@ void node::simulate()
 #ifdef _DEBUG
 	cout << "SIMULATION step" << endl;
 #endif
-    abstract_player* t_our = new random_player(*our_curr);
-    abstract_player* t_opp = new random_player(*opp_curr);
+    random_player t_our(*our_curr);
+    random_player t_opp(*opp_curr);
 
 	//need to clear the history so the history would contains only the simulation part
-    t_our->clear_history();
-    t_opp->clear_history();
+    t_our.clear_history();
+    t_opp.clear_history();
 
-    game sim_game(t_our, t_opp);
+    game sim_game(&t_our, &t_opp);
     abstract_player* winner = sim_game.playout(my_turn);
     int result = 0;
-    if (winner == t_our) {
+    if (winner == &t_our) {
         result = 1;
-    } else if (winner == t_opp){
+    } else if (winner == &t_opp){
         result = -1;
     }
 
@@ -165,8 +165,8 @@ void node::simulate()
 #endif
 
 	//we need to make copies here because expand will modify the argument variables
-    list<pos_move> our_hist = t_our->get_history();
-    list<pos_move> opp_hist = t_opp->get_history();
+    list<pos_move> our_hist = t_our.get_history();
+    list<pos_move> opp_hist = t_opp.get_history();
 
 #ifdef _DEBUG
     if (our_hist.empty()) {
@@ -176,9 +176,6 @@ void node::simulate()
         cout << "opp_hist is empty after simulation";
     }
 #endif
-
-    delete t_our;
-    delete t_opp;
 
 	expand(our_hist, opp_hist, result);//this very node is definitely the parental node
 }

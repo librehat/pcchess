@@ -13,13 +13,16 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    int opt, rounds = 1;
+    int opt, rounds = 1, think_time = 2;
     bool enable_print = false, chinese_print = false, all_random = false;
 
-    while((opt = getopt(argc, argv, "r:pca")) != -1) {
+    while((opt = getopt(argc, argv, "r:t:pca")) != -1) {
         switch(opt) {
         case 'r':
             rounds = atoi(optarg);
+            break;
+        case 't':
+            think_time = atoi(optarg);
             break;
         case 'p':
             enable_print = true;
@@ -45,7 +48,7 @@ int main(int argc, char** argv)
         if (all_random) {
             our = new random_player;
         } else {
-            our = new mcts_player(2, true, opp);
+            our = new mcts_player(think_time, true, opp);
         }
         our->init_pieces(false);
         opp->init_pieces(true);

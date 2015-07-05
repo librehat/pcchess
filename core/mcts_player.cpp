@@ -1,6 +1,7 @@
 #include "mcts_player.h"
 #include "random_player.h"
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 using namespace chrono;
@@ -12,6 +13,9 @@ mcts_player::mcts_player(double _think_time, bool first_hand, const abstract_pla
     root(nullptr)
 {
     think_time = duration<double>(_think_time);
+    if (_think_time < 0) {
+        throw invalid_argument("Think time can't be negative");
+    }
 }
 
 mcts_player::~mcts_player()
