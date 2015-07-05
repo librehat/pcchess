@@ -122,10 +122,11 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 
 	node* child = find_child(next_move);
 	if (!child) {
-        random_player* n_our = new random_player(*our_curr);
-        random_player* n_opp = new random_player(*opp_curr);
+        abstract_player* n_our = new random_player(*our_curr);
+        abstract_player* n_opp = new random_player(*opp_curr);
 
-        //TODO make a move
+        game updater_sim(n_our, n_opp);
+        updater_sim.move_piece(next_move);
 
         child = new node(n_our, n_opp, !my_turn, this);
 	    child->set_our_move(my_turn ? next_move : our_move);
@@ -215,6 +216,11 @@ node* node::get_best_child_uct() const
     return best_child;
 }
 
+void node::remoev_child(node *c)
+{
+    children.remove(c);
+}
+
 void node::backpropagate(const int &score)
 {
     if (parent) {
@@ -225,7 +231,7 @@ void node::backpropagate(const int &score)
 
 void node::detach()
 {
-    parent->children.remove(this);
+    parent->remoev_child(this);
     parent = nullptr;
 }
 
@@ -233,11 +239,11 @@ node* node::find_child(const pos_move &m)
 {
     for (auto &&child : children) {
         if (my_turn) {
-            if (child->our_move == m) {
+            if (child->get_our_move() == m) {
                 return child;
             }
         } else {
-            if (child->opp_move == m) {
+            if (child->get_opp_move() == m) {
                 return child;
             }
         }

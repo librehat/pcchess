@@ -34,6 +34,8 @@ public:
     node* get_best_child() const;//best child which has highest visits
     node* get_best_child_uct() const;//return best child which has maximum value of get_uct_val()
 
+    void remoev_child(node *);
+
     void backpropagate(const int &score);
     void detach();
 
