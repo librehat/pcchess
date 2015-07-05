@@ -36,12 +36,12 @@ public:
 
     bool operator !=(const board&);
 
-private:
-    p_piece* data;
-
     static const int RANK_NUM = 10;
     static const int FILE_NUM = 9;
     static const int NUM = FILE_NUM * RANK_NUM;
+
+private:
+    p_piece* data;
 };
 
 #endif // BOARD_H
