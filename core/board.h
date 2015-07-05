@@ -2,7 +2,7 @@
 #define BOARD_H
 
 #include "position.h"
-#include <memory>
+#include <stdexcept>
 
 class abstract_piece;
 
@@ -19,18 +19,29 @@ public:
 
     inline p_piece* operator [] (const int &file)
     {
-        return data + file * 10;
+        if (file >= FILE_NUM) {
+            throw std::range_error("board file index out of range");
+        }
+        return data + file * RANK_NUM;
     }
 
     inline p_piece& operator [] (const position &pos)
     {
-        return data[pos.file * 10 + pos.rank];
+        int loc = pos.file * RANK_NUM + pos.rank;
+        if (loc >= NUM) {
+            throw std::range_error("board position index out of range");
+        }
+        return data[pos.file * RANK_NUM + pos.rank];
     }
 
     bool operator !=(const board&);
 
 private:
     p_piece* data;
+
+    static const int RANK_NUM = 10;
+    static const int FILE_NUM = 9;
+    static const int NUM = FILE_NUM * RANK_NUM;
 };
 
 #endif // BOARD_H

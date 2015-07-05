@@ -1,14 +1,13 @@
 #include "board.h"
-#include <stdexcept>
 #include <iostream>
 
 using namespace std;
 
 board::board()
 {
-    data = new p_piece[90];
+    data = new p_piece[NUM];
 
-    for (int i = 0; i < 90; i++) {
+    for (int i = 0; i < NUM; i++) {
         data[i] = nullptr;
     }
 }
@@ -20,12 +19,12 @@ board::~board()
 
 p_piece board::at(const int &file, const int &rank) const
 {
-    int dis = file * 10 + rank;
-    if (dis >= 90) {
+    int dis = file * RANK_NUM + rank;
+    if (dis >= NUM) {
 #ifdef _DEBUG
         cerr << "Trying to access file " << file << " rank " << rank << endl;
 #endif
-        throw runtime_error("Error. Accessing an element in board out of range.");
+        return nullptr;
     }
     return data[dis];
 }
