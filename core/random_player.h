@@ -13,7 +13,7 @@ public:
     bool think_next_move(pos_move &_move, const board &bd);
 
 private:
-    std::random_device device;
+    static std::random_device device;
     std::default_random_engine generator;
 };
 

@@ -13,6 +13,8 @@ random_player::random_player(const abstract_player &b) :
     generator(device())
 {}
 
+random_device random_player::device;
+
 bool random_player::think_next_move(pos_move &_move, const board &bd)
 {
     vector<pos_move> all_avail_moves;
