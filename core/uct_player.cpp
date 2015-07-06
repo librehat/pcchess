@@ -1,4 +1,4 @@
-#include "mcts_player.h"
+#include "uct_player.h"
 #include "random_player.h"
 #include <iostream>
 #include <stdexcept>
@@ -6,7 +6,7 @@
 using namespace std;
 using namespace chrono;
 
-mcts_player::mcts_player(double _think_time, bool first_hand, const abstract_player* const _opp) :
+uct_player::uct_player(double _think_time, bool first_hand, const abstract_player* const _opp) :
     abstract_player(),
     opp(_opp),
     firsthand(first_hand),
@@ -18,14 +18,14 @@ mcts_player::mcts_player(double _think_time, bool first_hand, const abstract_pla
     }
 }
 
-mcts_player::~mcts_player()
+uct_player::~uct_player()
 {
     if (root) {
         delete root;
     }
 }
 
-bool mcts_player::think_next_move(pos_move &_move, const board &)
+bool uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
         root = new node(new random_player(*this), new random_player(*opp), firsthand);
@@ -56,7 +56,7 @@ bool mcts_player::think_next_move(pos_move &_move, const board &)
     return false;
 }
 
-void mcts_player::opponent_moved(const pos_move &m)
+void uct_player::opponent_moved(const pos_move &m)
 {
     node* new_root = root->find_child(m);
     if (new_root) {
