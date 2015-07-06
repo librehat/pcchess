@@ -77,16 +77,16 @@ void node::set_opp_move(const pos_move &m)
     opp_move = m;
 }
 
-void node::select()
+bool node::select()
 {
 #ifdef _DEBUG
 	cout << "SELECTION step" << endl;
 #endif
 
     if (visits > select_threshold && !children.empty()) {
-        get_best_child_uct()->select();
+        return get_best_child_uct()->select();
     } else {
-        simulate();
+        return simulate();
     }
 }
 
@@ -139,7 +139,7 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	child->expand(our_hist, opp_hist, score);
 }
 
-void node::simulate()
+bool node::simulate()
 {
 #ifdef _DEBUG
 	cout << "SIMULATION step" << endl;
@@ -168,16 +168,14 @@ void node::simulate()
     list<pos_move> our_hist = t_our.get_history();
     list<pos_move> opp_hist = t_opp.get_history();
 
-#ifdef _DEBUG
-    if (our_hist.empty()) {
-        cout << "our_hist is empty after simulation";
+    if ((our_hist.empty() && my_turn) || (opp_hist.empty() && !my_turn)) {//can't expand the tree if the current player can't move
+        visits++;
+        scores += result;
+        return false;
+    } else {
+        expand(our_hist, opp_hist, result);//this very node is definitely the parental node
+        return true;
     }
-    if (opp_hist.empty()) {
-        cout << "opp_hist is empty after simulation";
-    }
-#endif
-
-	expand(our_hist, opp_hist, result);//this very node is definitely the parental node
 }
 
 node* node::get_best_child() const

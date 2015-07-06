@@ -36,8 +36,9 @@ bool uct_player::think_next_move(pos_move &_move, const board &)
          elapsed < think_time;
          elapsed = steady_clock::now() - start)
     {
-        root->select();
-        //TODO if the MCTS progress can't continue, we should break the loop immediately
+        if (!root->select()) {
+            break;
+        }
     }
 
     node* best_child = root->get_best_child();

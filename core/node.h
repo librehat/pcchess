@@ -23,9 +23,9 @@ public:
     void set_opp_move(const pos_move &m);
 
     //three steps for MCTS
-    void select();
+    bool select();//return true if it did a successful simulation
     void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
-    void simulate();
+    bool simulate();
 
     /*
      * select child according to the visit times
