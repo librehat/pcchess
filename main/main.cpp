@@ -34,7 +34,13 @@ int main(int argc, char** argv)
             all_random = true;
             break;
         default:
-            ;//TODO
+            cout << "Command-line options:\n"
+                 << "  -r <number of rounds>\n"
+                 << "  -t <maximum think time (s)>\n"
+                 << "  -p\tprint out the board after each round\n"
+                 << "  -c\tuse Chinese characters in the board\n"
+                 << "  -a\tuse two random players instead of one UCT and one random"
+                 << endl;
             return 1;
         }
     }
