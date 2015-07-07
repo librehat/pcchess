@@ -211,7 +211,7 @@ node* node::get_best_child_uct() const
     return best_child;
 }
 
-void node::remoev_child(node *c)
+void node::remove_child(node *c)
 {
     children.remove(c);
 }
@@ -226,7 +226,7 @@ void node::backpropagate(const int &score)
 
 void node::detach()
 {
-    parent->remoev_child(this);
+    parent->remove_child(this);
     parent = nullptr;
 }
 

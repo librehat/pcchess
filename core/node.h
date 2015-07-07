@@ -23,9 +23,9 @@ public:
     void set_opp_move(const pos_move &m);
 
     //three steps for MCTS
-    bool select();//return true if it did a successful simulation
-    void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
-    bool simulate();
+    virtual bool select();//return true if it did a successful simulation
+    virtual void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
+    virtual bool simulate();
 
     /*
      * select child according to the visit times
@@ -34,7 +34,7 @@ public:
     node* get_best_child() const;//best child which has highest visits
     node* get_best_child_uct() const;//return best child which has maximum value of get_uct_val()
 
-    void remoev_child(node *);
+    void remove_child(node *);
 
     void backpropagate(const int &score);
     void detach();

@@ -6,6 +6,7 @@
 #include "../core/game.h"
 #include "../core/random_player.h"
 #include "../core/uct_player.h"
+#include "../core/threaded_uct_player.h"
 #include "unistd.h"
 #include <iostream>
 
@@ -54,7 +55,8 @@ int main(int argc, char** argv)
         if (all_random) {
             our = new random_player;
         } else {
-            our = new uct_player(think_time, true, opp);
+            //our = new uct_player(think_time, true, opp);
+            our = new threaded_uct_player(think_time, true, opp, 4);
         }
         our->init_pieces(false);
         opp->init_pieces(true);
