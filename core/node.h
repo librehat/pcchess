@@ -46,7 +46,7 @@ public:
     node* find_child(const pos_move &m);
 
 protected:
-    bool my_turn;
+    const bool my_turn;
 
     node* parent;
     std::list<node *> children;
