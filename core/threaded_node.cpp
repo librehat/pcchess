@@ -11,10 +11,6 @@ threaded_node::threaded_node(abstract_player *_our, abstract_player *_opp, bool 
 
 bool threaded_node::select()
 {
-#ifdef _DEBUG
-    cout << "THREADED SELECTION" << endl;
-#endif
-
     if (visits > select_threshold && !children.empty()) {
         children_mutex.lock();
         auto bc = get_best_child_uct();
