@@ -52,7 +52,7 @@ void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, c
         game updater_sim(n_our, n_opp);
         updater_sim.move_piece(next_move);
 
-        child = new node(n_our, n_opp, !my_turn, this);
+        child = new threaded_node(n_our, n_opp, !my_turn, this);
         child->set_our_move(my_turn ? next_move : our_move);
         child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
