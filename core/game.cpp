@@ -75,10 +75,8 @@ void game::move_piece(const position &from, const position &to)
 
     p_piece target = m_board[to];
     if (target) {//capture the target
-        if (target->is_opposite_side()) {
+        if (!our_player->remove(target)) {
             opp_player->remove(target);
-        } else {
-            our_player->remove(target);
         }
     }
 
