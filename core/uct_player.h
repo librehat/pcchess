@@ -19,9 +19,11 @@ public:
     virtual bool think_next_move(pos_move &_move, const board &m_board);
     virtual void opponent_moved(const pos_move &m);
 
+    void set_opponent_player(const abstract_player* const _opp);
+
 protected:
     std::chrono::duration<double> think_time;//the maximum period for each move
-    const abstract_player* const opp;
+    const abstract_player* opp;
     const bool firsthand;
     node *root;
 };

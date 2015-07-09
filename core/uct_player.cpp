@@ -25,6 +25,11 @@ uct_player::~uct_player()
     }
 }
 
+void uct_player::set_opponent_player(const abstract_player * const _opp)
+{
+    opp = _opp;
+}
+
 bool uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
