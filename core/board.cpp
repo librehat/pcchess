@@ -20,7 +20,7 @@ board::~board()
 
 p_piece* board::operator [](const int &file)
 {
-    if (file >= FILE_NUM) {
+    if (file >= FILE_NUM || file < 0) {
         throw std::out_of_range("board file index out of range");
     }
     return data + file * RANK_NUM;
@@ -28,8 +28,7 @@ p_piece* board::operator [](const int &file)
 
 p_piece& board::operator [] (const position &pos)
 {
-    int loc = pos.file * RANK_NUM + pos.rank;
-    if (loc >= NUM) {
+    if (pos.not_in_range(0, FILE_NUM - 1, 0, RANK_NUM - 1)) {
         throw std::out_of_range("board position index out of range");
     }
     return data[pos.file * RANK_NUM + pos.rank];
@@ -37,6 +36,10 @@ p_piece& board::operator [] (const position &pos)
 
 p_piece board::at(const int &file, const int &rank) const
 {
+    if (file < 0 || file >= FILE_NUM || rank < 0 || rank >= RANK_NUM) {
+        return nullptr;
+    }
+
     int dis = file * RANK_NUM + rank;
     if (dis >= NUM) {
         return nullptr;
