@@ -50,14 +50,17 @@ int main(int argc, char** argv)
     int we_draw = 0;
     int we_lose = 0;
     for (int i = 0; i < rounds; ++i) {
-        abstract_player *our, *opp;
-        opp = new random_player;
+        abstract_player *our;
+        uct_player *opp;
+        //opp = new random_player;
+        opp = new uct_player(think_time, false, nullptr);
         if (all_random) {
             our = new random_player;
         } else {
             //our = new uct_player(think_time, true, opp);
             our = new threaded_uct_player(think_time, true, opp, 4);
         }
+        opp->set_opponent_player(our);
         our->init_pieces(false);
         opp->init_pieces(true);
         game g(our, opp);
