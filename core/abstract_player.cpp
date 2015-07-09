@@ -55,6 +55,7 @@ void abstract_player::remove(p_piece p)
             }
             pieces.remove(p);
             delete p;
+            return;
         }
     }
     throw domain_error("The piece to remove doesn't belong to this player");

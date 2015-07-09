@@ -40,11 +40,7 @@ p_piece board::at(const int &file, const int &rank) const
         return nullptr;
     }
 
-    int dis = file * RANK_NUM + rank;
-    if (dis >= NUM) {
-        return nullptr;
-    }
-    return data[dis];
+    return data[file * RANK_NUM + rank];
 }
 
 p_piece board::at(const position &pos) const
