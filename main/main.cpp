@@ -53,16 +53,16 @@ int main(int argc, char** argv)
         abstract_player *our;
         uct_player *opp;
         //opp = new random_player;
-        opp = new uct_player(think_time, false, nullptr);
+        opp = new uct_player(think_time, false, nullptr, true);
         if (all_random) {
-            our = new random_player;
+            our = new random_player(false);
         } else {
             //our = new uct_player(think_time, true, opp);
-            our = new threaded_uct_player(think_time, true, opp, 4);
+            our = new threaded_uct_player(think_time, true, opp, 4, false);
         }
         opp->set_opponent_player(our);
-        our->init_pieces(false);
-        opp->init_pieces(true);
+        our->init_pieces();
+        opp->init_pieces();
         game g(our, opp);
         abstract_player* winner = g.playout();
 

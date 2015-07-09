@@ -6,8 +6,8 @@
 using namespace std;
 using namespace chrono;
 
-uct_player::uct_player(double _think_time, bool first_hand, const abstract_player* const _opp) :
-    abstract_player(),
+uct_player::uct_player(double _think_time, bool first_hand, const abstract_player* const _opp, bool opposite) :
+    abstract_player(opposite),
     opp(_opp),
     firsthand(first_hand),
     root(nullptr)

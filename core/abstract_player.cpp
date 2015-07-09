@@ -11,13 +11,15 @@
 
 using namespace std;
 
-abstract_player::abstract_player() :
+abstract_player::abstract_player(bool opposite) :
+    opposite_player(opposite),
     checked(false),
     checkmated(false)
 {}
 
 abstract_player::abstract_player(const abstract_player &b) :
     move_history(b.move_history),
+    opposite_player(b.opposite_player),
     checked(b.checked),
     checkmated(b.checkmated)
 {
@@ -85,7 +87,7 @@ void abstract_player::clear_history()
     move_history.clear();
 }
 
-void abstract_player::init_pieces(bool opposite)
+void abstract_player::init_pieces()
 {
     if (!pieces.empty()) {
         throw runtime_error("Error. pieces list is not empty when init_pieces is called.");
@@ -94,50 +96,55 @@ void abstract_player::init_pieces(bool opposite)
     p_piece p;
 
     //soldiers (pawns)
-    p = p_piece(new soldier(0, opposite ? 3 : 6, opposite));
+    p = p_piece(new soldier(0, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(2, opposite ? 3 : 6, opposite));
+    p = p_piece(new soldier(2, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(4, opposite ? 3 : 6, opposite));
+    p = p_piece(new soldier(4, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(6, opposite ? 3 : 6, opposite));
+    p = p_piece(new soldier(6, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(8, opposite ? 3 : 6, opposite));
+    p = p_piece(new soldier(8, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
 
     //cannons
-    p = p_piece(new cannon(1, opposite ? 2 : 7, opposite));
+    p = p_piece(new cannon(1, opposite_player ? 2 : 7, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new cannon(7, opposite ? 2 : 7, opposite));
+    p = p_piece(new cannon(7, opposite_player ? 2 : 7, opposite_player));
     pieces.push_back(p);
 
     //rooks
-    p = p_piece(new rook(0, opposite ? 0 : 9, opposite));
+    p = p_piece(new rook(0, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new rook(8, opposite ? 0 : 9, opposite));
+    p = p_piece(new rook(8, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
     //horses
-    p = p_piece(new horse(1, opposite ? 0 : 9, opposite));
+    p = p_piece(new horse(1, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new horse(7, opposite ? 0 : 9, opposite));
+    p = p_piece(new horse(7, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
     //elephants
-    p = p_piece(new elephant(2, opposite ? 0 : 9, opposite));
+    p = p_piece(new elephant(2, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new elephant(6, opposite ? 0 : 9, opposite));
+    p = p_piece(new elephant(6, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
     //advisors
-    p = p_piece(new advisor(3, opposite ? 0 : 9, opposite));
+    p = p_piece(new advisor(3, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new advisor(5, opposite ? 0 : 9, opposite));
+    p = p_piece(new advisor(5, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
     //general
-    p = p_piece(new general(4, opposite ? 0 : 9, opposite));
+    p = p_piece(new general(4, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
+}
+
+bool abstract_player::is_opposite() const
+{
+    return opposite_player;
 }
 
 bool abstract_player::is_checked() const

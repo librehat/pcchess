@@ -5,8 +5,8 @@
 using namespace std;
 using namespace chrono;
 
-threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, const abstract_player * const _opp, int _threads) :
-    uct_player(_think_time, first_hand, _opp),
+threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, const abstract_player * const _opp, int _threads, bool opposite) :
+    uct_player(_think_time, first_hand, _opp, opposite),
     threads(_threads)
 {
     if (threads <= 0) {

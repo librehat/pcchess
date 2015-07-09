@@ -8,7 +8,8 @@
 class abstract_player
 {
 public:
-    abstract_player();
+    //opposite: whether this player is opposite player
+    abstract_player(bool opposite = false);
     abstract_player(const abstract_player &b);
     virtual ~abstract_player();
 
@@ -22,10 +23,10 @@ public:
     /*
      * initialise the pieces list to a normal beginning situation
      * no need to call add function multiple times
-     * opposite: whether this player is opposite player
      */
-    void init_pieces(bool opposite = false);
+    void init_pieces();
 
+    bool is_opposite() const;
     bool is_checked() const;
     bool is_checkmated() const;
     const std::list<p_piece> &get_pieces() const;
@@ -48,6 +49,7 @@ public:
 protected:
     std::list<p_piece> pieces;
     std::list<pos_move> move_history;//front: latest move, back: the first move
+    const bool opposite_player;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
 };
