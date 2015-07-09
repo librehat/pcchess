@@ -245,9 +245,6 @@ node* node::find_child(const pos_move &m)
             }
         }
     }
-#ifdef _DEBUG
-    cout << "Can't find a child with given pos_move" << endl;
-#endif
     return nullptr;
 }
 
