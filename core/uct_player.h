@@ -13,7 +13,7 @@
 class uct_player : public abstract_player
 {
 public:
-    uct_player(double _think_time, bool first_hand, const abstract_player* const _opp, bool opposite = false);//think_time: seconds
+    uct_player(double _think_time, const abstract_player* const _opp, bool opposite);//think_time: seconds
     virtual ~uct_player();
 
     virtual bool think_next_move(pos_move &_move, const board &);
@@ -22,7 +22,6 @@ public:
 
 protected:
     std::chrono::duration<double> think_time;//the maximum period for each move
-    const bool firsthand;
     node *root;
 };
 

@@ -6,9 +6,8 @@
 using namespace std;
 using namespace chrono;
 
-uct_player::uct_player(double _think_time, bool first_hand, const abstract_player* const _opp, bool opposite) :
+uct_player::uct_player(double _think_time, const abstract_player* const _opp, bool opposite) :
     abstract_player(_opp, opposite),
-    firsthand(first_hand),
     root(nullptr)
 {
     think_time = duration<double>(_think_time);
@@ -27,7 +26,7 @@ uct_player::~uct_player()
 bool uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
-        root = new node(new random_player(*this), new random_player(*opponent), firsthand);
+        root = new node(new random_player(*this), new random_player(*opponent), true);
     }
 
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals

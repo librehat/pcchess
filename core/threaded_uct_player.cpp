@@ -5,8 +5,8 @@
 using namespace std;
 using namespace chrono;
 
-threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, const abstract_player * const _opp, int _threads, bool opposite) :
-    uct_player(_think_time, first_hand, _opp, opposite),
+threaded_uct_player::threaded_uct_player(double _think_time, const abstract_player * const _opp, bool opposite, int _threads) :
+    uct_player(_think_time, _opp, opposite),
     threads(_threads)
 {
     if (threads <= 0) {
@@ -21,7 +21,7 @@ threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, co
 bool threaded_uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
-        root = new threaded_node(new random_player(*this), new random_player(*opponent), firsthand);
+        root = new threaded_node(new random_player(*this), new random_player(*opponent), true);
     }
 
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
