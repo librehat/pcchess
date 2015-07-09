@@ -8,7 +8,11 @@ game::game(abstract_player* our, abstract_player* opp) :
     our_player(our),
     opp_player(opp)
 {
-    setup_players();
+    if (our->is_opposite() ^ opp->is_opposite()) {
+        setup_players();
+    } else {
+        throw invalid_argument("Two players are on the same side!");
+    }
 }
 
 game::~game()
