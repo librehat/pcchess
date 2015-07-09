@@ -27,7 +27,7 @@ abstract_player::abstract_player(const abstract_player &b) :
 	}
 #ifdef _DEBUG
     if (pieces.empty()) {
-        cout << "New player's pieces list is empty after copy construction.";
+        cout << "New player's pieces list is empty after copy construction." << endl;
     }
 #endif
 }
@@ -57,7 +57,7 @@ void abstract_player::remove(p_piece p)
         }
     }
 #ifdef _DEBUG
-    cout << "The piece to remove doesn't belong to this player";
+    cout << "The piece to remove doesn't belong to this player" << endl;
 #endif
 }
 
