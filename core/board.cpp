@@ -39,9 +39,6 @@ p_piece board::at(const int &file, const int &rank) const
 {
     int dis = file * RANK_NUM + rank;
     if (dis >= NUM) {
-#ifdef _DEBUG
-        cerr << "Trying to access file " << file << " rank " << rank << endl;
-#endif
         return nullptr;
     }
     return data[dis];

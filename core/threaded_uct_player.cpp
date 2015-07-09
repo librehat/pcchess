@@ -18,7 +18,7 @@ threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, co
     thread_vec.resize(threads);
 }
 
-bool threaded_uct_player::think_next_move(pos_move &_move, const board &m_board)
+bool threaded_uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
         root = new threaded_node(new random_player(*this), new random_player(*opp), firsthand);

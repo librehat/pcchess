@@ -16,7 +16,7 @@ public:
     uct_player(double _think_time, bool first_hand, const abstract_player* const _opp);//think_time: seconds
     virtual ~uct_player();
 
-    virtual bool think_next_move(pos_move &_move, const board &m_board);
+    virtual bool think_next_move(pos_move &_move, const board &);
     virtual void opponent_moved(const pos_move &m);
 
     void set_opponent_player(const abstract_player* const _opp);
