@@ -48,8 +48,9 @@ int main(int argc, char** argv)
     int our_sims = 0;
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        uct_player *our, *opp;
-        opp = new uct_player(think_time, false, nullptr, true);
+        abstract_player *our, *opp;
+        //opp = new uct_player(think_time, false, nullptr, true);
+        opp = new random_player(nullptr, true);
         our = new threaded_uct_player(think_time, true, opp, 4, false);
         opp->set_opponent_player(our);
         our->init_pieces();

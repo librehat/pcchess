@@ -53,6 +53,8 @@ public:
      */
     virtual void opponent_moved(const pos_move &) {}
 
+    virtual int get_total_simulations() const { return 0; }
+
 protected:
     std::list<p_piece> pieces;
     std::list<pos_move> move_history;//front: latest move, back: the first move
