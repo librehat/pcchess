@@ -51,6 +51,9 @@ public:
 
 protected:
     const bool m_opposite;
+    position pos;
+    std::list<position> avail_moves;
+
     /*
      * a piece can't move if it's the only piece separate generals
      * return false if it's such a piece hence it can't move
@@ -61,9 +64,6 @@ protected:
     virtual void gen_moves(const board &m_board) = 0;
     //invalid: out of the given scope, default to the board
     void remove_invalid_moves(const board &m_board, int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);
-
-    position pos;
-    std::list<position> avail_moves;
 };
 
 #endif //ABSTRACT_PIECE_H

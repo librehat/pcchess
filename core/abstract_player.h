@@ -14,7 +14,7 @@ public:
     virtual ~abstract_player();
 
     void add(p_piece p);
-    bool remove(p_piece p);//return true if there is p in pieces and gets removed successfully.
+    void remove(p_piece p);//if p doesn't belong to this player, it'll throw an error
     void add_history(const position &from, const position &to);
     void add_history(const pos_move &m);
     const std::list<pos_move>& get_history() const;

@@ -46,7 +46,7 @@ void abstract_player::add(p_piece p)
     pieces.push_back(p);
 }
 
-bool abstract_player::remove(p_piece p)
+void abstract_player::remove(p_piece p)
 {
     for (auto &&ip : pieces) {
         if (ip == p) {
@@ -55,13 +55,9 @@ bool abstract_player::remove(p_piece p)
             }
             pieces.remove(p);
             delete p;
-            return true;
         }
     }
-#ifdef _DEBUG
-    cout << "The piece to remove doesn't belong to this player" << endl;
-#endif
-    return false;
+    throw domain_error("The piece to remove doesn't belong to this player");
 }
 
 void abstract_player::add_history(const position &from, const position &to)
