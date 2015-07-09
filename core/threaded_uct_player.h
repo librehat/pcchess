@@ -12,6 +12,7 @@ public:
 
     bool think_next_move(pos_move &_move, const board &);
     void opponent_moved(const pos_move &m);
+    int get_total_simulations() const;
 
 private:
     int threads;

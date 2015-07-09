@@ -65,3 +65,8 @@ void threaded_uct_player::opponent_moved(const pos_move &m)
     delete root;
     root = new_root;
 }
+
+int threaded_uct_player::get_total_simulations() const
+{
+    return threaded_node::get_total_simulations();
+}

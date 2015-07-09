@@ -77,3 +77,8 @@ void uct_player::opponent_moved(const pos_move &m)
     delete root;
     root = new_root;
 }
+
+int uct_player::get_total_simulations() const
+{
+    return node::get_total_simulations();
+}

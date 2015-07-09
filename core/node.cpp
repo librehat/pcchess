@@ -8,6 +8,7 @@
 
 using namespace std;
 
+int node::total_simulations = 0;
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
@@ -144,6 +145,7 @@ bool node::simulate()
 #ifdef _DEBUG
 	cout << "SIMULATION step" << endl;
 #endif
+    total_simulations++;
     random_player t_our(*our_curr);
     random_player t_opp(*opp_curr);
 
@@ -247,4 +249,9 @@ node* node::find_child(const pos_move &m)
     cout << "Can't find a child with given pos_move" << endl;
 #endif
     return nullptr;
+}
+
+int node::get_total_simulations()
+{
+    return total_simulations;
 }

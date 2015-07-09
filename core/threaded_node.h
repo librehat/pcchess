@@ -3,6 +3,7 @@
 
 #include "node.h"
 #include <mutex>
+#include <atomic>
 
 class threaded_node : public node
 {
@@ -13,10 +14,14 @@ public:
     void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
     bool simulate();
 
+    static int get_total_simulations();
+
 private:
     //they're instantiated per instance (each instance has its own visits, scores, children)
     std::mutex value_mutex;//protects visits, scores
     std::mutex children_mutex;//protects children
+
+    static std::atomic<int> total_simulations;
 };
 
 #endif //THREADED_NODE_H

@@ -15,9 +15,9 @@ using namespace std;
 int main(int argc, char** argv)
 {
     int opt, rounds = 1, think_time = 2;
-    bool enable_print = false, chinese_print = false, all_random = false;
+    bool enable_print = false, chinese_print = false;
 
-    while((opt = getopt(argc, argv, "r:t:pca")) != -1) {
+    while((opt = getopt(argc, argv, "r:t:pch")) != -1) {
         switch(opt) {
         case 'r':
             rounds = atoi(optarg);
@@ -31,16 +31,12 @@ int main(int argc, char** argv)
         case 'c':
             chinese_print = true;
             break;
-        case 'a':
-            all_random = true;
-            break;
         default:
             cout << "Command-line options:\n"
                  << "  -r <number of rounds>\n"
                  << "  -t <maximum think time (s)>\n"
                  << "  -p\tprint out the board after each round\n"
                  << "  -c\tuse Chinese characters in the board\n"
-                 << "  -a\tuse two random players instead of one UCT and one random"
                  << endl;
             return 1;
         }
@@ -49,17 +45,12 @@ int main(int argc, char** argv)
     int we_win = 0;
     int we_draw = 0;
     int we_lose = 0;
+    int our_sims = 0;
+    int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        abstract_player *our;
-        uct_player *opp;
-        //opp = new random_player;
+        uct_player *our, *opp;
         opp = new uct_player(think_time, false, nullptr, true);
-        if (all_random) {
-            our = new random_player(false);
-        } else {
-            //our = new uct_player(think_time, true, opp);
-            our = new threaded_uct_player(think_time, true, opp, 4, false);
-        }
+        our = new threaded_uct_player(think_time, true, opp, 4, false);
         opp->set_opponent_player(our);
         our->init_pieces();
         opp->init_pieces();
@@ -78,13 +69,17 @@ int main(int argc, char** argv)
             we_draw++;
         }
 
+        our_sims += our->get_total_simulations();
+        opp_sims += opp->get_total_simulations();
+
         delete our;
         delete opp;
     }
 
     cout << "WIN:\t" << we_win << endl
          << "DRAW:\t" << we_draw << endl
-         << "LOSE:\t" << we_lose << endl;
+         << "LOSE:\t" << we_lose << endl
+         << "TOTAL SIMULATIONS:\t" << our_sims << " v.s. " << opp_sims << endl;
 
     return 0;
 }

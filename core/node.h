@@ -45,6 +45,8 @@ public:
      */
     node* find_child(const pos_move &m);
 
+    static int get_total_simulations();
+
 protected:
     const bool my_turn;
 
@@ -63,6 +65,9 @@ protected:
 
     static const int select_threshold;
     static const double uct_constant;
+
+private:
+    static int total_simulations;
 };
 
 #endif // NODE_H

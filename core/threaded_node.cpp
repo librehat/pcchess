@@ -9,6 +9,8 @@ threaded_node::threaded_node(abstract_player *_our, abstract_player *_opp, bool 
     node(_our, _opp, _my_turn, _parent)
 {}
 
+atomic<int> threaded_node::total_simulations(0);
+
 bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
@@ -63,6 +65,7 @@ void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, c
 
 bool threaded_node::simulate()
 {
+    total_simulations++;
     random_player t_our(*our_curr);
     random_player t_opp(*opp_curr);
 
@@ -93,4 +96,9 @@ bool threaded_node::simulate()
         expand(our_hist, opp_hist, result);//this very node is definitely the parental node
         return true;
     }
+}
+
+int threaded_node::get_total_simulations()
+{
+    return total_simulations;
 }

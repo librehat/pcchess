@@ -18,6 +18,7 @@ public:
 
     virtual bool think_next_move(pos_move &_move, const board &);
     virtual void opponent_moved(const pos_move &m);
+    virtual int get_total_simulations() const;
 
     void set_opponent_player(const abstract_player* const _opp);
 
