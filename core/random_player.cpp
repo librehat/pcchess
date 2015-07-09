@@ -3,8 +3,8 @@
 
 using namespace std;
 
-random_player::random_player(bool opposite) :
-    abstract_player(opposite),
+random_player::random_player(const abstract_player * const opp, bool opposite) :
+    abstract_player(opp, opposite),
     generator(device())
 {}
 

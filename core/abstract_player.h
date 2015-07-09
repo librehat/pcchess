@@ -8,8 +8,13 @@
 class abstract_player
 {
 public:
-    //opposite: whether this player is opposite player
-    abstract_player(bool opposite = false);
+    /*
+     * opp: the opponent player's pointer, if the subclass doesn't use opponent,
+     * you can pass nullptr here.
+     * You can set opponent pointer via set_opponent_player function as well.
+     * opposite: whether this player is opposite player
+     */
+    abstract_player(const abstract_player *const opp, bool opposite = false);
     abstract_player(const abstract_player &b);
     virtual ~abstract_player();
 
@@ -31,6 +36,8 @@ public:
     bool is_checkmated() const;
     const std::list<p_piece> &get_pieces() const;
 
+    void set_opponent_player(const abstract_player* const _opp);
+
     /*
      * sub-class has to implement this pure virtual function
      * return true if a move is proposed and store the results
@@ -50,6 +57,7 @@ protected:
     std::list<p_piece> pieces;
     std::list<pos_move> move_history;//front: latest move, back: the first move
     const bool opposite_player;
+    const abstract_player* opponent;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
 };

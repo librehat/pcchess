@@ -21,7 +21,7 @@ threaded_uct_player::threaded_uct_player(double _think_time, bool first_hand, co
 bool threaded_uct_player::think_next_move(pos_move &_move, const board &)
 {
     if (!root) {
-        root = new threaded_node(new random_player(*this), new random_player(*opp), firsthand);
+        root = new threaded_node(new random_player(*this), new random_player(*opponent), firsthand);
     }
 
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -60,7 +60,7 @@ void threaded_uct_player::opponent_moved(const pos_move &m)
     if (new_root) {
         new_root->detach();
     } else {
-        new_root = new threaded_node(new random_player(*this), new random_player(*opp), true);
+        new_root = new threaded_node(new random_player(*this), new random_player(*opponent), true);
     }
     delete root;
     root = new_root;

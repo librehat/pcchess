@@ -5,6 +5,11 @@ position::position(int _file, int _rank) :
     rank(_rank)
 {}
 
+position::position(const position &b)
+{
+    *this = b;
+}
+
 bool position::not_in_range(int min_file, int max_file, int min_rank, int max_rank) const
 {
     return file < min_file || file > max_file || rank < min_rank || rank > max_rank;

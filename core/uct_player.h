@@ -20,11 +20,8 @@ public:
     virtual void opponent_moved(const pos_move &m);
     virtual int get_total_simulations() const;
 
-    void set_opponent_player(const abstract_player* const _opp);
-
 protected:
     std::chrono::duration<double> think_time;//the maximum period for each move
-    const abstract_player* opp;
     const bool firsthand;
     node *root;
 };
