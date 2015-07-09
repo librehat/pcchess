@@ -64,6 +64,10 @@ bool uct_player::think_next_move(pos_move &_move, const board &)
 
 void uct_player::opponent_moved(const pos_move &m)
 {
+    if (!root) {
+        return;
+    }
+
     node* new_root = root->find_child(m);
     if (new_root) {
         new_root->detach();
