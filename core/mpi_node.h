@@ -6,6 +6,8 @@
 
 class mpi_node : public node
 {
+public:
+    mpi_node(abstract_player* _our, abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
 };
 
 #endif //MPI_NODE_H

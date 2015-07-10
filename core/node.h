@@ -10,7 +10,7 @@ class node
 public:
     //WARN: the node will take memory control of _our and _opp pointers!
     node(abstract_player* _our, abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
-    ~node();
+    virtual ~node();
 
     int get_visits() const;
     int get_scores() const;
