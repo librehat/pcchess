@@ -34,7 +34,7 @@ position position::operator -(const position &b)
     return position(this->file - b.file, this->rank - b.rank);
 }
 
-bool position::operator <(const position &b)
+bool position::operator <(const position &b) const
 {
     if (file < b.file) {
         return true;

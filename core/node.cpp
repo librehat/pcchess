@@ -248,6 +248,17 @@ node* node::find_child(const pos_move &m)
     return nullptr;
 }
 
+bool node::operator ==(const node &b) const
+{
+    return !(*this != b);
+}
+
+bool node::operator !=(const node &b) const
+{
+    return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
+            our_move != b.our_move || opp_move != b.opp_move || visits != b.visits || scores != b.scores;
+}
+
 int node::get_total_simulations()
 {
     return total_simulations;

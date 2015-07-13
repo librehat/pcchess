@@ -16,7 +16,7 @@ public:
     position& operator= (const position &b);
     position operator+ (const position &b);
     position operator- (const position &b);
-    bool operator< (const position &b);
+    bool operator< (const position &b) const;
 };
 
 inline bool operator !=(const position &a, const position &b)

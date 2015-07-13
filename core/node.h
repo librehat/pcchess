@@ -45,6 +45,9 @@ public:
      */
     node* find_child(const pos_move &m);
 
+    bool operator == (const node &b) const;
+    bool operator != (const node &b) const;
+
     static int get_total_simulations();
 
 protected:
