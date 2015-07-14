@@ -1,19 +1,22 @@
 #ifndef SLOW_TREE_UCT_PLAYER_H
 #define SLOW_TREE_UCT_PLAYER_H
 
-#include "uct_player.h"
+#include "../core/uct_player.h"
+#include <boost/mpi.hpp>
 
 class slow_tree_uct_player : public uct_player
 {
 public:
-    slow_tree_uct_player(double _think_time, const abstract_player* const _opp, bool opposite, int _compute_nodes);
+    slow_tree_uct_player(double _think_time, const abstract_player* const _opp, bool opposite);
 
     bool think_next_move(pos_move &_move, const board &);
     void opponent_moved(const pos_move &m);
     int get_total_simulations() const;
 
 private:
-    int compute_nodes;
+    void init_mpi_nodes();//distribute the tree (the root node) among all nodes
+
+    static boost::mpi::communicator world_comm;
 };
 
 #endif //SLOW_TREE_UCT_PLAYER_H

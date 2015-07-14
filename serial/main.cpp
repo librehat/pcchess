@@ -7,21 +7,13 @@
 #include "../core/random_player.h"
 #include "../core/uct_player.h"
 #include "../core/threaded_uct_player.h"
-#include "../core/slow_tree_uct_player.h"
 #include "unistd.h"
-#include <boost/mpi/environment.hpp>
 #include <iostream>
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-    /*
-     * the constructor of environment is equivalent to MPI_Init
-     * and the destructor is to MPI_Finalize
-     */
-    boost::mpi::environment mpi_env(argc, argv);
-
     int opt, rounds = 1, think_time = 2;
     bool enable_print = false, chinese_print = false;
 
