@@ -3,6 +3,7 @@
 
 #include <array>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/nvp.hpp>
 
 class position
 {
@@ -22,7 +23,7 @@ public:
 private:
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void serialize(Archive &ar, const unsigned int version)
     {
         ar & file;
         ar & rank;
@@ -40,5 +41,11 @@ inline bool operator ==(const position &a, const position &b)
 }
 
 typedef std::array<position, 2> pos_move;//moving a piece from move[0] to move[1]
+template<class Archive>
+void serialize(Archive &ar, pos_move &p, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_NVP(p[0]);
+    ar & BOOST_SERIALIZATION_NVP(p[1]);
+}
 
 #endif //POSITION_H

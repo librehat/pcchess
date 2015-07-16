@@ -10,7 +10,7 @@
 #include "unistd.h"
 #include <iostream>
 #include <fstream>
-#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 using namespace std;
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
         node* tree_root = opp->get_tree();
         ofstream fs;
         fs.open("/tmp/boost_serialization_test", ios_base::out | ios_base::app);
-        boost::archive::xml_oarchive oa(fs);
+        boost::archive::text_oarchive oa(fs);
         oa << BOOST_SERIALIZATION_NVP(*tree_root);
         fs.close();
 
