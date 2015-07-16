@@ -80,11 +80,11 @@ private:
     {
         ar & my_turn;
         ar & parent;
-        ar & BOOST_SERIALIZATION_NVP(children);
-        ar & BOOST_SERIALIZATION_NVP(our_curr);
-        ar & BOOST_SERIALIZATION_NVP(opp_curr);
-        ar & BOOST_SERIALIZATION_NVP(our_move);
-        ar & BOOST_SERIALIZATION_NVP(opp_move);
+        ar & children;
+        ar & our_curr;
+        ar & opp_curr;
+        ar & our_move;
+        ar & opp_move;
         ar & visits;
         ar & scores;
     }

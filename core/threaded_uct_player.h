@@ -17,6 +17,14 @@ public:
 private:
     int threads;
     std::vector<std::thread> thread_vec;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<uct_player>(*this);
+        ar & threads;
+    }
 };
 
 #endif //THREADED_UCT_PLAYER_H

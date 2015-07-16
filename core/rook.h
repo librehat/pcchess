@@ -26,6 +26,13 @@ protected:
 
 private:
     void search_moves(const bool forward, const bool is_rank, const board &m_board);
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_piece>(*this);
+    }
 };
 
 #endif //ROOK_H

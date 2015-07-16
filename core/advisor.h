@@ -27,6 +27,13 @@ private:
     static const position upright;
     static const position downleft;
     static const position downright;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_piece>(*this);
+    }
 };
 
 #endif //ADVISOR_H

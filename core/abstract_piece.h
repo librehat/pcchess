@@ -64,6 +64,16 @@ protected:
     virtual void gen_moves(const board &m_board) = 0;
     //invalid: out of the given scope, default to the board
     void remove_invalid_moves(const board &m_board, int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & m_opposite;
+        ar & pos;
+        ar & avail_moves;
+    }
 };
 
 #endif //ABSTRACT_PIECE_H

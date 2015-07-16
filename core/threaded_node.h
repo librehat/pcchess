@@ -26,8 +26,6 @@ private:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & boost::serialization::base_object<node>(*this);
-        ar & value_mutex;
-        ar & children_mutex;
     }
 
     static std::atomic<int> total_simulations;

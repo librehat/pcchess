@@ -7,6 +7,7 @@
 #include "../core/random_player.h"
 #include "../core/uct_player.h"
 #include "../core/threaded_uct_player.h"
+#include "../core/serialization_export.h"
 #include "unistd.h"
 #include <iostream>
 #include <fstream>

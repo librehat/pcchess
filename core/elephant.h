@@ -32,6 +32,13 @@ private:
     static const position up_right_centre;
     static const position down_left_centre;
     static const position down_right_centre;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_piece>(*this);
+    }
 };
 
 #endif //ELEPHANT_H

@@ -4,6 +4,7 @@
 #include "abstract_piece.h"
 #include "position.h"
 #include <list>
+#include <boost/serialization/list.hpp>
 
 class abstract_player
 {
@@ -62,6 +63,19 @@ protected:
     const abstract_player* opponent;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & pieces;
+        ar & move_history;
+        ar & opposite_player;
+        ar & opponent;
+        ar & checked;
+        ar & checkmated;
+    }
 };
 
 #endif //ABSTRACT_PlAYER_H

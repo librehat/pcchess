@@ -15,6 +15,13 @@ public:
 private:
     static std::random_device device;
     std::default_random_engine generator;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_player>(*this);
+    }
 };
 
 #endif //RANDOM_PLAYER_H

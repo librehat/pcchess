@@ -35,6 +35,13 @@ private:
     static const position l1d2;
     static const position r2d1;
     static const position r1d2;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_piece>(*this);
+    }
 };
 
 #endif //HORSE_H

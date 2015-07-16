@@ -25,6 +25,15 @@ public:
 protected:
     std::chrono::duration<double> think_time;//the maximum period for each move
     node *root;
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<abstract_player>(*this);
+        ar & root;
+    }
 };
 
 #endif // UCT_PLAYER_H
