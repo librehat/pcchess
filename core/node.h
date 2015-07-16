@@ -2,6 +2,7 @@
 #define NODE_H
 
 #include <boost/ptr_container/ptr_list.hpp>
+#include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 #include "position.h"
@@ -78,11 +79,11 @@ private:
     {
         ar & my_turn;
         ar & parent;
-        ar & boost::serialization::make_nvp("children", children);
-        ar & our_curr;
-        ar & opp_curr;
-        ar & our_move;
-        ar & opp_move;
+        ar & BOOST_SERIALIZATION_NVP(children);
+        ar & BOOST_SERIALIZATION_NVP(our_curr);
+        ar & BOOST_SERIALIZATION_NVP(opp_curr);
+        ar & BOOST_SERIALIZATION_NVP(our_move);
+        ar & BOOST_SERIALIZATION_NVP(opp_move);
         ar & visits;
         ar & scores;
     }

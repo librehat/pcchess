@@ -9,6 +9,8 @@
 #include "../core/threaded_uct_player.h"
 #include "unistd.h"
 #include <iostream>
+#include <fstream>
+#include <boost/archive/xml_oarchive.hpp>
 
 using namespace std;
 
@@ -48,7 +50,8 @@ int main(int argc, char** argv)
     int our_sims = 0;
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        abstract_player *our, *opp;
+        abstract_player *our;
+        uct_player *opp;
         opp = new uct_player(think_time, nullptr, true);
         //opp = new random_player(nullptr, true);
         //our = new threaded_uct_player(think_time, opp, false);
@@ -73,6 +76,14 @@ int main(int argc, char** argv)
 
         our_sims += our->get_total_simulations();
         opp_sims += opp->get_total_simulations();
+
+        //do a Boost serialization test
+        node* tree_root = opp->get_tree();
+        ofstream fs;
+        fs.open("/tmp/boost_serialization_test", ios_base::out | ios_base::app);
+        boost::archive::xml_oarchive oa(fs);
+        oa << BOOST_SERIALIZATION_NVP(*tree_root);
+        fs.close();
 
         delete our;
         delete opp;

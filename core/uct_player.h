@@ -20,6 +20,8 @@ public:
     virtual void opponent_moved(const pos_move &m);
     virtual int get_total_simulations() const;
 
+    node* get_tree() const;
+
 protected:
     std::chrono::duration<double> think_time;//the maximum period for each move
     node *root;

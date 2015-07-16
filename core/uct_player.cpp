@@ -76,3 +76,8 @@ int uct_player::get_total_simulations() const
 {
     return node::get_total_simulations();
 }
+
+node* uct_player::get_tree() const
+{
+    return root;
+}

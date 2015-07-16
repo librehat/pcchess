@@ -2,6 +2,7 @@
 #define POSITION_H
 
 #include <array>
+#include <boost/serialization/access.hpp>
 
 class position
 {
@@ -17,6 +18,15 @@ public:
     position operator+ (const position &b);
     position operator- (const position &b);
     bool operator< (const position &b) const;
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & file;
+        ar & rank;
+    }
 };
 
 inline bool operator !=(const position &a, const position &b)
