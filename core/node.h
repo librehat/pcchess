@@ -1,6 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include <boost/utility.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
