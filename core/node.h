@@ -1,11 +1,13 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <list>
+#include <boost/ptr_container/ptr_list.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/nvp.hpp>
 #include "position.h"
 #include "abstract_player.h"
 
-class node
+class node : boost::noncopyable
 {
 public:
     //WARN: the node will take memory control of _our and _opp pointers!
@@ -31,19 +33,18 @@ public:
      * select child according to the visit times
      * be aware of the return value could be nullptr (if children is empty)
      */
-    node* get_best_child() const;//best child which has highest visits
-    node* get_best_child_uct() const;//return best child which has maximum value of get_uct_val()
-
-    void remove_child(node *);
+    boost::ptr_list<node>::iterator get_best_child();//best child which has highest visits
+    boost::ptr_list<node>::iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
+    boost::ptr_list<node>::iterator child_end();
 
     void backpropagate(const int &score);
-    void detach();
+    node* release_child(boost::ptr_list<node>::iterator i);
 
     /*
      * find the children with same moves (our_move or opp_move, up to the parental my_turn value).
      * return nullptr if no such child
      */
-    node* find_child(const pos_move &m);
+    boost::ptr_list<node>::iterator find_child(const pos_move &m);
 
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
@@ -54,7 +55,8 @@ protected:
     const bool my_turn;
 
     node* parent;
-    std::list<node *> children;
+    //std::list<node *> children;
+    boost::ptr_list<node> children;
 
     //"current": the state in this node
     abstract_player* our_curr;
@@ -70,7 +72,24 @@ protected:
     static const double uct_constant;
 
 private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & my_turn;
+        ar & parent;
+        ar & boost::serialization::make_nvp("children", children);
+        ar & our_curr;
+        ar & opp_curr;
+        ar & our_move;
+        ar & opp_move;
+        ar & visits;
+        ar & scores;
+    }
+
     static int total_simulations;
 };
+
+typedef boost::ptr_list<node>::iterator node_iterator;
 
 #endif // NODE_H

@@ -39,12 +39,12 @@ bool uct_player::think_next_move(pos_move &_move, const board &)
         }
     }
 
-    node* best_child = root->get_best_child();
-    if (best_child) {
+    auto best_child = root->get_best_child();
+    if (best_child != root->child_end()) {
         //this is the new tree root
-        best_child->detach();
+        node* new_root = root->release_child(best_child);
         delete root;
-        root = best_child;
+        root = new_root;
 
         _move = root->get_our_move();
         return true;
@@ -61,9 +61,10 @@ void uct_player::opponent_moved(const pos_move &m)
         return;
     }
 
-    node* new_root = root->find_child(m);
-    if (new_root) {
-        new_root->detach();
+    node *new_root = nullptr;
+    auto root_iter = root->find_child(m);
+    if (root_iter != root->child_end()) {
+        new_root = root->release_child(root_iter);
     } else {
         new_root = new node(new random_player(*this), new random_player(*opponent), true);
     }

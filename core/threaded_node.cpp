@@ -46,21 +46,25 @@ void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, c
     }
 
     children_mutex.lock();
-    node* child = find_child(next_move);
-    if (!child) {
+    auto child_iter = find_child(next_move);
+    children_mutex.unlock();
+    if (child_iter == children.end()) {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
 
         game updater_sim(n_our, n_opp);
         updater_sim.move_piece(next_move);
 
-        child = new threaded_node(n_our, n_opp, !my_turn, this);
+        auto child = new threaded_node(n_our, n_opp, !my_turn, this);
         child->set_our_move(my_turn ? next_move : our_move);
         child->set_opp_move(my_turn ? opp_move : next_move);
+
+        children_mutex.lock();
         children.push_back(child);
+        children_mutex.unlock();
+    } else {
+        child_iter->expand(our_hist, opp_hist, score);
     }
-    children_mutex.unlock();
-    child->expand(our_hist, opp_hist, score);
 }
 
 bool threaded_node::simulate()

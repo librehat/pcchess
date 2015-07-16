@@ -27,9 +27,7 @@ node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_p
 
 node::~node()
 {
-    for(auto &&child : children) {
-        delete child;
-    }
+    children.clear();
     delete our_curr;
     delete opp_curr;
 }
@@ -121,23 +119,24 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	    opp_hist.pop_back();
 	}
 
-	node* child = find_child(next_move);
-	if (!child) {
+    auto child_iter = find_child(next_move);
+    if (child_iter == children.end()) {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
 
         game updater_sim(n_our, n_opp);
         updater_sim.move_piece(next_move);
 
-        child = new node(n_our, n_opp, !my_turn, this);
+        node *child = new node(n_our, n_opp, !my_turn, this);
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
 #ifdef _DEBUG
         cout << "A new child node is created" << endl;
 #endif
-	}
-	child->expand(our_hist, opp_hist, score);
+    } else {
+        child_iter->expand(our_hist, opp_hist, score);
+    }
 }
 
 bool node::simulate()
@@ -180,42 +179,42 @@ bool node::simulate()
     }
 }
 
-node* node::get_best_child() const
+node_iterator node::get_best_child()
 {
-    node* best = nullptr;
+    auto best = children.end();
     int current_max = 0;
-    for (auto &&child : children) {
-        if (child->visits > current_max) {
-            best = child;
-            current_max = child->visits;
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        if (it->visits > current_max) {
+            best = it;
+            current_max = it->visits;
         }
     }
     return best;
 }
 
-node* node::get_best_child_uct() const
+node_iterator node::get_best_child_uct()
 {
     if (children.empty()) {
-        return nullptr;
+        return children.end();
     }
 
-    node* best_child = children.front();
-    auto best_uct = children.front()->get_uct_val();
-    auto it = children.cbegin();
+    auto best_child = children.begin();
+    auto best_uct = children.front().get_uct_val();
+    auto it = children.begin();
     it++;
     for (; it != children.end(); ++it) {
-        auto uct = (*it)->get_uct_val();
+        auto uct = it->get_uct_val();
         if (uct > best_uct) {
-            best_child = *it;
+            best_child = it;
             best_uct = uct;
         }
     }
     return best_child;
 }
 
-void node::remove_child(node *c)
+node_iterator node::child_end()
 {
-    children.remove(c);
+    return children.end();
 }
 
 void node::backpropagate(const int &score)
@@ -226,26 +225,28 @@ void node::backpropagate(const int &score)
     scores += score;
 }
 
-void node::detach()
+node* node::release_child(node_iterator i)
 {
-    parent->remove_child(this);
-    parent = nullptr;
+    assert(i != children.end());
+    node* c = children.release(i).release();
+    c->parent = nullptr;
+    return c;
 }
 
-node* node::find_child(const pos_move &m)
+node_iterator node::find_child(const pos_move &m)
 {
-    for (auto &&child : children) {
+    for (auto it = children.begin(); it != children.end(); ++it) {
         if (my_turn) {
-            if (child->get_our_move() == m) {
-                return child;
+            if (it->get_our_move() == m) {
+                return it;
             }
         } else {
-            if (child->get_opp_move() == m) {
-                return child;
+            if (it->get_opp_move() == m) {
+                return it;
             }
         }
     }
-    return nullptr;
+    return children.end();
 }
 
 bool node::operator ==(const node &b) const

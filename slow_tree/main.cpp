@@ -16,11 +16,11 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     int rank = world_comm.rank();
 
-    slow_tree_uct_player stup(2, nullptr, false);
-    random_player rp(&stup, true);
-    stup.set_opponent_player(&rp);
+    random_player rp(nullptr, true);
+    slow_tree_uct_player stup(2, &rp, false);
 
     if (rank == 0) {//master plays the game
+
         game g(&stup, &rp);
         abstract_player* winner = g.playout();
         if (winner == &stup) {
@@ -32,6 +32,7 @@ int main(int argc, char **argv)
         }
     } else {
         //TODO slaves are dedicated for work (not involved in game playing)
+        //
     }
 
     return 0;
