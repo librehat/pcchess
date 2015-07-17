@@ -12,7 +12,7 @@
 class rook : public abstract_piece
 {
 public:
-    rook(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    rook(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
     rook(const rook &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;

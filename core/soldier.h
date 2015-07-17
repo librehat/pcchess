@@ -12,7 +12,7 @@
 class soldier : public abstract_piece
 {
 public:
-    soldier(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    soldier(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
     soldier(const soldier &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;

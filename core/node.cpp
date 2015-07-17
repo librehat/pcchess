@@ -19,17 +19,17 @@ node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_p
     opp_curr(_opp),
     visits(0),
     scores(0)
-{
-    if (!_our || !_opp) {
-        throw invalid_argument("Error. Null player pointer is used for node constructor.");
-    }
-}
+{}
 
 node::~node()
 {
     children.clear();
-    delete our_curr;
-    delete opp_curr;
+    if (our_curr) {
+        delete our_curr;
+    }
+    if (opp_curr) {
+        delete opp_curr;
+    }
 }
 
 int node::get_visits() const

@@ -17,7 +17,7 @@
 class abstract_piece
 {
 public:
-    abstract_piece(int _file, int _rank, bool oppo);
+    abstract_piece(int _file = 0, int _rank = 0, bool oppo = false);
     abstract_piece(const abstract_piece &b);
     virtual ~abstract_piece();
 
@@ -70,7 +70,7 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & m_opposite;
+        ar & const_cast<bool &>(m_opposite);
         ar & pos;
         ar & avail_moves;
     }

@@ -1,10 +1,12 @@
 #include "slow_tree_uct_player.h"
 #include "../core/game.h"
 #include "../core/random_player.h"
-#include <boost/mpi.hpp>
+#include "../core/serialization_export.h"
 
 using namespace std;
 namespace mpi = boost::mpi;
+
+BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
 int main(int argc, char **argv)
 {

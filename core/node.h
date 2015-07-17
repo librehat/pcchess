@@ -13,7 +13,7 @@ class node : boost::noncopyable
 {
 public:
     //WARN: the node will take memory control of _our and _opp pointers!
-    node(abstract_player* _our, abstract_player* _opp, bool _my_turn, node *_parent = nullptr);
+    node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
     virtual ~node();
 
     int get_visits() const;
@@ -78,7 +78,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & my_turn;
+        ar & const_cast<bool &>(my_turn);
         ar & parent;
         ar & children;
         ar & our_curr;

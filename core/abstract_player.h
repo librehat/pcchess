@@ -15,7 +15,7 @@ public:
      * You can set opponent pointer via set_opponent_player function as well.
      * opposite: whether this player is opposite player
      */
-    abstract_player(const abstract_player *const opp, bool opposite = false);
+    abstract_player(const abstract_player *const opp = nullptr, bool opposite = false);
     abstract_player(const abstract_player &b);
     virtual ~abstract_player();
 
@@ -71,8 +71,8 @@ private:
     {
         ar & pieces;
         ar & move_history;
-        ar & opposite_player;
-        ar & opponent;
+        ar & const_cast<bool &>(opposite_player);
+        ar & const_cast<abstract_player* &>(opponent);
         ar & checked;
         ar & checkmated;
     }

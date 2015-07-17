@@ -8,7 +8,7 @@
 class threaded_uct_player : public uct_player
 {
 public:
-    threaded_uct_player(double _think_time, const abstract_player* const _opp, bool opposite, int _threads = 0);
+    threaded_uct_player(double _think_time = 1, const abstract_player* const _opp = nullptr, bool opposite = false, int _threads = 0);
 
     bool think_next_move(pos_move &_move, const board &);
     void opponent_moved(const pos_move &m);

@@ -10,7 +10,7 @@
 class elephant : public abstract_piece
 {
 public:
-    elephant(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    elephant(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
     elephant(const elephant &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;

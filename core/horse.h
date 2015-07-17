@@ -12,7 +12,7 @@
 class horse : public abstract_piece
 {
 public:
-    horse(int _file, int _rank, bool oppo) : abstract_piece(_file, _rank, oppo) {}
+    horse(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
     horse(const horse &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
