@@ -17,7 +17,9 @@ uct_player::uct_player(const abstract_player* const _opp, bool opposite) :
 
 uct_player::~uct_player()
 {
-    delete root;
+    if (root) {
+        delete root;
+    }
 }
 
 bool uct_player::think_next_move(pos_move &_move, const board &)
