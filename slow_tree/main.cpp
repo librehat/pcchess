@@ -1,12 +1,10 @@
 #include "slow_tree_uct_player.h"
 #include "../core/game.h"
 #include "../core/random_player.h"
-#include "../core/serialization_export.h"
+#include <boost/mpi.hpp>
 
 using namespace std;
 namespace mpi = boost::mpi;
-
-BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
 int main(int argc, char **argv)
 {
@@ -19,10 +17,11 @@ int main(int argc, char **argv)
     int rank = world_comm.rank();
 
     random_player rp(nullptr, true);
-    slow_tree_uct_player stup(2, &rp, false);
+    slow_tree_uct_player stup(&rp, false);
+    rp.init_pieces();
+    stup.init_pieces();
 
     if (rank == 0) {//master plays the game
-
         game g(&stup, &rp);
         abstract_player* winner = g.playout();
         if (winner == &stup) {
@@ -33,8 +32,17 @@ int main(int argc, char **argv)
             cout << "Draw" << endl;
         }
     } else {
-        //TODO slaves are dedicated for work (not involved in game playing)
-        //
+        stup.do_slave_job();
+    }
+
+    for (int i = 1; i < world_comm.size(); ++i) {
+        world_comm.send(i, slow_tree_uct_player::TAG_EXIT);
+    }
+
+    int sims = stup.get_total_simulations(), sum_sims = 0;
+    mpi::reduce(world_comm, sims, sum_sims, plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
+    if (rank == 0) {
+        cout << "Total Simulations: " << sum_sims << " v.s. " << rp.get_total_simulations() << endl;
     }
 
     return 0;

@@ -1,12 +1,14 @@
 #include "threaded_uct_player.h"
 #include "threaded_node.h"
 #include "random_player.h"
+#include "game.h"
+#include <chrono>
 
 using namespace std;
 using namespace chrono;
 
-threaded_uct_player::threaded_uct_player(double _think_time, const abstract_player * const _opp, bool opposite, int _threads) :
-    uct_player(_think_time, _opp, opposite),
+threaded_uct_player::threaded_uct_player(const abstract_player * const _opp, bool opposite, int _threads) :
+    uct_player(_opp, opposite),
     threads(_threads)
 {
     if (threads <= 0) {
@@ -20,11 +22,13 @@ threaded_uct_player::threaded_uct_player(double _think_time, const abstract_play
 
 bool threaded_uct_player::think_next_move(pos_move &_move, const board &)
 {
+    duration<double> think_time = duration<double>(game::step_time);
+    time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
+
     if (!root) {
         root = new threaded_node(new random_player(*this), new random_player(*opponent), true);
     }
 
-    time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
     for (duration<double> elapsed = steady_clock::now() - start;
          elapsed < think_time;
          elapsed = steady_clock::now() - start)
@@ -38,16 +42,16 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &)
     }
 
     auto best_child = root->get_best_child();
-    if (best_child != root->child_end()) {
-        //this is the new tree root
-        node* new_root = root->release_child(best_child);
-        delete root;
-        root = new_root;
-
-        _move = root->get_our_move();
-        return true;
+    if (best_child == root->child_end()) {
+        return false;
     }
-    return false;
+
+    node* new_root = root->release_child(best_child);
+    delete root;
+    root = new_root;
+
+    _move = root->get_our_move();
+    return true;
 }
 
 void threaded_uct_player::opponent_moved(const pos_move &m)

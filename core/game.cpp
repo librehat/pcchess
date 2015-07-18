@@ -15,6 +15,8 @@ game::game(abstract_player* our, abstract_player* opp) :
     }
 }
 
+int game::step_time = 1;
+
 game::~game()
 {}
 

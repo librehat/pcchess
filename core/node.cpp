@@ -19,7 +19,13 @@ node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_p
     opp_curr(_opp),
     visits(0),
     scores(0)
-{}
+{
+    if (parent) {
+        depth = parent->depth + 1;
+    } else {
+        depth = 0;
+    }
+}
 
 node::~node()
 {
@@ -78,10 +84,6 @@ void node::set_opp_move(const pos_move &m)
 
 bool node::select()
 {
-#ifdef _DEBUG
-	cout << "SELECTION step" << endl;
-#endif
-
     if (visits > select_threshold && !children.empty()) {
         return get_best_child_uct()->select();
     } else {
@@ -91,28 +93,18 @@ bool node::select()
 
 void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int &score)
 {
-#ifdef _DEBUG
-	cout << "EXPANSION step" << endl;
-#endif
-
 	visits++;
 	scores += score;
 
 	pos_move next_move;
 	if (my_turn) {
 	    if (our_hist.empty()) {
-#ifdef _DEBUG
-            cout << "our_hist is empty" << endl;
-#endif
 	        return;
 	    }
 	    next_move = our_hist.back();
 	    our_hist.pop_back();
 	} else {
 	    if (opp_hist.empty()) {
-#ifdef _DEBUG
-            cout << "opp_hist is empty" << endl;
-#endif
 	        return;
 	    }
 	    next_move = opp_hist.back();
@@ -131,9 +123,6 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
-#ifdef _DEBUG
-        cout << "A new child node is created" << endl;
-#endif
     } else {
         child_iter->expand(our_hist, opp_hist, score);
     }
@@ -141,9 +130,6 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
 
 bool node::simulate()
 {
-#ifdef _DEBUG
-	cout << "SIMULATION step" << endl;
-#endif
     total_simulations++;
     random_player t_our(*our_curr);
     random_player t_opp(*opp_curr);
@@ -160,10 +146,6 @@ bool node::simulate()
     } else if (winner == &t_opp){
         result = -1;
     }
-
-#ifdef _DEBUG
-    cout << "SIMULATION result: " << result << endl;
-#endif
 
 	//we need to make copies here because expand will modify the argument variables
     list<pos_move> our_hist = t_our.get_history();
@@ -256,8 +238,10 @@ bool node::operator ==(const node &b) const
 
 bool node::operator !=(const node &b) const
 {
-    return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
-            our_move != b.our_move || opp_move != b.opp_move || visits != b.visits || scores != b.scores;
+    //return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
+    //the pointer addresses won't be the same in different MPI nodes
+    return my_turn != b.my_turn || depth != b.depth ||
+           our_move != b.our_move || opp_move != b.opp_move || visits != b.visits || scores != b.scores;
 }
 
 int node::get_total_simulations()

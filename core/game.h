@@ -23,6 +23,8 @@ public:
     void move_piece(const position &from, const position &to);
     void move_piece(const pos_move &_move);
 
+    static int step_time;//maximum time for each step
+
 private:
     void setup_players();
 

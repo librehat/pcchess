@@ -7,17 +7,15 @@
 #include "../core/random_player.h"
 #include "../core/uct_player.h"
 #include "../core/threaded_uct_player.h"
-#include "../core/serialization_export.h"
 #include "unistd.h"
 #include <iostream>
 #include <fstream>
-#include <boost/archive/text_oarchive.hpp>
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-    int opt, rounds = 1, think_time = 2;
+    int opt, rounds = 1;
     bool enable_print = false, chinese_print = false;
 
     while((opt = getopt(argc, argv, "r:t:pch")) != -1) {
@@ -26,7 +24,7 @@ int main(int argc, char** argv)
             rounds = atoi(optarg);
             break;
         case 't':
-            think_time = atoi(optarg);
+            game::step_time = atoi(optarg);
             break;
         case 'p':
             enable_print = true;
@@ -53,7 +51,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < rounds; ++i) {
         abstract_player *our;
         uct_player *opp;
-        opp = new uct_player(think_time, nullptr, true);
+        opp = new uct_player(nullptr, true);
         //opp = new random_player(nullptr, true);
         //our = new threaded_uct_player(think_time, opp, false);
         our = new random_player(opp, false);
@@ -78,13 +76,7 @@ int main(int argc, char** argv)
         our_sims += our->get_total_simulations();
         opp_sims += opp->get_total_simulations();
 
-        //do a Boost serialization test
-        node* tree_root = opp->get_tree();
-        ofstream fs;
-        fs.open("/tmp/boost_serialization_test", ios_base::out | ios_base::app);
-        boost::archive::text_oarchive oa(fs);
-        oa << BOOST_SERIALIZATION_NVP(*tree_root);
-        fs.close();
+        opp->text_archive_tree(std::cout);
 
         delete our;
         delete opp;

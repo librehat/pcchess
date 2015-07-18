@@ -67,6 +67,7 @@ protected:
     pos_move our_move;
     pos_move opp_move;
 
+    int depth;
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
 
@@ -85,6 +86,7 @@ private:
         ar & opp_curr;
         ar & our_move;
         ar & opp_move;
+        ar & depth;
         ar & visits;
         ar & scores;
     }
