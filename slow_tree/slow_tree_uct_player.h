@@ -20,6 +20,7 @@ public:
     static const int TAG_CHILD_SELEC = 20;
     static const int TAG_CHILD_SELEC_DATA = 21;
     static const int TAG_COMP = 30;
+    static const int TAG_ERASE = 90;
     static const int TAG_EXIT = 0;
 
 private:

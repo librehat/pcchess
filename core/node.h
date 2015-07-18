@@ -48,6 +48,8 @@ public:
      */
     boost::ptr_list<node>::iterator find_child(const pos_move &m);
 
+    bool is_same_node_in_tree(const node &b) const;
+
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
 

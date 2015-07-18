@@ -48,6 +48,9 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &)
 
     auto best_child = root->get_best_child();
     if (best_child == root->child_end()) {
+        for (int i = 1; i < world_comm.size(); ++i) {
+            world_comm.send(i, TAG_ERASE);
+        }
         return false;
     }
 
@@ -115,9 +118,6 @@ void slow_tree_uct_player::do_slave_job()
 
         status = world_comm.recv(0, mpi::any_tag);
         tag = status.tag();
-        if (tag == TAG_EXIT) {
-            break;
-        }
 
         switch (tag) {
         case TAG_SYNC:
@@ -132,6 +132,12 @@ void slow_tree_uct_player::do_slave_job()
         case TAG_COMP:
             slave_compute();
             break;
+        case TAG_ERASE:
+            delete root;
+            root = nullptr;
+            break;
+        case TAG_EXIT:
+            return;
         default:
             throw invalid_argument("Unknown tag");
         }
@@ -154,11 +160,9 @@ void slow_tree_uct_player::slave_opponent_moved()
     auto root_iter = root->find_child(mov);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
-        delete root;
-        root = new_root;
-    } else {
-        root = nullptr;//this will make slave loop goes to broadcast_tree() automatically
     }
+    delete root;
+    root = new_root;//if it's nullptr, the slave loop would let it go into broadcast_tree
 }
 
 void slow_tree_uct_player::slave_select_child()
@@ -182,7 +186,7 @@ void slow_tree_uct_player::slave_compute()
     }
 
     duration<double> think_time = duration<double>(game::step_time);
-    time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
+    time_point<steady_clock> start = steady_clock::now();
     for (duration<double> elapsed = steady_clock::now() - start;
          elapsed < think_time;
          elapsed = steady_clock::now() - start)
@@ -205,11 +209,13 @@ void slow_tree_uct_player::broadcast_tree()
 
 void slow_tree_uct_player::sync_tree()
 {
-    vector<node*> tree_vec;
+    int size = world_comm.size();
+    vector<node*> tree_vec;//TODO is there a memory leak?
+
     mpi::all_gather(world_comm, root, tree_vec);
 
     int rank = world_comm.rank();
-    for(int i = 0; i < world_comm.size(); ++i) {
+    for(int i = 0; i < size; ++i) {
         if (rank == i) {
             continue;
         }
@@ -219,5 +225,6 @@ void slow_tree_uct_player::sync_tree()
 
 void slow_tree_uct_player::merge_tree(node *b)
 {
-    //assert(root->operator ==(*b));
+    assert(root->is_same_node_in_tree(*b));
+    //FIXME: need an implementation
 }

@@ -231,6 +231,12 @@ node_iterator node::find_child(const pos_move &m)
     return children.end();
 }
 
+bool node::is_same_node_in_tree(const node &b) const
+{
+    /* true if they should be in the same node */
+    return !(my_turn != b.my_turn || depth != b.depth || our_move != b.our_move || opp_move != b.opp_move);
+}
+
 bool node::operator ==(const node &b) const
 {
     return !(*this != b);
@@ -238,9 +244,7 @@ bool node::operator ==(const node &b) const
 
 bool node::operator !=(const node &b) const
 {
-    //return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
-    //the pointer addresses won't be the same in different MPI nodes
-    return my_turn != b.my_turn || depth != b.depth ||
+    return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
            our_move != b.our_move || opp_move != b.opp_move || visits != b.visits || scores != b.scores;
 }
 
