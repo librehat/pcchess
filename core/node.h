@@ -81,16 +81,16 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & const_cast<bool &>(my_turn);
-        ar & parent;
-        ar & children;
-        ar & our_curr;
-        ar & opp_curr;
-        ar & our_move;
-        ar & opp_move;
-        ar & depth;
-        ar & visits;
-        ar & scores;
+        ar & BOOST_SERIALIZATION_NVP(const_cast<bool &>(my_turn));
+        ar & BOOST_SERIALIZATION_NVP(parent);
+        ar & BOOST_SERIALIZATION_NVP(children);
+        ar & BOOST_SERIALIZATION_NVP(our_curr);
+        ar & BOOST_SERIALIZATION_NVP(opp_curr);
+        ar & BOOST_SERIALIZATION_NVP(our_move);
+        ar & BOOST_SERIALIZATION_NVP(opp_move);
+        ar & BOOST_SERIALIZATION_NVP(depth);
+        ar & BOOST_SERIALIZATION_NVP(visits);
+        ar & BOOST_SERIALIZATION_NVP(scores);
     }
 
     static int total_simulations;

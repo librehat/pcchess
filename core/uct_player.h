@@ -21,6 +21,7 @@ public:
 
     node *get_tree() const;
     void text_archive_tree(std::ostream &os) const;
+    void xml_archive_tree(std::ostream &os) const;
 
 protected:
     node *root;
@@ -30,8 +31,8 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<abstract_player>(*this);
-        ar & root;
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(abstract_player);
+        ar & BOOST_SERIALIZATION_NVP(root);
     }
 };
 

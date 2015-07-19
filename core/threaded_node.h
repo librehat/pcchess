@@ -25,7 +25,7 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<node>(*this);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(node);
     }
 
     static std::atomic<int> total_simulations;

@@ -69,13 +69,15 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & pieces;
-        ar & move_history;
-        ar & const_cast<bool &>(opposite_player);
-        ar & const_cast<abstract_player* &>(opponent);
-        ar & checked;
-        ar & checkmated;
+        ar & BOOST_SERIALIZATION_NVP(pieces);
+        ar & BOOST_SERIALIZATION_NVP(move_history);
+        ar & BOOST_SERIALIZATION_NVP(const_cast<bool &>(opposite_player));
+        ar & BOOST_SERIALIZATION_NVP(const_cast<abstract_player* &>(opponent));
+        ar & BOOST_SERIALIZATION_NVP(checked);
+        ar & BOOST_SERIALIZATION_NVP(checkmated);
     }
 };
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(abstract_player)
 
 #endif //ABSTRACT_PlAYER_H

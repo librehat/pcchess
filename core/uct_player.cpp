@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
 #include <chrono>
 
 using namespace std;
@@ -84,5 +85,11 @@ node* uct_player::get_tree() const
 void uct_player::text_archive_tree(ostream &os) const
 {
     boost::archive::text_oarchive oa(os);
+    oa << BOOST_SERIALIZATION_NVP(*root);
+}
+
+void uct_player::xml_archive_tree(ostream &os) const
+{
+    boost::archive::xml_oarchive oa(os);
     oa << BOOST_SERIALIZATION_NVP(*root);
 }

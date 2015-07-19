@@ -76,7 +76,11 @@ int main(int argc, char** argv)
         our_sims += our->get_total_simulations();
         opp_sims += opp->get_total_simulations();
 
-        opp->text_archive_tree(std::cout);
+        //opp->text_archive_tree(std::cout);
+        fstream fs;
+        fs.open("/tmp/xml_archive.xml", ios_base::out);
+        opp->xml_archive_tree(fs);
+        fs.close();
 
         delete our;
         delete opp;

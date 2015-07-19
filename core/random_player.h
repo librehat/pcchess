@@ -20,7 +20,8 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<abstract_player>(*this);
+        //ar & boost::serialization::base_object<abstract_player>(*this);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(abstract_player);
     }
 };
 
