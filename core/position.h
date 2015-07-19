@@ -3,7 +3,6 @@
 
 #include <array>
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
 #include <boost/mpi/datatype.hpp>
 
 class position
@@ -45,8 +44,8 @@ typedef std::array<position, 2> pos_move;//moving a piece from move[0] to move[1
 template<class Archive>
 void serialize(Archive &ar, pos_move &p, const unsigned int version)
 {
-    ar & BOOST_SERIALIZATION_NVP(p[0]);
-    ar & BOOST_SERIALIZATION_NVP(p[1]);
+    ar & p[0];
+    ar & p[1];
 }
 
 BOOST_IS_MPI_DATATYPE(position)
