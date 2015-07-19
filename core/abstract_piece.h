@@ -70,7 +70,7 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_NVP(const_cast<bool &>(m_opposite));
+        ar & boost::serialization::make_nvp("m_opposite", const_cast<bool &>(m_opposite));
         ar & BOOST_SERIALIZATION_NVP(pos);
         ar & BOOST_SERIALIZATION_NVP(avail_moves);
     }

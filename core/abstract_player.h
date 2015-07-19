@@ -71,8 +71,8 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(pieces);
         ar & BOOST_SERIALIZATION_NVP(move_history);
-        ar & BOOST_SERIALIZATION_NVP(const_cast<bool &>(opposite_player));
-        ar & BOOST_SERIALIZATION_NVP(const_cast<abstract_player* &>(opponent));
+        ar & boost::serialization::make_nvp("opposite_player", const_cast<bool &>(opposite_player));
+        ar & boost::serialization::make_nvp("opponent", const_cast<abstract_player *&>(opponent));
         ar & BOOST_SERIALIZATION_NVP(checked);
         ar & BOOST_SERIALIZATION_NVP(checkmated);
     }

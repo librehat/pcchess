@@ -5,7 +5,6 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
 #include "position.h"
 #include "abstract_player.h"
 
@@ -81,7 +80,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_NVP(const_cast<bool &>(my_turn));
+        ar & boost::serialization::make_nvp("my_turn", const_cast<bool &>(my_turn));
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
         ar & BOOST_SERIALIZATION_NVP(our_curr);
