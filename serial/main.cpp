@@ -9,6 +9,7 @@
 #include "../core/threaded_uct_player.h"
 #include "unistd.h"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -48,12 +49,9 @@ int main(int argc, char** argv)
     int our_sims = 0;
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        abstract_player *our;
-        uct_player *opp;
+        uct_player *opp, *our;
         opp = new uct_player(nullptr, true);
-        //opp = new random_player(nullptr, true);
         our = new threaded_uct_player(opp, false);
-        //our = new random_player(opp, false);
         opp->set_opponent_player(our);
         our->init_pieces();
         opp->init_pieces();
@@ -74,6 +72,11 @@ int main(int argc, char** argv)
 
         our_sims += our->get_total_simulations();
         opp_sims += opp->get_total_simulations();
+
+        ofstream fs;
+        fs.open("/tmp/xml_archive.xml", ios_base::out);
+        uct_player::xml_archive_tree(fs, our->get_tree());
+        fs.close();
 
         delete our;
         delete opp;

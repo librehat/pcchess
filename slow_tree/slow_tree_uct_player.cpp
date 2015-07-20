@@ -2,8 +2,10 @@
 #include "../core/random_player.h"
 #include "../core/game.h"
 #include "../core/serialization_export.h"
+#include <boost/archive/xml_oarchive.hpp>
 #include <stdexcept>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
 using namespace chrono;
@@ -215,10 +217,21 @@ void slow_tree_uct_player::sync_tree()
 
     int size = world_comm.size();
     vector<node*> tree_vec;//TODO is there a memory leak?
+    tree_vec.resize(size);
 
     mpi::all_gather(world_comm, root, tree_vec);
 
     int rank = world_comm.rank();
+/*#ifdef _DEBUG
+    if (rank == 0) {
+        ofstream fs;
+        fs.open("/tmp/debug_slow_tree.xml", ios_base::out);
+        boost::archive::xml_oarchive oa(fs);
+        oa << boost::serialization::make_nvp("0_tree", root);
+        oa << boost::serialization::make_nvp("1_tree", tree_vec[1]);
+        fs.close();
+    }
+#endif*/
     for(int i = 0; i < size; ++i) {
         if (rank == i) {//don't merge itself
             continue;

@@ -151,7 +151,7 @@ bool node::simulate()
     }
 }
 
-void node::merge(node &b)
+void node::merge(node &b)//FIXME: somehow it causes MPI address not mapped error
 {
     assert(is_same_place_in_tree(b));
     visits += b.visits;

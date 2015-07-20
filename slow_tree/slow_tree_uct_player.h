@@ -35,7 +35,7 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<uct_player>(*this);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(uct_player);
     }
 
     static boost::mpi::communicator world_comm;

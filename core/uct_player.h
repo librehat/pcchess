@@ -20,8 +20,9 @@ public:
     virtual int get_total_simulations() const;
 
     node *get_tree() const;
-    void text_archive_tree(std::ostream &os) const;
-    void xml_archive_tree(std::ostream &os) const;
+
+    static void text_archive_tree(std::ostream &os, node *);
+    static void xml_archive_tree(std::ostream &os, node *);
 
 protected:
     node *root;

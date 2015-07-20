@@ -82,14 +82,14 @@ node* uct_player::get_tree() const
     return root;
 }
 
-void uct_player::text_archive_tree(ostream &os) const
+void uct_player::text_archive_tree(ostream &os, node *b)
 {
     boost::archive::text_oarchive oa(os);
-    oa << boost::serialization::make_nvp("tree", root);
+    oa << boost::serialization::make_nvp("tree", b);
 }
 
-void uct_player::xml_archive_tree(ostream &os) const
+void uct_player::xml_archive_tree(ostream &os, node *b)
 {
     boost::archive::xml_oarchive oa(os);
-    oa << boost::serialization::make_nvp("tree", root);
+    oa << boost::serialization::make_nvp("tree", b);
 }

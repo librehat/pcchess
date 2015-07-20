@@ -17,8 +17,8 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     int rank = world_comm.rank();
 
-    //random_player rp(nullptr, true);
-    uct_player rp(nullptr, true);
+    random_player rp(nullptr, true);
+    //uct_player rp(nullptr, true);
     slow_tree_uct_player stup(&rp, false);
     rp.set_opponent_player(&stup);
     rp.init_pieces();
