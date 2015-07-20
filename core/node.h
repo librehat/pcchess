@@ -28,6 +28,12 @@ public:
     virtual void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
     virtual bool simulate();
 
+    void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree
+
+    void backpropagate(const int &score);
+    int children_size() const;
+    node* release_child(boost::ptr_list<node>::iterator i);
+
     /*
      * select child according to the visit times
      * be aware of the return value could be nullptr (if children is empty)
@@ -35,11 +41,6 @@ public:
     boost::ptr_list<node>::iterator get_best_child();//best child which has highest visits
     boost::ptr_list<node>::iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
     boost::ptr_list<node>::iterator child_end();
-
-    void backpropagate(const int &score);
-    node* release_child(boost::ptr_list<node>::iterator i);
-
-    void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree
 
     /*
      * find the children with same moves (our_move or opp_move, up to the parental my_turn value).

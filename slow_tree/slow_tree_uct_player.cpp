@@ -209,6 +209,10 @@ void slow_tree_uct_player::broadcast_tree()
 
 void slow_tree_uct_player::sync_tree()
 {
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] children_size (before sync): " << root->children_size() << endl;
+#endif
+
     int size = world_comm.size();
     vector<node*> tree_vec;//TODO is there a memory leak?
 
@@ -221,4 +225,8 @@ void slow_tree_uct_player::sync_tree()
         }
         root->merge(*(tree_vec[i]));
     }
+
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] children_size (after sync): " << root->children_size() << endl;
+#endif
 }

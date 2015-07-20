@@ -151,6 +151,59 @@ bool node::simulate()
     }
 }
 
+void node::merge(node &b)
+{
+    assert(is_same_place_in_tree(b));
+    visits += b.visits;
+    scores += b.scores;
+
+    /* The node b will give its children to us, of which is either merged or pushed back as a new child */
+    for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
+        bool merged = false;
+        for (auto src_it = children.begin(); src_it != children.end(); ++src_it) {
+            if (src_it->is_same_place_in_tree(*target_it)) {//we already have an equivalent node
+                merged = true;
+                node* target = b.release_child(target_it);
+                src_it->merge(*target);
+                delete target;
+                break;
+            }
+        }
+
+        //this node is **new** to us
+        if (!merged) {
+            node* target = b.release_child(target_it);
+            children.push_back(target);
+        }
+    }
+}
+
+node_iterator node::child_end()
+{
+    return children.end();
+}
+
+int node::children_size() const
+{
+    return children.size();
+}
+
+void node::backpropagate(const int &score)
+{
+    if (parent) {
+        parent->backpropagate(score);
+    }
+    scores += score;
+}
+
+node* node::release_child(node_iterator i)
+{
+    assert(i != children.end());
+    node* c = children.release(i).release();
+    c->parent = nullptr;
+    return c;
+}
+
 node_iterator node::get_best_child()
 {
     auto best = children.end();
@@ -182,54 +235,6 @@ node_iterator node::get_best_child_uct()
         }
     }
     return best_child;
-}
-
-node_iterator node::child_end()
-{
-    return children.end();
-}
-
-void node::backpropagate(const int &score)
-{
-    if (parent) {
-        parent->backpropagate(score);
-    }
-    scores += score;
-}
-
-node* node::release_child(node_iterator i)
-{
-    assert(i != children.end());
-    node* c = children.release(i).release();
-    c->parent = nullptr;
-    return c;
-}
-
-void node::merge(node &b)
-{
-    assert(is_same_place_in_tree(b));
-    visits += b.visits;
-    scores += b.scores;
-
-    /* The node b will give its children to us, of which is either merged or pushed back as a new child */
-    for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
-        bool merged = false;
-        for (auto src_it = children.begin(); src_it != children.end(); ++src_it) {
-            if (src_it->is_same_place_in_tree(*target_it)) {//we already have an equivalent node
-                merged = true;
-                node* target = b.release_child(target_it);
-                src_it->merge(*target);
-                delete target;
-                break;
-            }
-        }
-
-        //this node is **new** to us
-        if (!merged) {
-            node* target = b.release_child(target_it);
-            children.push_back(target);
-        }
-    }
 }
 
 node_iterator node::find_child(const pos_move &m)
