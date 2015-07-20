@@ -9,7 +9,6 @@
 #include "../core/threaded_uct_player.h"
 #include "unistd.h"
 #include <iostream>
-#include <fstream>
 
 using namespace std;
 
@@ -53,8 +52,8 @@ int main(int argc, char** argv)
         uct_player *opp;
         opp = new uct_player(nullptr, true);
         //opp = new random_player(nullptr, true);
-        //our = new threaded_uct_player(think_time, opp, false);
-        our = new random_player(opp, false);
+        our = new threaded_uct_player(opp, false);
+        //our = new random_player(opp, false);
         opp->set_opponent_player(our);
         our->init_pieces();
         opp->init_pieces();
@@ -75,12 +74,6 @@ int main(int argc, char** argv)
 
         our_sims += our->get_total_simulations();
         opp_sims += opp->get_total_simulations();
-
-        //opp->text_archive_tree(std::cout);
-        fstream fs;
-        fs.open("/tmp/xml_archive.xml", ios_base::out);
-        opp->xml_archive_tree(fs);
-        fs.close();
 
         delete our;
         delete opp;

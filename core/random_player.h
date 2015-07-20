@@ -2,7 +2,6 @@
 #define RANDOM_PLAYER_H
 
 #include "abstract_player.h"
-#include <random>
 
 class random_player : public abstract_player
 {
@@ -13,9 +12,6 @@ public:
     bool think_next_move(pos_move &_move, const board &bd);
 
 private:
-    static std::random_device device;
-    std::default_random_engine generator;
-
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version)

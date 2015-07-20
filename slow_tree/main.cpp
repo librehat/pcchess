@@ -1,6 +1,7 @@
 #include "slow_tree_uct_player.h"
 #include "../core/game.h"
 #include "../core/random_player.h"
+#include "../core/uct_player.h"
 #include <boost/mpi.hpp>
 
 using namespace std;
@@ -16,10 +17,14 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     int rank = world_comm.rank();
 
-    random_player rp(nullptr, true);
+    //random_player rp(nullptr, true);
+    uct_player rp(nullptr, true);
     slow_tree_uct_player stup(&rp, false);
+    rp.set_opponent_player(&stup);
     rp.init_pieces();
     stup.init_pieces();
+
+    game::step_time = 2;
 
     if (rank == 0) {//master plays the game
         game g(&stup, &rp);
@@ -40,6 +45,9 @@ int main(int argc, char **argv)
     }
 
     int sims = stup.get_total_simulations(), sum_sims = 0;
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] simulations : " << sims << endl;
+#endif
     mpi::reduce(world_comm, sims, sum_sims, plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
     if (rank == 0) {
         cout << "Total Simulations: " << sum_sims << " v.s. " << rp.get_total_simulations() << endl;

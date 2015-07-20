@@ -1,22 +1,22 @@
 #include "random_player.h"
 #include <vector>
+#include <random>
 
 using namespace std;
 
 random_player::random_player(const abstract_player * const opp, bool opposite) :
-    abstract_player(opp, opposite),
-    generator(device())
+    abstract_player(opp, opposite)
 {}
 
 random_player::random_player(const abstract_player &b) :
-    abstract_player(b),
-    generator(device())
+    abstract_player(b)
 {}
-
-random_device random_player::device;
 
 bool random_player::think_next_move(pos_move &_move, const board &bd)
 {
+    random_device device;
+    static thread_local mt19937 generator(device());
+
     vector<pos_move> all_avail_moves;
     for (auto &&p : pieces) {
         p->update_moves(bd);
