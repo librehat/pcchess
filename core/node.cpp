@@ -38,16 +38,6 @@ node::~node()
     }
 }
 
-int node::get_visits() const
-{
-    return visits;
-}
-
-int node::get_scores() const
-{
-    return scores;
-}
-
 double node::get_value() const
 {
     return static_cast<double>(scores) / static_cast<double>(visits);
@@ -66,7 +56,7 @@ const pos_move& node::get_opp_move() const
 double node::get_uct_val() const
 {
 	if (parent) {
-		return get_value() + uct_constant * sqrt(log(parent->get_visits()) / visits);
+        return get_value() + uct_constant * sqrt(log(parent->visits) / visits);
 	} else {
 		return 0;
 	}
@@ -215,15 +205,42 @@ node* node::release_child(node_iterator i)
     return c;
 }
 
+void node::merge(node &b)
+{
+    assert(is_same_place_in_tree(b));
+    visits += b.visits;
+    scores += b.scores;
+
+    /* The node b will give its children to us, of which is either merged or pushed back as a new child */
+    for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
+        bool merged = false;
+        for (auto src_it = children.begin(); src_it != children.end(); ++src_it) {
+            if (src_it->is_same_place_in_tree(*target_it)) {//we already have an equivalent node
+                merged = true;
+                node* target = b.release_child(target_it);
+                src_it->merge(*target);
+                delete target;
+                break;
+            }
+        }
+
+        //this node is **new** to us
+        if (!merged) {
+            node* target = b.release_child(target_it);
+            children.push_back(target);
+        }
+    }
+}
+
 node_iterator node::find_child(const pos_move &m)
 {
     for (auto it = children.begin(); it != children.end(); ++it) {
         if (my_turn) {
-            if (it->get_our_move() == m) {
+            if (it->our_move == m) {
                 return it;
             }
         } else {
-            if (it->get_opp_move() == m) {
+            if (it->opp_move == m) {
                 return it;
             }
         }
@@ -231,9 +248,9 @@ node_iterator node::find_child(const pos_move &m)
     return children.end();
 }
 
-bool node::is_same_node_in_tree(const node &b) const
+bool node::is_same_place_in_tree(const node &b) const
 {
-    /* true if they should be in the same node */
+    /* true if they should be in the same place */
     return !(my_turn != b.my_turn || depth != b.depth || our_move != b.our_move || opp_move != b.opp_move);
 }
 

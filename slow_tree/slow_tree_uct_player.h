@@ -30,7 +30,6 @@ private:
 
     void broadcast_tree();
     void sync_tree();
-    void merge_tree(node *b);
 
     friend class boost::serialization::access;
     template<class Archive>

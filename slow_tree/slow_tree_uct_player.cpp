@@ -216,15 +216,9 @@ void slow_tree_uct_player::sync_tree()
 
     int rank = world_comm.rank();
     for(int i = 0; i < size; ++i) {
-        if (rank == i) {
+        if (rank == i) {//don't merge itself
             continue;
         }
-        merge_tree(tree_vec[i]);
+        root->merge(*(tree_vec[i]));
     }
-}
-
-void slow_tree_uct_player::merge_tree(node *b)
-{
-    assert(root->is_same_node_in_tree(*b));
-    //FIXME: need an implementation
 }

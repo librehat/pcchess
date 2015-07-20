@@ -15,8 +15,6 @@ public:
     node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
     virtual ~node();
 
-    int get_visits() const;
-    int get_scores() const;
     double get_value() const;
     const pos_move& get_our_move() const;
     const pos_move& get_opp_move() const;
@@ -41,13 +39,15 @@ public:
     void backpropagate(const int &score);
     node* release_child(boost::ptr_list<node>::iterator i);
 
+    void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree
+
     /*
      * find the children with same moves (our_move or opp_move, up to the parental my_turn value).
      * return nullptr if no such child
      */
     boost::ptr_list<node>::iterator find_child(const pos_move &m);
 
-    bool is_same_node_in_tree(const node &b) const;
+    bool is_same_place_in_tree(const node &b) const;
 
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
