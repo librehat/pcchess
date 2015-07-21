@@ -216,27 +216,21 @@ void slow_tree_uct_player::sync_tree()
 #endif
 
     int size = world_comm.size();
-    vector<node*> tree_vec;//TODO is there a memory leak?
-    tree_vec.resize(size);
+    vector<node*> tree_vec;
 
     mpi::all_gather(world_comm, root, tree_vec);
 
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] after mpi::all_gather" << endl;
+#endif
+
     int rank = world_comm.rank();
-/*#ifdef _DEBUG
-    if (rank == 0) {
-        ofstream fs;
-        fs.open("/tmp/debug_slow_tree.xml", ios_base::out);
-        boost::archive::xml_oarchive oa(fs);
-        oa << boost::serialization::make_nvp("0_tree", root);
-        oa << boost::serialization::make_nvp("1_tree", tree_vec[1]);
-        fs.close();
-    }
-#endif*/
     for(int i = 0; i < size; ++i) {
         if (rank == i) {//don't merge itself
             continue;
         }
         root->merge(*(tree_vec[i]));
+        delete tree_vec[i];
     }
 
 #ifdef _DEBUG

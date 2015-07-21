@@ -144,9 +144,11 @@ bool node::simulate()
     if ((our_hist.empty() && my_turn) || (opp_hist.empty() && !my_turn)) {//can't expand the tree if the current player can't move
         visits++;
         scores += result;
+        backpropagate(result);
         return false;
     } else {
         expand(our_hist, opp_hist, result);//this very node is definitely the parental node
+        backpropagate(result);
         return true;
     }
 }
@@ -173,6 +175,7 @@ void node::merge(node &b)//FIXME: somehow it causes MPI address not mapped error
         //this node is **new** to us
         if (!merged) {
             node* target = b.release_child(target_it);
+            target->parent = this;
             children.push_back(target);
         }
     }
@@ -191,9 +194,9 @@ int node::children_size() const
 void node::backpropagate(const int &score)
 {
     if (parent) {
+        parent->scores += score;//TODO should we backpropagate visits?
         parent->backpropagate(score);
     }
-    scores += score;
 }
 
 node* node::release_child(node_iterator i)
