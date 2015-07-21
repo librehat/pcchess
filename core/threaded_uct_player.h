@@ -8,10 +8,10 @@
 class threaded_uct_player : public uct_player
 {
 public:
-    threaded_uct_player(const abstract_player* const _opp = nullptr, bool opposite = false, int _threads = 0);
+    threaded_uct_player(bool opposite = false, int _threads = 0);
 
-    bool think_next_move(pos_move &_move, const board &);
-    void opponent_moved(const pos_move &m);
+    bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent);
+    void opponent_moved(const pos_move &m, const abstract_player &opponent);
     int get_total_simulations() const;
 
 private:

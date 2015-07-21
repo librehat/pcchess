@@ -50,9 +50,8 @@ int main(int argc, char** argv)
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
         uct_player *opp, *our;
-        opp = new uct_player(nullptr, true);
-        our = new threaded_uct_player(opp, false);
-        opp->set_opponent_player(our);
+        opp = new uct_player(true);
+        our = new threaded_uct_player(false);
         our->init_pieces();
         opp->init_pieces();
         game g(our, opp);

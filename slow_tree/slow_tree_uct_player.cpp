@@ -13,16 +13,16 @@ namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
-slow_tree_uct_player::slow_tree_uct_player(const abstract_player * const _opp, bool opposite) :
-    uct_player(_opp, opposite)
+slow_tree_uct_player::slow_tree_uct_player(bool opposite) :
+    uct_player(opposite)
 {}
 
 mpi::communicator slow_tree_uct_player::world_comm;
 
-bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &)
+bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const abstract_player &opponent)
 {
     if (!root) {
-        root = new node(new random_player(*this), new random_player(*opponent), true);
+        root = new node(new random_player(*this), new random_player(opponent), true);
         broadcast_tree();
     }
 
@@ -76,7 +76,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &)
     return true;
 }
 
-void slow_tree_uct_player::opponent_moved(const pos_move &m)
+void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent)
 {
     vector<mpi::request> request_vec;
     for (int i = 1; i < world_comm.size(); ++i) {
@@ -103,7 +103,7 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
         root = new_root;
     } else {
         delete root;
-        root = new node(new random_player(*this), new random_player(*opponent), true);
+        root = new node(new random_player(*this), new random_player(opponent), true);
         broadcast_tree();
     }
 }
@@ -217,6 +217,17 @@ void slow_tree_uct_player::sync_tree()
 
     int size = world_comm.size();
     vector<node*> tree_vec;
+
+    //
+    ofstream fs;
+    string file("/tmp/");
+    file += to_string(world_comm.rank());
+    file += ".xml";
+    fs.open(file, ios_base::out);
+    xml_archive_tree(fs, root);
+    fs.close();
+    cout << "[" << world_comm.rank() << "] after xml archive" << endl;
+    //
 
     mpi::all_gather(world_comm, root, tree_vec);
 

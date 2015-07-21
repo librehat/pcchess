@@ -11,8 +11,8 @@
 using namespace std;
 using namespace chrono;
 
-uct_player::uct_player(const abstract_player* const _opp, bool opposite) :
-    abstract_player(_opp, opposite),
+uct_player::uct_player(bool opposite) :
+    abstract_player(opposite),
     root(nullptr)
 {}
 
@@ -23,13 +23,13 @@ uct_player::~uct_player()
     }
 }
 
-bool uct_player::think_next_move(pos_move &_move, const board &)
+bool uct_player::think_next_move(pos_move &_move, const board &, const abstract_player &opponent)
 {
     duration<double> think_time = duration<double>(game::step_time);
     time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals{
 
     if (!root) {
-        root = new node(new random_player(*this), new random_player(*opponent), true);
+        root = new node(new random_player(*this), new random_player(opponent), true);
     }
 
     for (duration<double> elapsed = steady_clock::now() - start;
@@ -55,7 +55,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &)
     return true;
 }
 
-void uct_player::opponent_moved(const pos_move &m)
+void uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent)
 {
     if (!root) {
         return;
@@ -66,7 +66,7 @@ void uct_player::opponent_moved(const pos_move &m)
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
     } else {
-        new_root = new node(new random_player(*this), new random_player(*opponent), true);
+        new_root = new node(new random_player(*this), new random_player(opponent), true);
     }
     delete root;
     root = new_root;

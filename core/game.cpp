@@ -29,21 +29,21 @@ abstract_player* game::playout(bool we_first)
     abstract_player* second = we_first ? opp_player : our_player;
 
     for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
-        movable = first->think_next_move(next_move, m_board);
+        movable = first->think_next_move(next_move, m_board, *second);
         if (!movable || first->is_checkmated()) {
             return second;
         } else {
             move_piece(next_move);
             first->add_history(next_move);
-            second->opponent_moved(next_move);
+            second->opponent_moved(next_move, *first);
         }
-        movable = second->think_next_move(next_move, m_board);
+        movable = second->think_next_move(next_move, m_board, *first);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
             move_piece(next_move);
             second->add_history(next_move);
-            first->opponent_moved(next_move);
+            first->opponent_moved(next_move, *second);
         }
     }
 

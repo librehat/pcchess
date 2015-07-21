@@ -6,10 +6,10 @@
 class random_player : public abstract_player
 {
 public:
-    random_player(const abstract_player* const opp = nullptr, bool opposite = false);
+    random_player(bool opposite = false);
     random_player(const abstract_player &b);
 
-    bool think_next_move(pos_move &_move, const board &bd);
+    bool think_next_move(pos_move &_move, const board &bd, const abstract_player &opponent);
 
 private:
     friend class boost::serialization::access;

@@ -11,9 +11,8 @@
 
 using namespace std;
 
-abstract_player::abstract_player(const abstract_player * const opp, bool opposite) :
+abstract_player::abstract_player(bool opposite) :
     opposite_player(opposite),
-    opponent(opp),
     checked(false),
     checkmated(false)
 {}
@@ -21,7 +20,6 @@ abstract_player::abstract_player(const abstract_player * const opp, bool opposit
 abstract_player::abstract_player(const abstract_player &b) :
     move_history(b.move_history),
     opposite_player(b.opposite_player),
-    opponent(b.opponent),
     checked(b.checked),
     checkmated(b.checkmated)
 {
@@ -159,9 +157,4 @@ bool abstract_player::is_checkmated() const
 const list<p_piece>& abstract_player::get_pieces() const
 {
     return pieces;
-}
-
-void abstract_player::set_opponent_player(const abstract_player * const _opp)
-{
-    opponent = _opp;
 }
