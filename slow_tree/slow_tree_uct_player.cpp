@@ -218,22 +218,7 @@ void slow_tree_uct_player::sync_tree()
     int size = world_comm.size();
     vector<node*> tree_vec;
 
-    //
-    ofstream fs;
-    string file("/tmp/");
-    file += to_string(world_comm.rank());
-    file += ".xml";
-    fs.open(file, ios_base::out);
-    xml_archive_tree(fs, root);
-    fs.close();
-    cout << "[" << world_comm.rank() << "] after xml archive" << endl;
-    //
-
     mpi::all_gather(world_comm, root, tree_vec);
-
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] after mpi::all_gather" << endl;
-#endif
 
     int rank = world_comm.rank();
     for(int i = 0; i < size; ++i) {
