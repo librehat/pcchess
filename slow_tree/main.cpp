@@ -2,6 +2,7 @@
 #include "../core/game.h"
 #include "../core/random_player.h"
 #include "../core/uct_player.h"
+#include "../core/threaded_uct_player.h"
 #include <boost/mpi.hpp>
 
 using namespace std;
@@ -17,8 +18,8 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     int rank = world_comm.rank();
 
-    random_player rp(true);
-    //uct_player rp(true);
+    //random_player rp(true);
+    threaded_uct_player rp(true);
     slow_tree_uct_player stup(false);
     rp.init_pieces();
     stup.init_pieces();
@@ -35,12 +36,12 @@ int main(int argc, char **argv)
         } else {
             cout << "Draw" << endl;
         }
+
+        for (int i = 1; i < world_comm.size(); ++i) {
+            world_comm.send(i, slow_tree_uct_player::TAG_EXIT);
+        }
     } else {
         stup.do_slave_job();
-    }
-
-    for (int i = 1; i < world_comm.size(); ++i) {
-        world_comm.send(i, slow_tree_uct_player::TAG_EXIT);
     }
 
     int sims = stup.get_total_simulations(), sum_sims = 0;

@@ -104,6 +104,9 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_play
     } else {
         delete root;
         root = new node(new random_player(*this), new random_player(opponent), true);
+        for (int i = 1; i < world_comm.size(); ++i) {
+            world_comm.send(i, TAG_BROADCAST_TREE);
+        }
         broadcast_tree();
     }
 }
@@ -113,11 +116,11 @@ void slow_tree_uct_player::do_slave_job()
     int tag;
     mpi::status status;
 
-    do {
-        if (!root) {
-            broadcast_tree();
-        }
+    if (!root) {
+        broadcast_tree();
+    }
 
+    do {
         status = world_comm.recv(0, mpi::any_tag);
         tag = status.tag();
 
@@ -133,6 +136,9 @@ void slow_tree_uct_player::do_slave_job()
             break;
         case TAG_COMP:
             slave_compute();
+            break;
+        case TAG_BROADCAST_TREE:
+            broadcast_tree();
             break;
         case TAG_ERASE:
             delete root;
@@ -164,7 +170,7 @@ void slow_tree_uct_player::slave_opponent_moved()
         new_root = root->release_child(root_iter);
     }
     delete root;
-    root = new_root;//if it's nullptr, the slave loop would let it go into broadcast_tree
+    root = new_root;
 }
 
 void slow_tree_uct_player::slave_select_child()
