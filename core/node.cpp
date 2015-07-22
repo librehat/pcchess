@@ -262,6 +262,11 @@ bool node::is_same_place_in_tree(const node &b) const
     return !(my_turn != b.my_turn || depth != b.depth || our_move != b.our_move || opp_move != b.opp_move);
 }
 
+bool node::is_basically_the_same(const node &b) const
+{
+    return !(!is_same_place_in_tree(b) || visits != b.visits || scores != b.scores || children.size() != b.children.size());
+}
+
 bool node::operator ==(const node &b) const
 {
     return !(*this != b);
@@ -269,8 +274,7 @@ bool node::operator ==(const node &b) const
 
 bool node::operator !=(const node &b) const
 {
-    return my_turn != b.my_turn || parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr ||
-           our_move != b.our_move || opp_move != b.opp_move || visits != b.visits || scores != b.scores;
+    return parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr || !is_basically_the_same(b);
 }
 
 int node::get_total_simulations()

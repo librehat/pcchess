@@ -44,15 +44,22 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     }
     request_vec.clear();
 
+    long int synced_point = 0, next_sync_point = sync_period;
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        if ((elapsed.count() % sync_period) == 0) {
+        long int current_point = elapsed.count();
+        if (synced_point < current_point && current_point >= next_sync_point) {
             for (int i = 1; i < world_size; ++i) {
                 world_comm.send(i, TAG_SYNC);
             }
+#ifdef _DEBUG
+            cout << "sync in the loop, time count: " << current_point << endl;
+#endif
             sync_tree();
+            synced_point = current_point;
+            next_sync_point = synced_point + sync_period;
         }
         if (!root->select()) {
             this_thread::sleep_for(think_time - elapsed);//we may need to wait for other nodes
@@ -262,10 +269,14 @@ void slow_tree_uct_player::sync_tree()
 
     int rank = world_comm.rank();
     for(int i = 0; i < world_size; ++i) {
-        if (rank == i) {//don't merge itself
+        //don't merge itself
+        if (rank == i) {
             continue;
         }
-        root->merge(*(tree_vec[i]));
+        //merge only if they're different (they might be basically the same if nothing happened between two syncs)
+        if (!root->is_basically_the_same(*(tree_vec[i]))) {
+            root->merge(*(tree_vec[i]));
+        }
         delete tree_vec[i];
     }
 

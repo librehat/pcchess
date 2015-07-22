@@ -49,6 +49,7 @@ public:
     boost::ptr_list<node>::iterator find_child(const pos_move &m);
 
     bool is_same_place_in_tree(const node &b) const;
+    bool is_basically_the_same(const node &b) const;//everything is the same except for those pointers such as parent
 
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
@@ -59,7 +60,6 @@ protected:
     const bool my_turn;
 
     node* parent;
-    //std::list<node *> children;
     boost::ptr_list<node> children;
 
     //"current": the state in this node
