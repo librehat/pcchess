@@ -1,3 +1,6 @@
+/*
+ * random_player plays the game totally randomly based on currently available moves
+ */
 #ifndef RANDOM_PLAYER_H
 #define RANDOM_PLAYER_H
 

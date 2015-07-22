@@ -1,3 +1,6 @@
+/*
+ * threaded_uct_player (together with threaded_node) implements tree-parallelisation with local lock
+ */
 #ifndef THREADED_UCT_PLAYER_H
 #define THREADED_UCT_PLAYER_H
 

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
             rounds = atoi(optarg);
             break;
         case 't':
-            game::step_time = atoi(optarg);
+            game::step_time = atol(optarg);
             break;
         case 'p':
             enable_print = true;
@@ -35,7 +35,7 @@ int main(int argc, char** argv)
         default:
             cout << "Command-line options:\n"
                  << "  -r <number of rounds>\n"
-                 << "  -t <maximum think time (s)>\n"
+                 << "  -t <maximum think time (milliseconds)>\n"
                  << "  -p\tprint out the board after each round\n"
                  << "  -c\tuse Chinese characters in the board\n"
                  << endl;

@@ -20,11 +20,11 @@ int main(int argc, char **argv)
 
     //random_player rp(true);
     threaded_uct_player rp(true);
-    slow_tree_uct_player stup(false);
+    slow_tree_uct_player stup(500, false);
     rp.init_pieces();
     stup.init_pieces();
 
-    game::step_time = 2;
+    game::step_time = 1500;
 
     if (rank == 0) {//master plays the game
         game g(&stup, &rp);

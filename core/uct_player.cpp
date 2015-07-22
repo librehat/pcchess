@@ -25,16 +25,16 @@ uct_player::~uct_player()
 
 bool uct_player::think_next_move(pos_move &_move, const board &, const abstract_player &opponent)
 {
-    duration<double> think_time = duration<double>(game::step_time);
-    time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals{
+    milliseconds think_time = milliseconds(game::step_time);
+    steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
 
     if (!root) {
         root = new node(new random_player(*this), new random_player(opponent), true);
     }
 
-    for (duration<double> elapsed = steady_clock::now() - start;
+    for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
-         elapsed = steady_clock::now() - start)
+         elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
         if (!root->select()) {
             break;

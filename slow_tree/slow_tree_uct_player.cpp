@@ -5,6 +5,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 #include <stdexcept>
 #include <chrono>
+#include <thread>
 #include <fstream>
 
 using namespace std;
@@ -13,54 +14,73 @@ namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
-slow_tree_uct_player::slow_tree_uct_player(bool opposite) :
-    uct_player(opposite)
-{}
+slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool opposite) :
+    uct_player(opposite),
+    sync_period(sync_period_ms)
+{
+    assert(sync_period > 0);
+}
 
 mpi::communicator slow_tree_uct_player::world_comm;
 
 bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const abstract_player &opponent)
 {
+    milliseconds think_time = milliseconds(game::step_time);
+    steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
+
+    static int world_size = world_comm.size();
+
     if (!root) {
         root = new node(new random_player(*this), new random_player(opponent), true);
         broadcast_tree();
     }
 
     vector<mpi::request> request_vec;
-    for (int i = 1; i < world_comm.size(); ++i) {
-        request_vec.push_back(world_comm.isend(i, TAG_COMP));
+    for (int i = 1; i < world_size; ++i) {
+        request_vec.push_back(world_comm.isend(i, TAG_COMP_LOOP));
     }
-
-    duration<double> think_time = duration<double>(game::step_time);
-    time_point<steady_clock> start = steady_clock::now();//steady_clock is best suitable for measuring intervals
-    for (duration<double> elapsed = steady_clock::now() - start;
-         elapsed < think_time;
-         elapsed = steady_clock::now() - start)
-    {
-        if (!root->select()) {
-            break;
-        }
-    }
-
     for (auto &&rt : request_vec) {
         rt.wait();
     }
     request_vec.clear();
+
+    for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
+         elapsed < think_time;
+         elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
+    {
+        if ((elapsed.count() % sync_period) == 0) {
+            for (int i = 1; i < world_size; ++i) {
+                world_comm.send(i, TAG_SYNC);
+            }
+            sync_tree();
+        }
+        if (!root->select()) {
+            this_thread::sleep_for(think_time - elapsed);//we may need to wait for other nodes
+            break;
+        }
+    }
+    for (int i = 1; i < world_size; ++i) {
+        world_comm.send(i, TAG_COMP_FINISH);
+    }
+
+    for (int i = 1; i < world_size; ++i) {
+        world_comm.send(i, TAG_SYNC);
+    }
     sync_tree();
 
     auto best_child = root->get_best_child();
     if (best_child == root->child_end()) {
-        for (int i = 1; i < world_comm.size(); ++i) {
+        for (int i = 1; i < world_size; ++i) {
             world_comm.send(i, TAG_ERASE);
         }
         return false;
     }
 
     node* new_root = root->release_child(best_child);
-    for (int i = 1; i < world_comm.size(); ++i) {
+    for (int i = 1; i < world_size; ++i) {
         request_vec.push_back(world_comm.isend(i, TAG_CHILD_SELEC));
     }
-    for (int i = 1; i < world_comm.size(); ++i) {
+    for (int i = 1; i < world_size; ++i) {
         request_vec[i - 1].wait();
         request_vec[i - 1] = world_comm.isend(i, TAG_CHILD_SELEC_DATA, new_root->get_our_move());
     }
@@ -122,9 +142,8 @@ void slow_tree_uct_player::do_slave_job()
 
     do {
         status = world_comm.recv(0, mpi::any_tag);
-        tag = status.tag();
 
-        switch (tag) {
+        switch (status.tag()) {
         case TAG_SYNC:
             sync_tree();
             break;
@@ -134,8 +153,13 @@ void slow_tree_uct_player::do_slave_job()
         case TAG_CHILD_SELEC:
             slave_select_child();
             break;
-        case TAG_COMP:
+        case TAG_COMP_LOOP:
             slave_compute();
+            break;
+        case TAG_COMP_FINISH:
+#ifdef _DEBUG
+            cout << "[" << world_comm.rank() << "] seems I finished my comp_loop earlier than expected, maybe I have no move to test" << endl;
+#endif
             break;
         case TAG_BROADCAST_TREE:
             broadcast_tree();
@@ -147,7 +171,7 @@ void slow_tree_uct_player::do_slave_job()
         case TAG_EXIT:
             return;
         default:
-            throw invalid_argument("Unknown tag");
+            throw invalid_argument("received an invalid mpi tag in do_slave_job()");
         }
     } while (true);
 }
@@ -193,17 +217,27 @@ void slow_tree_uct_player::slave_compute()
         throw runtime_error("root is nullptr");
     }
 
-    duration<double> think_time = duration<double>(game::step_time);
-    time_point<steady_clock> start = steady_clock::now();
-    for (duration<double> elapsed = steady_clock::now() - start;
-         elapsed < think_time;
-         elapsed = steady_clock::now() - start)
-    {
+    mpi::request request = world_comm.irecv(0, mpi::any_tag);
+    bool cont_comp = true;
+    do {
         if (!root->select()) {
             break;
         }
-    }
-    sync_tree();
+        boost::optional<mpi::status> req_ret = request.test();
+        if (req_ret) {
+            switch (req_ret.get().tag()) {
+            case TAG_SYNC:
+                sync_tree();
+                request = world_comm.irecv(0, mpi::any_tag);//we may get a new order again
+                break;
+            case TAG_COMP_FINISH:
+                cont_comp = false;
+                break;
+            default:
+                throw invalid_argument("received an invalid mpi tag in slave_compute()");
+            }
+        }
+    } while (cont_comp);
 }
 
 void slow_tree_uct_player::broadcast_tree()
@@ -221,13 +255,13 @@ void slow_tree_uct_player::sync_tree()
     cout << "[" << world_comm.rank() << "] children_size (before sync): " << root->children_size() << endl;
 #endif
 
-    int size = world_comm.size();
+    static int world_size = world_comm.size();
     vector<node*> tree_vec;
 
     mpi::all_gather(world_comm, root, tree_vec);
 
     int rank = world_comm.rank();
-    for(int i = 0; i < size; ++i) {
+    for(int i = 0; i < world_size; ++i) {
         if (rank == i) {//don't merge itself
             continue;
         }
