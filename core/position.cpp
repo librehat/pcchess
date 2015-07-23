@@ -5,6 +5,12 @@ position::position(int _file, int _rank) :
     rank(_rank)
 {}
 
+position::position(char _file, int _rank) :
+    rank(_rank)
+{
+    file = static_cast<int>(_file - 'a');
+}
+
 position::position(const position &b)
 {
     *this = b;

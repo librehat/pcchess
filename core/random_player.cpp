@@ -22,9 +22,9 @@ bool random_player::think_next_move(pos_move &_move, const board &bd, const abst
         p->update_moves(bd);
         if (p->is_movable()) {
             pos_move mov;
-            mov[0] = p->get_position();
+            mov.from = p->get_position();
         	for (auto &&m : p->get_avail_moves()) {
-        		mov[1] = m;
+                mov.to = m;
         		all_avail_moves.push_back(mov);
         	}
         }

@@ -10,6 +10,7 @@ class position
 {
 public:
     position(int _file = 0, int _rank = 0);
+    position(char _file, int _rank = 0);
     position(const position &b);
     int file;
     int rank;
@@ -41,15 +42,6 @@ inline bool operator ==(const position &a, const position &b)
     return !(a != b);
 }
 
-typedef std::array<position, 2> pos_move;//moving a piece from move[0] to move[1]
-template<class Archive>
-void serialize(Archive &ar, pos_move &p, const unsigned int version)
-{
-    ar & boost::serialization::make_nvp("pos_move.from", p[0]);
-    ar & boost::serialization::make_nvp("pos_move.to", p[1]);
-}
-
 BOOST_IS_MPI_DATATYPE(position)
-BOOST_IS_MPI_DATATYPE(pos_move)
 
 #endif //POSITION_H

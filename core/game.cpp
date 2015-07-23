@@ -95,7 +95,7 @@ void game::move_piece(const position &from, const position &to)
 
 void game::move_piece(const pos_move &_move)
 {
-    move_piece(_move[0], _move[1]);
+    move_piece(_move.from, _move.to);
 }
 
 void game::print_board(bool chinese_char) const

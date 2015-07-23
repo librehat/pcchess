@@ -63,9 +63,7 @@ void abstract_player::remove(p_piece p)
 
 void abstract_player::add_history(const position &from, const position &to)
 {
-	pos_move m;
-	m[0] = from;
-	m[1] = to;
+    pos_move m(from, to);
 	add_history(m);
 }
 

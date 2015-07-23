@@ -3,6 +3,7 @@
 
 #include "abstract_piece.h"
 #include "position.h"
+#include "pos_move.h"
 #include <list>
 #include <boost/serialization/list.hpp>
 
