@@ -23,6 +23,15 @@ public:
     void move_piece(const position &from, const position &to);
     void move_piece(const pos_move &_move);
 
+    /*
+     * Parse position FEN string according to UCCI protocol
+     * The players' piece list should be empty before calling this function,
+     * because this function would add pieces to players according to the
+     * FEN string. For details, check
+     * http://www.xqbase.com/protocol/cchess_fen.htm
+     */
+    void parse_fen(const std::string &fen);
+
     static long int step_time;//maximum time for each step (milliseconds)
 
 private:

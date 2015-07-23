@@ -98,6 +98,11 @@ void game::move_piece(const pos_move &_move)
     move_piece(_move.from, _move.to);
 }
 
+void game::parse_fen(const string &fen)
+{
+    //TODO
+}
+
 void game::print_board(bool chinese_char) const
 {
     for(int j = 0; j <= 9 ; ++j) {//rank
