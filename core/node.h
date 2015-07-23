@@ -40,6 +40,7 @@ public:
      */
     boost::ptr_list<node>::iterator get_best_child();//best child which has highest visits
     boost::ptr_list<node>::iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
+    boost::ptr_list<node>::iterator get_worst_child_uct();
     boost::ptr_list<node>::iterator child_end();
 
     /*

@@ -75,7 +75,18 @@ void node::set_opp_move(const pos_move &m)
 bool node::select()
 {
     if (visits > select_threshold && !children.empty()) {
-        return get_best_child_uct()->select();
+        /*
+         * if the children represent opponent's moves, because
+         * the opponent would possibly make a move giving them
+         * a better chance, which is basically our worst case,
+         * the child returned should be the worst instead of
+         * best in this situation.
+         */
+        if (my_turn) {
+            return get_best_child_uct()->select();
+        } else {
+            return get_worst_child_uct()->select();
+        }
     } else {
         return simulate();
     }
@@ -238,6 +249,26 @@ node_iterator node::get_best_child_uct()
         }
     }
     return best_child;
+}
+
+node_iterator node::get_worst_child_uct()
+{
+    if (children.empty()) {
+        return children.end();
+    }
+
+    auto worst_child = children.begin();
+    auto worst_uct = children.front().get_uct_val();
+    auto it = children.begin();
+    it++;
+    for (; it != children.end(); ++it) {
+        auto uct = it->get_uct_val();
+        if (uct < worst_uct) {
+            worst_child = it;
+            worst_uct = uct;
+        }
+    }
+    return worst_child;
 }
 
 node_iterator node::find_child(const pos_move &m)
