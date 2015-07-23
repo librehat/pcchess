@@ -14,7 +14,7 @@ abstract_piece* general::make_a_copy() const
 
 char general::abbr_name() const
 {
-    return 'G';
+    return 'K';//use more widespread translation
 }
 
 string general::chinese_name() const

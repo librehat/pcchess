@@ -13,7 +13,7 @@ abstract_piece* soldier::make_a_copy() const
 
 char soldier::abbr_name() const
 {
-    return 'S';
+    return 'P';//pawn
 }
 
 string soldier::chinese_name() const
