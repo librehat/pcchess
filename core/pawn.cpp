@@ -1,32 +1,32 @@
-#include "soldier.h"
+#include "pawn.h"
 
 using namespace std;
 
-const position soldier::up = position(0, -1);
-const position soldier::left = position(-1, 0);
-const position soldier::right = position(1, 0);
+const position pawn::up = position(0, -1);
+const position pawn::left = position(-1, 0);
+const position pawn::right = position(1, 0);
 
-abstract_piece* soldier::make_a_copy() const
+abstract_piece* pawn::make_a_copy() const
 {
-    return new soldier(*this);
+    return new pawn(*this);
 }
 
-char soldier::abbr_name() const
+char pawn::abbr_name() const
 {
     return 'P';//pawn
 }
 
-string soldier::chinese_name() const
+string pawn::chinese_name() const
 {
     return string("卒");
 }
 
-int soldier::value() const
+int pawn::value() const
 {
     return 2;
 }
 
-bool soldier::can_move_horizontally()
+bool pawn::can_move_horizontally()
 {
     if (m_opposite) {
         return pos.rank > 4;
@@ -35,7 +35,7 @@ bool soldier::can_move_horizontally()
     }
 }
 
-void soldier::gen_moves(const board &m_board)
+void pawn::gen_moves(const board &m_board)
 {
     if (can_move_horizontally()) {
         avail_moves.push_back(position(pos + left));

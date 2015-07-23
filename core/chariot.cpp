@@ -1,28 +1,28 @@
-#include "rook.h"
+#include "chariot.h"
 
 using namespace std;
 
-abstract_piece* rook::make_a_copy() const
+abstract_piece* chariot::make_a_copy() const
 {
-    return new rook(*this);
+    return new chariot(*this);
 }
 
-char rook::abbr_name() const
+char chariot::abbr_name() const
 {
     return 'R';
 }
 
-string rook::chinese_name() const
+string chariot::chinese_name() const
 {
     return string("車");
 }
 
-int rook::value() const
+int chariot::value() const
 {
     return 6;
 }
 
-void rook::search_moves(const bool forward, const bool is_rank, const board &m_board)
+void chariot::search_moves(const bool forward, const bool is_rank, const board &m_board)
 {
     for (position p = pos; !p.not_in_range(0, 8, 0, 9);
          is_rank ? (p.rank += forward ? 1 : -1) : (p.file += forward ? 1 : -1)
@@ -33,7 +33,7 @@ void rook::search_moves(const bool forward, const bool is_rank, const board &m_b
     }
 }
 
-void rook::gen_moves(const board &m_board)
+void chariot::gen_moves(const board &m_board)
 {
     search_moves(true, true, m_board);
     search_moves(true, false, m_board);

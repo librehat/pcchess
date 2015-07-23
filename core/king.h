@@ -1,19 +1,19 @@
 /*
- * General, also known as King in some translations.
+ * King, also known as king in some translations.
  *
  * Copyright 2015 Symeon Huang <hzwhuang@gmail.com>
  */
 
-#ifndef GENERAL_H
-#define GENERAL_H
+#ifndef KING_H
+#define KING_H
 
 #include "abstract_piece.h"
 
-class general : public abstract_piece
+class king : public abstract_piece
 {
 public:
-    general(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
-    general(const general &b) : abstract_piece(b) {}
+    king(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    king(const king &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
 
@@ -38,4 +38,4 @@ private:
     }
 };
 
-#endif //GENERAL_H
+#endif //KING_H

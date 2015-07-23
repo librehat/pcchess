@@ -1,19 +1,19 @@
 /*
- * Rook, chariot.
+ * ChaRiot, also known as chariot
  *
  * Copyright 2015 Symeon Huang <hzwhuang@gmail.com>
  */
 
-#ifndef ROOK_H
-#define ROOK_H
+#ifndef CHARIOT_H
+#define CHARIOT_H
 
 #include "abstract_piece.h"
 
-class rook : public abstract_piece
+class chariot : public abstract_piece
 {
 public:
-    rook(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
-    rook(const rook &b) : abstract_piece(b) {}
+    chariot(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    chariot(const chariot &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
 
@@ -35,4 +35,4 @@ private:
     }
 };
 
-#endif //ROOK_H
+#endif //CHARIOT_H

@@ -1,33 +1,33 @@
-#include "general.h"
+#include "king.h"
 
 using namespace std;
 
-const position general::up = position(0, -1);
-const position general::down = position(0, 1);
-const position general::left = position(-1, 0);
-const position general::right = position(1, 0);
+const position king::up = position(0, -1);
+const position king::down = position(0, 1);
+const position king::left = position(-1, 0);
+const position king::right = position(1, 0);
 
-abstract_piece* general::make_a_copy() const
+abstract_piece* king::make_a_copy() const
 {
-    return new general(*this);
+    return new king(*this);
 }
 
-char general::abbr_name() const
+char king::abbr_name() const
 {
     return 'K';//use more widespread translation
 }
 
-string general::chinese_name() const
+string king::chinese_name() const
 {
     return string("將");
 }
 
-int general::value() const
+int king::value() const
 {
     return 8;
 }
 
-void general::gen_moves(const board &m_board)
+void king::gen_moves(const board &m_board)
 {
     avail_moves.push_back(pos + up);
     avail_moves.push_back(pos + down);
@@ -36,41 +36,41 @@ void general::gen_moves(const board &m_board)
     position pos_right = pos + right;
     
     /* 
-     * if there is only one (enemy) general on the left,
-     * then our general can't move to the left.
+     * if there is only one (enemy) king on the left,
+     * then our king can't move to the left.
      * the same applies to right.
      */
-    bool found_general = false;
+    bool found_king = false;
     bool other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
         if (m_board.at(pos_left.file, irank)) {
-            if (found_general) {
+            if (found_king) {
                 other_piece_between = true;
                 break;
             } else if (m_board.at(pos_left.file, irank)->abbr_name() == 'G') {
-                found_general = true;
+                found_king = true;
             }
         }
     }
     
-    if (other_piece_between || !found_general) {
+    if (other_piece_between || !found_king) {
         avail_moves.push_back(pos_left);
     }
     
-    found_general = false;
+    found_king = false;
     other_piece_between = false;
     for (int irank = 0; irank <= 9; irank++) {
         if (m_board.at(pos_right.file, irank)) {
-            if (found_general) {
+            if (found_king) {
                 other_piece_between = true;
                 break;
             } else if (m_board.at(pos_right.file, irank)->abbr_name() == 'G') {
-                found_general = true;
+                found_king = true;
             }
         }
     }
     
-    if (other_piece_between || !found_general) {
+    if (other_piece_between || !found_king) {
         avail_moves.push_back(pos_right);
     }
     

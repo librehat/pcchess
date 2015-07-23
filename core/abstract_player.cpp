@@ -1,11 +1,11 @@
 #include "abstract_player.h"
-#include "soldier.h"
+#include "pawn.h"
 #include "cannon.h"
-#include "rook.h"
+#include "chariot.h"
 #include "horse.h"
 #include "elephant.h"
 #include "advisor.h"
-#include "general.h"
+#include "king.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -92,16 +92,16 @@ void abstract_player::init_pieces()
 
     p_piece p;
 
-    //soldiers (pawns)
-    p = p_piece(new soldier(0, opposite_player ? 3 : 6, opposite_player));
+    //pawns (pawns)
+    p = p_piece(new pawn(0, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(2, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(2, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(4, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(4, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(6, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(6, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new soldier(8, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(8, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
 
     //cannons
@@ -110,10 +110,10 @@ void abstract_player::init_pieces()
     p = p_piece(new cannon(7, opposite_player ? 2 : 7, opposite_player));
     pieces.push_back(p);
 
-    //rooks
-    p = p_piece(new rook(0, opposite_player ? 0 : 9, opposite_player));
+    //chariots
+    p = p_piece(new chariot(0, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
-    p = p_piece(new rook(8, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new chariot(8, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
     //horses
@@ -135,7 +135,7 @@ void abstract_player::init_pieces()
     pieces.push_back(p);
 
     //general
-    p = p_piece(new general(4, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new king(4, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 }
 
