@@ -23,27 +23,19 @@ bool threaded_node::select()
     }
 }
 
-void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int &score)
+void threaded_node::expand(deque<pos_move> &hist, const int &score)
 {
     value_mutex.lock();
     visits++;
     scores += score;
     value_mutex.unlock();
 
-    pos_move next_move;
-    if (my_turn) {
-        if (our_hist.empty()) {
-            return;
-        }
-        next_move = our_hist.back();
-        our_hist.pop_back();
-    } else {
-        if (opp_hist.empty()) {
-            return;
-        }
-        next_move = opp_hist.back();
-        opp_hist.pop_back();
+    if (hist.empty()) {
+        return;
     }
+
+    pos_move next_move = hist.back();
+    hist.pop_back();
 
     children_mutex.lock();
     auto child_iter = find_child(next_move);
@@ -51,8 +43,9 @@ void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, c
     if (child_iter == children.end()) {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
+        bool is_red = !n_our->is_opposite();
 
-        game updater_sim(n_our, n_opp);
+        game updater_sim(is_red ? n_our : n_opp, is_red ? n_opp : n_our);
         updater_sim.move_piece(next_move);
 
         auto child = new threaded_node(n_our, n_opp, !my_turn, this);
@@ -63,7 +56,7 @@ void threaded_node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, c
         children.push_back(child);
         children_mutex.unlock();
     } else {
-        child_iter->expand(our_hist, opp_hist, score);
+        child_iter->expand(hist, score);
     }
 }
 
@@ -72,13 +65,10 @@ bool threaded_node::simulate()
     total_simulations++;
     random_player t_our(*our_curr);
     random_player t_opp(*opp_curr);
+    bool is_red = !t_our.is_opposite();
 
-    //need to clear the history so the history would contains only the simulation part
-    t_our.clear_history();
-    t_opp.clear_history();
-
-    game sim_game(&t_our, &t_opp);
-    abstract_player* winner = sim_game.playout(my_turn);
+    game sim_game(is_red ? &t_our : &t_opp, is_red ? &t_opp : &t_our);
+    abstract_player* winner = sim_game.playout(my_turn && is_red);
     int result = 0;
     if (winner == &t_our) {
         result = 1;
@@ -86,18 +76,15 @@ bool threaded_node::simulate()
         result = -1;
     }
 
-    //we need to make copies here because expand will modify the argument variables
-    list<pos_move> our_hist = t_our.get_history();
-    list<pos_move> opp_hist = t_opp.get_history();
-
-    if ((our_hist.empty() && my_turn) || (opp_hist.empty() && !my_turn)) {//can't expand the tree if the current player can't move
+    auto hist = sim_game.get_history();
+    if (hist.empty()) {//can't expand the tree if the current player can't move
         value_mutex.lock();
         visits++;
         scores += result;
         value_mutex.unlock();
         return false;
     } else {
-        expand(our_hist, opp_hist, result);//this very node is definitely the parental node
+        expand(hist, result);//this very node is definitely the parental node
         return true;
     }
 }

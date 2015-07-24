@@ -5,6 +5,7 @@
 #include "abstract_piece.h"
 #include "abstract_player.h"
 #include "board.h"
+#include <deque>
 
 class game
 {
@@ -32,6 +33,8 @@ public:
      */
     void parse_fen(const std::string &fen);
 
+    std::deque<pos_move> get_history() const;
+
     static long int step_time;//maximum time for each step (milliseconds)
 
     /*
@@ -49,7 +52,7 @@ private:
     abstract_player *const red;
     abstract_player *const black;
 
-    std::vector<pos_move> history;
+    std::deque<pos_move> history;
     unsigned int rounds_since_last_eat;
 };
 

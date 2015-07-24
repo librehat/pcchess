@@ -11,7 +11,7 @@ public:
     explicit threaded_node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
 
     bool select();
-    void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
+    void expand(std::deque<pos_move> &hist, const int &score);
     bool simulate();
 
     static int get_total_simulations();

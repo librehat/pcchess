@@ -7,6 +7,7 @@
 #include <boost/serialization/access.hpp>
 #include "../core/position.h"
 #include "../core/abstract_player.h"
+#include <deque>
 
 class node : boost::noncopyable
 {
@@ -25,7 +26,7 @@ public:
 
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
-    virtual void expand(std::list<pos_move> &our_hist, std::list<pos_move> &opp_hist, const int &score);
+    virtual void expand(std::deque<pos_move> &hist, const int &score);
     virtual bool simulate();
 
     void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree

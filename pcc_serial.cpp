@@ -50,7 +50,8 @@ int main(int argc, char** argv)
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
         uct_player *red, *black;
-        red = new threaded_uct_player(false);
+        //red = new threaded_uct_player(false);
+        red = new uct_player(false);
         black = new uct_player(true);
         red->init_pieces();
         black->init_pieces();
@@ -72,10 +73,10 @@ int main(int argc, char** argv)
         our_sims += red->get_total_simulations();
         opp_sims += black->get_total_simulations();
 
-        ofstream fs;
+        /*ofstream fs;
         fs.open("/tmp/xml_archive.xml", ios_base::out);
         uct_player::xml_archive_tree(fs, red->get_tree());
-        fs.close();
+        fs.close();*/
 
         delete red;
         delete black;

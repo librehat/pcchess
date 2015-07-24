@@ -23,7 +23,6 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_
     } else {
         setup_players();
     }
-    history.reserve(200);
 }
 
 long int game::step_time = 2000;
@@ -47,7 +46,7 @@ abstract_player* game::playout(bool red_first)
             return second;
         } else {
             move_piece(next_move);
-            first->add_history(next_move);
+            //first->add_history(next_move);
             second->opponent_moved(next_move, *first);
         }
         movable = second->think_next_move(next_move, m_board, *first);
@@ -55,7 +54,7 @@ abstract_player* game::playout(bool red_first)
             return first;
         } else {
             move_piece(next_move);
-            second->add_history(next_move);
+            //second->add_history(next_move);
             first->opponent_moved(next_move, *second);
         }
     } while (rounds_since_last_eat < NO_EAT_DRAW_ROUNDS && NO_EAT_DRAW_ROUNDS != 0);
@@ -110,7 +109,7 @@ void game::move_piece(const pos_move &_move)
     m_board[_move.from] = nullptr;
     m_board[_move.to] = piece;
     piece->move_to_pos(_move.to);
-    history.push_back(_move);
+    history.push_front(_move);
 }
 
 void game::parse_fen(const string &fen)
@@ -190,6 +189,11 @@ void game::parse_fen(const string &fen)
             cerr << "Current field's FEN string is incorrect!" << endl;
         }
     }
+}
+
+deque<pos_move> game::get_history() const
+{
+    return history;
 }
 
 void game::print_board(bool chinese_char) const

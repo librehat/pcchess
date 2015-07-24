@@ -18,7 +18,6 @@ abstract_player::abstract_player(bool opposite) :
 {}
 
 abstract_player::abstract_player(const abstract_player &b) :
-    move_history(b.move_history),
     opposite_player(b.opposite_player),
     checked(b.checked),
     checkmated(b.checkmated)
@@ -62,27 +61,6 @@ void abstract_player::remove(p_piece p)
         }
     }
     throw invalid_argument("The piece to remove doesn't belong to this player");
-}
-
-void abstract_player::add_history(const position &from, const position &to)
-{
-    pos_move m(from, to);
-	add_history(m);
-}
-
-void abstract_player::add_history(const pos_move &m)
-{
-	move_history.push_front(m);
-}
-
-const list<pos_move>& abstract_player::get_history() const
-{
-	return move_history;
-}
-
-void abstract_player::clear_history()
-{
-    move_history.clear();
 }
 
 void abstract_player::init_pieces()

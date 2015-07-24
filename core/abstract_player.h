@@ -20,10 +20,6 @@ public:
 
     void add(p_piece p);
     void remove(p_piece p);//if p doesn't belong to this player, it'll throw an error
-    void add_history(const position &from, const position &to);
-    void add_history(const pos_move &m);
-    const std::list<pos_move>& get_history() const;
-    void clear_history();
 
     /*
      * initialise the pieces list to a normal beginning situation
@@ -55,7 +51,6 @@ public:
 
 protected:
     std::list<p_piece> pieces;
-    std::list<pos_move> move_history;//front: latest move, back: the first move
     const bool opposite_player;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
@@ -66,7 +61,6 @@ private:
     void serialize(Archive &ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_NVP(pieces);
-        ar & BOOST_SERIALIZATION_NVP(move_history);
         ar & boost::serialization::make_nvp("opposite_player", const_cast<bool &>(opposite_player));
         ar & BOOST_SERIALIZATION_NVP(checked);
         ar & BOOST_SERIALIZATION_NVP(checkmated);

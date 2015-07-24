@@ -24,8 +24,6 @@ int main(int argc, char **argv)
     rp.init_pieces();
     stup.init_pieces();
 
-    game::step_time = 1500;
-
     if (rank == 0) {//master plays the game
         game g(&stup, &rp);
         abstract_player* winner = g.playout();
