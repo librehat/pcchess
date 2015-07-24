@@ -116,8 +116,9 @@ void node::expand(list<pos_move> &our_hist, list<pos_move> &opp_hist, const int 
     if (child_iter == children.end()) {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
+        bool is_red = !n_our->is_opposite();
 
-        game updater_sim(n_our, n_opp);
+        game updater_sim(is_red ? n_our : n_opp, is_red ? n_opp : n_our);
         updater_sim.move_piece(next_move);
 
         node *child = new node(n_our, n_opp, !my_turn, this);
@@ -138,9 +139,10 @@ bool node::simulate()
 	//need to clear the history so the history would contains only the simulation part
     t_our.clear_history();
     t_opp.clear_history();
+    bool is_red = !t_our.is_opposite();
 
-    game sim_game(&t_our, &t_opp);
-    abstract_player* winner = sim_game.playout(my_turn);
+    game sim_game(is_red ? &t_our : &t_opp, is_red ? &t_opp : &t_our);
+    abstract_player* winner = sim_game.playout(my_turn && is_red);
     int result = 0;
     if (winner == &t_our) {
         result = 1;
