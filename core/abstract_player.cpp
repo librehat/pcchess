@@ -43,6 +43,9 @@ abstract_player::~abstract_player()
 
 void abstract_player::add(p_piece p)
 {
+    if(p->is_opposite_side() != opposite_player) {
+        throw invalid_argument("piece to add belongs to different side");
+    }
     pieces.push_back(p);
 }
 
@@ -58,7 +61,7 @@ void abstract_player::remove(p_piece p)
             return;
         }
     }
-    throw domain_error("The piece to remove doesn't belong to this player");
+    throw invalid_argument("The piece to remove doesn't belong to this player");
 }
 
 void abstract_player::add_history(const position &from, const position &to)
@@ -90,7 +93,7 @@ void abstract_player::init_pieces()
 
     p_piece p;
 
-    //pawns (pawns)
+    //pawns
     p = p_piece(new pawn(0, opposite_player ? 3 : 6, opposite_player));
     pieces.push_back(p);
     p = p_piece(new pawn(2, opposite_player ? 3 : 6, opposite_player));
@@ -132,7 +135,7 @@ void abstract_player::init_pieces()
     p = p_piece(new advisor(5, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 
-    //general
+    //king (general)
     p = p_piece(new king(4, opposite_player ? 0 : 9, opposite_player));
     pieces.push_back(p);
 }
