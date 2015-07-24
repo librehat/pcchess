@@ -11,8 +11,9 @@
 
 #include "position.h"
 #include "board.h"
-#include <list>
+#include <vector>
 #include <string>
+#include <boost/serialization/vector.hpp>
 
 class abstract_piece
 {
@@ -37,7 +38,7 @@ public:
      * give the board data to this function
      */
     void update_moves(const board &m_board);
-    const std::list<position>& get_avail_moves() const;
+    const std::vector<position>& get_avail_moves() const;
     bool is_movable() const;//check if avail_moves is empty
 
     virtual char abbr_name() const = 0;
@@ -52,7 +53,7 @@ public:
 protected:
     const bool m_opposite;
     position pos;
-    std::list<position> avail_moves;
+    std::vector<position> avail_moves;
 
     /*
      * a piece can't move if it's the only piece separate generals

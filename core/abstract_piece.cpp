@@ -95,7 +95,7 @@ void abstract_piece::remove_invalid_moves(const board &m_board, int min_file, in
     }
 }
 
-const list<position>& abstract_piece::get_avail_moves() const
+const vector<position>& abstract_piece::get_avail_moves() const
 {
     return avail_moves;
 }
