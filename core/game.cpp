@@ -1,6 +1,15 @@
 #include "game.h"
+#include "king.h"
+#include "pawn.h"
+#include "elephant.h"
+#include "advisor.h"
+#include "chariot.h"
+#include "horse.h"
+#include "cannon.h"
 #include <iostream>
 #include <stdexcept>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 using namespace std;
 
@@ -106,7 +115,81 @@ void game::move_piece(const pos_move &_move)
 
 void game::parse_fen(const string &fen)
 {
-    //TODO
+    vector<string> rank_str;
+    boost::split(rank_str, fen, boost::is_any_of("/"), boost::token_compress_off);
+    if (rank_str.size() != 10) {
+        cerr << "FEN string is incorrect or it's splitted incorrectly." << endl;
+        return;
+    }
+
+    for (int rank = 0; rank < 10; ++rank) {
+        const string &str = rank_str.at(rank);
+        int file = 0;
+        char c;
+        for (int i = 0; i < str.size(); ++i) {
+            c = str[i];
+            if (c <= '9') {
+                file += static_cast<int>(c - '0');
+            } else {
+                file++;
+                p_piece p;
+                switch (c) {//upper-case: red side; lower-case: black side
+                case 'K':
+                    p = new king(file, rank, false);
+                    break;
+                case 'k':
+                    p = new king(file, rank, true);
+                    break;
+                case 'P':
+                    p = new pawn(file, rank, false);
+                    break;
+                case 'p':
+                    p = new pawn(file, rank, true);
+                    break;
+                case 'E':
+                    p = new elephant(file, rank, false);
+                    break;
+                case 'e':
+                    p = new elephant(file, rank, true);
+                    break;
+                case 'A':
+                    p = new advisor(file, rank, false);
+                    break;
+                case 'a':
+                    p = new advisor(file, rank, true);
+                    break;
+                case 'R':
+                    p = new chariot(file, rank, false);
+                    break;
+                case 'r':
+                    p = new chariot(file, rank, true);
+                    break;
+                case 'H':
+                    p = new horse(file, rank, false);
+                    break;
+                case 'h':
+                    p = new horse(file, rank, true);
+                    break;
+                case 'C':
+                    p = new cannon(file, rank, false);
+                    break;
+                case 'c':
+                    p = new cannon(file, rank, true);
+                    break;
+                default:
+                    cerr << "Unknown character in FEN string: " << c;
+                }
+                if (p->is_opposite_side()) {
+                    black->add(p);
+                } else {
+                    red->add(p);
+                }
+            }
+        }
+        if (file != 9) {
+            cerr << "Current field's FEN string is incorrect!" << endl;
+        }
+    }
 }
 
 void game::print_board(bool chinese_char) const
