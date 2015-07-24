@@ -6,7 +6,7 @@
 #ifndef UCT_PLAYER_H
 #define UCT_PLAYER_H
 
-#include "abstract_player.h"
+#include "../core/abstract_player.h"
 #include "node.h"
 
 class uct_player : public abstract_player

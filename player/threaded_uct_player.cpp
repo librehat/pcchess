@@ -1,7 +1,7 @@
 #include "threaded_uct_player.h"
 #include "threaded_node.h"
 #include "random_player.h"
-#include "game.h"
+#include "../core/game.h"
 #include <chrono>
 
 using namespace std;

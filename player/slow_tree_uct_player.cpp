@@ -1,12 +1,11 @@
 #include "slow_tree_uct_player.h"
-#include "../core/random_player.h"
+#include "random_player.h"
 #include "../core/game.h"
-#include "../core/serialization_export.h"
-#include <boost/archive/xml_oarchive.hpp>
 #include <stdexcept>
 #include <chrono>
 #include <thread>
 #include <fstream>
+#include <boost/serialization/export.hpp>
 
 using namespace std;
 using namespace chrono;

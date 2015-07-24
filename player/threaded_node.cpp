@@ -1,6 +1,6 @@
 #include "threaded_node.h"
 #include "random_player.h"
-#include "game.h"
+#include "../core/game.h"
 #include <iostream>
 
 using namespace std;

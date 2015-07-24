@@ -4,7 +4,7 @@
 #ifndef RANDOM_PLAYER_H
 #define RANDOM_PLAYER_H
 
-#include "abstract_player.h"
+#include "../core/abstract_player.h"
 
 class random_player : public abstract_player
 {

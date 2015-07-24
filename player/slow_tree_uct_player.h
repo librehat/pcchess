@@ -5,7 +5,7 @@
 #ifndef SLOW_TREE_UCT_PLAYER_H
 #define SLOW_TREE_UCT_PLAYER_H
 
-#include "../core/uct_player.h"
+#include "uct_player.h"
 #include <boost/mpi.hpp>
 
 class slow_tree_uct_player : public uct_player

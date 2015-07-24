@@ -1,13 +1,13 @@
 #ifndef SERIALIZATION_EXPORT_H
 #define SERIALIZATION_EXPORT_H
 
-#include "advisor.h"
-#include "cannon.h"
-#include "elephant.h"
-#include "king.h"
-#include "horse.h"
-#include "chariot.h"
-#include "pawn.h"
+#include "../core/advisor.h"
+#include "../core/cannon.h"
+#include "../core/elephant.h"
+#include "../core/king.h"
+#include "../core/horse.h"
+#include "../core/chariot.h"
+#include "../core/pawn.h"
 #include "threaded_node.h"
 #include "random_player.h"
 #include "uct_player.h"

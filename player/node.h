@@ -5,8 +5,8 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
-#include "position.h"
-#include "abstract_player.h"
+#include "../core/position.h"
+#include "../core/abstract_player.h"
 
 class node : boost::noncopyable
 {

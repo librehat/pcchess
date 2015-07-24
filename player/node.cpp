@@ -1,6 +1,6 @@
 #include "node.h"
-#include "board.h"
-#include "game.h"
+#include "../core/board.h"
+#include "../core/game.h"
 #include "random_player.h"
 #include <stdexcept>
 #include <cmath>

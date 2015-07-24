@@ -1,8 +1,8 @@
-#include "slow_tree_uct_player.h"
-#include "../core/game.h"
-#include "../core/random_player.h"
-#include "../core/uct_player.h"
-#include "../core/threaded_uct_player.h"
+#include "core/game.h"
+#include "player/random_player.h"
+#include "player/uct_player.h"
+#include "player/threaded_uct_player.h"
+#include "player/slow_tree_uct_player.h"
 #include <boost/mpi.hpp>
 
 using namespace std;

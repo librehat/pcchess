@@ -1,6 +1,6 @@
 #include "uct_player.h"
 #include "random_player.h"
-#include "game.h"
+#include "../core/game.h"
 #include "serialization_export.h"
 #include <iostream>
 #include <stdexcept>
