@@ -52,7 +52,7 @@ void abstract_player::remove(p_piece p)
 {
     for (auto &&ip : pieces) {
         if (ip == p) {
-            if (p->abbr_name() == 'G') {
+            if (p->abbr_name() == 'K') {
                 checkmated = true;
             }
             pieces.remove(p);
