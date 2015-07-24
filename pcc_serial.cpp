@@ -49,9 +49,9 @@ int main(int argc, char** argv)
     int our_sims = 0;
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        uct_player *red, *black;
-        //red = new threaded_uct_player(false);
-        red = new uct_player(false);
+        abstract_player *red, *black;
+        red = new threaded_uct_player(false);
+        //red = new uct_player(false);
         black = new uct_player(true);
         red->init_pieces();
         black->init_pieces();

@@ -3,6 +3,7 @@
 #include "player/uct_player.h"
 #include "player/threaded_uct_player.h"
 #include "player/slow_tree_uct_player.h"
+#include "player/serialization_export.h"
 #include <boost/mpi.hpp>
 
 using namespace std;
@@ -20,7 +21,7 @@ int main(int argc, char **argv)
 
     //random_player rp(true);
     threaded_uct_player rp(true);
-    slow_tree_uct_player stup(500, false);
+    slow_tree_uct_player stup(800, false);
     rp.init_pieces();
     stup.init_pieces();
 
