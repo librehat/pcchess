@@ -4,18 +4,21 @@
 
 using namespace std;
 
-game::game(abstract_player* _red, abstract_player* _black) :
+game::game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_rounds) :
     red(_red),
-    black(_black)
+    black(_black),
+    rounds_since_last_eat(not_eat_rounds)
 {
     if (red->is_opposite() || !black->is_opposite()) {
         throw invalid_argument("player is in the wrong side");
     } else {
         setup_players();
     }
+    history.reserve(200);
 }
 
-long int game::step_time = 1000;
+long int game::step_time = 2000;
+unsigned int game::NO_EAT_DRAW_ROUNDS = 60;
 
 game::~game()
 {}
@@ -28,7 +31,8 @@ abstract_player* game::playout(bool red_first)
     abstract_player* first = red_first ? red : black;
     abstract_player* second = red_first ? black : red;
 
-    for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
+    do {
+        rounds_since_last_eat++;
         movable = first->think_next_move(next_move, m_board, *second);
         if (!movable || first->is_checkmated()) {
             return second;
@@ -45,7 +49,7 @@ abstract_player* game::playout(bool red_first)
             second->add_history(next_move);
             first->opponent_moved(next_move, *second);
         }
-    }
+    } while (rounds_since_last_eat < NO_EAT_DRAW_ROUNDS && NO_EAT_DRAW_ROUNDS != 0);
 
     return nullptr;
 }
@@ -74,28 +78,30 @@ void game::setup_players()
 
 void game::move_piece(const position &from, const position &to)
 {
-    p_piece piece = m_board[from];
+    move_piece(pos_move(from, to));
+}
+
+void game::move_piece(const pos_move &_move)
+{
+    p_piece piece = m_board[_move.from];
     if (!piece){
         throw runtime_error("Error. The piece to move is nullptr on the board.");
     }
 
-    p_piece target = m_board[to];
+    p_piece target = m_board[_move.to];
     if (target) {//capture the target
         if (target->is_opposite_side()) {//black side is always the opposite
             black->remove(target);
         } else {
             red->remove(target);
         }
+        rounds_since_last_eat = 0;
     }
 
-    m_board[from] = nullptr;
-    m_board[to] = piece;
-    piece->move_to_pos(to);
-}
-
-void game::move_piece(const pos_move &_move)
-{
-    move_piece(_move.from, _move.to);
+    m_board[_move.from] = nullptr;
+    m_board[_move.to] = piece;
+    piece->move_to_pos(_move.to);
+    history.push_back(_move);
 }
 
 void game::parse_fen(const string &fen)
