@@ -49,36 +49,36 @@ int main(int argc, char** argv)
     int our_sims = 0;
     int opp_sims = 0;
     for (int i = 0; i < rounds; ++i) {
-        uct_player *opp, *our;
-        opp = new uct_player(true);
-        our = new threaded_uct_player(false);
-        our->init_pieces();
-        opp->init_pieces();
-        game g(our, opp);
+        uct_player *red, *black;
+        red = new threaded_uct_player(false);
+        black = new uct_player(true);
+        red->init_pieces();
+        black->init_pieces();
+        game g(red, black);
         abstract_player* winner = g.playout();
 
         if (enable_print) {
             g.print_board(chinese_print);
         }
 
-        if (winner == our) {
+        if (winner == red) {
             we_win++;
-        } else if (winner == opp) {
+        } else if (winner == black) {
             we_lose++;
         } else {
             we_draw++;
         }
 
-        our_sims += our->get_total_simulations();
-        opp_sims += opp->get_total_simulations();
+        our_sims += red->get_total_simulations();
+        opp_sims += black->get_total_simulations();
 
         ofstream fs;
         fs.open("/tmp/xml_archive.xml", ios_base::out);
-        uct_player::xml_archive_tree(fs, our->get_tree());
+        uct_player::xml_archive_tree(fs, red->get_tree());
         fs.close();
 
-        delete our;
-        delete opp;
+        delete red;
+        delete black;
     }
 
     cout << "WIN:\t" << we_win << endl

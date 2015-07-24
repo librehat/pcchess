@@ -17,8 +17,8 @@
 class abstract_piece
 {
 public:
-    abstract_piece(int _file = 0, int _rank = 0, bool oppo = false);
-    abstract_piece(const abstract_piece &b);
+    explicit abstract_piece(int _file = 0, int _rank = 0, bool oppo = false);
+    explicit abstract_piece(const abstract_piece &b);
     virtual ~abstract_piece();
 
     /*

@@ -10,8 +10,8 @@
 class advisor : public abstract_piece
 {
 public:
-    advisor(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
-    advisor(const advisor &b) : abstract_piece(b) {}
+    explicit advisor(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    explicit advisor(const advisor &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
 

@@ -12,7 +12,7 @@
 class uct_player : public abstract_player
 {
 public:
-    uct_player(bool opposite = false);
+    explicit uct_player(bool opposite = false);
     virtual ~uct_player();
 
     virtual bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent);

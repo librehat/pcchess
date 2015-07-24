@@ -10,9 +10,12 @@
 class abstract_player
 {
 public:
-    /* opposite: whether this player is opposite player */
-    abstract_player(bool opposite = false);
-    abstract_player(const abstract_player &b);
+    /*
+     * red vs black
+     * the opposite player is the black side (aka north in some notations)
+     */
+    explicit abstract_player(bool opposite = false);
+    explicit abstract_player(const abstract_player &b);
     virtual ~abstract_player();
 
     void add(p_piece p);

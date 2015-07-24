@@ -9,7 +9,7 @@
 class game
 {
 public:
-    game(abstract_player* our, abstract_player* opp);
+    explicit game(abstract_player* _red, abstract_player* _black);
     ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
@@ -18,7 +18,7 @@ public:
      * play the game till the end and return the winner
      * if the game result is draw, then a nullptr will be returned
      */
-    abstract_player* playout(bool we_first = true);
+    abstract_player* playout(bool red_first = true);
 
     void move_piece(const position &from, const position &to);
     void move_piece(const pos_move &_move);
@@ -38,8 +38,8 @@ private:
     void setup_players();
 
     board m_board;
-    abstract_player *const our_player;
-    abstract_player *const opp_player;
+    abstract_player *const red;
+    abstract_player *const black;
 };
 
 #endif //GAME_H

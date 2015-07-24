@@ -4,14 +4,14 @@
 
 using namespace std;
 
-game::game(abstract_player* our, abstract_player* opp) :
-    our_player(our),
-    opp_player(opp)
+game::game(abstract_player* _red, abstract_player* _black) :
+    red(_red),
+    black(_black)
 {
-    if (our->is_opposite() ^ opp->is_opposite()) {
-        setup_players();
+    if (red->is_opposite() || !black->is_opposite()) {
+        throw invalid_argument("player is in the wrong side");
     } else {
-        throw invalid_argument("Two players are on the same side!");
+        setup_players();
     }
 }
 
@@ -20,13 +20,13 @@ long int game::step_time = 1000;
 game::~game()
 {}
 
-abstract_player* game::playout(bool we_first)
+abstract_player* game::playout(bool red_first)
 {
     pos_move next_move;
     bool movable = false;
 
-    abstract_player* first = we_first ? our_player : opp_player;
-    abstract_player* second = we_first ? opp_player : our_player;
+    abstract_player* first = red_first ? red : black;
+    abstract_player* second = red_first ? black : red;
 
     for (int i = 0; i < 200; ++i) {//FIXME: implement the real draw rule
         movable = first->think_next_move(next_move, m_board, *second);
@@ -52,8 +52,8 @@ abstract_player* game::playout(bool we_first)
 
 void game::setup_players()
 {
-    auto our_pieces = our_player->get_pieces();
-    auto opp_pieces = opp_player->get_pieces();
+    auto our_pieces = red->get_pieces();
+    auto opp_pieces = black->get_pieces();
 
     for (auto&& it : our_pieces) {//access by reference
         position ipos = it->get_position();
@@ -81,10 +81,10 @@ void game::move_piece(const position &from, const position &to)
 
     p_piece target = m_board[to];
     if (target) {//capture the target
-        if (target->is_opposite_side() ^ our_player->is_opposite()) {
-            opp_player->remove(target);
+        if (target->is_opposite_side()) {//black side is always the opposite
+            black->remove(target);
         } else {
-            our_player->remove(target);
+            red->remove(target);
         }
     }
 

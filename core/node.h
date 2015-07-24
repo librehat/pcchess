@@ -12,7 +12,7 @@ class node : boost::noncopyable
 {
 public:
     //WARN: the node will take memory control of _our and _opp pointers!
-    node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
+    explicit node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
@@ -58,6 +58,10 @@ public:
     static int get_total_simulations();
 
 protected:
+    /*
+     * if this is my turn to make a move, then the best move is the our_move of my best child.
+     * if not, all my children's our_move are the same, but they have different opp_move
+     */
     const bool my_turn;
 
     node* parent;

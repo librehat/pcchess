@@ -11,7 +11,7 @@
 class slow_tree_uct_player : public uct_player
 {
 public:
-    slow_tree_uct_player(long int sync_period_ms = 500, bool opposite = false);
+    explicit slow_tree_uct_player(long int sync_period_ms = 500, bool opposite = false);
 
     bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent);
     void opponent_moved(const pos_move &m, const abstract_player &opponent);

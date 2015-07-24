@@ -12,8 +12,8 @@
 class chariot : public abstract_piece
 {
 public:
-    chariot(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
-    chariot(const chariot &b) : abstract_piece(b) {}
+    explicit chariot(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    explicit chariot(const chariot &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
 

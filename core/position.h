@@ -9,8 +9,8 @@
 class position
 {
 public:
-    position(int _file = 0, int _rank = 0);
-    position(char _file, int _rank = 0);
+    explicit position(int _file = 0, int _rank = 0);
+    explicit position(char _file, int _rank = 0);
     position(const position &b);
     int file;
     int rank;

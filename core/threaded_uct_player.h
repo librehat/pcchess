@@ -11,7 +11,7 @@
 class threaded_uct_player : public uct_player
 {
 public:
-    threaded_uct_player(bool opposite = false, int _threads = 0);
+    explicit threaded_uct_player(bool opposite = false, int _threads = 0);
 
     bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent);
     void opponent_moved(const pos_move &m, const abstract_player &opponent);
