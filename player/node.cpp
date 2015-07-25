@@ -147,6 +147,11 @@ bool node::simulate()
         return false;
     } else {
         expand(hist, result);//this very node is definitely the parental node
+#ifdef _DEBUG
+        if (!hist.empty()) {
+            cerr << "[node] hist is not empty after expand step" << endl;
+        }
+#endif
         backpropagate(result);
         return true;
     }
