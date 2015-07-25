@@ -89,7 +89,7 @@ protected:
 private:
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void serialize(Archive & ar, const unsigned int)
     {
         ar & boost::serialization::make_nvp("my_turn", const_cast<bool &>(my_turn));
         ar & BOOST_SERIALIZATION_NVP(parent);

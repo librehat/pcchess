@@ -21,11 +21,9 @@ bool random_player::think_next_move(pos_move &_move, const board &bd, const abst
     for (auto &&p : pieces) {
         p->update_moves(bd);
         if (p->is_movable()) {
-            pos_move mov;
-            mov.from = p->get_position();
+            auto from = p->get_position();
         	for (auto &&m : p->get_avail_moves()) {
-                mov.to = m;
-        		all_avail_moves.push_back(mov);
+                all_avail_moves.emplace_back(from, m);
         	}
         }
     }

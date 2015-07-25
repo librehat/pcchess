@@ -16,7 +16,7 @@ abstract_piece::abstract_piece(const abstract_piece &b) :
 abstract_piece::~abstract_piece()
 {}
 
-const bool abstract_piece::is_opposite_side() const
+bool abstract_piece::is_opposite_side() const
 {
     return m_opposite;
 }
@@ -51,7 +51,7 @@ bool abstract_piece::can_i_move(const board &m_board) const
     bool found_one_g = false;
     bool am_i_in_between = false;
     for (int irank = 0; irank <= 9; irank++) {
-        const p_piece piece = m_board.at(pos.file, irank);
+        auto piece = m_board.at(pos.file, irank);
         if (piece) {
             if (found_one_g) {
                 if (piece->abbr_name() == 'G') {//another General

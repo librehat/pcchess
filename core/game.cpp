@@ -172,7 +172,7 @@ void game::parse_fen(const string &fen)
         const string &str = rank_str.at(rank);
         int file = 0;
         char c;
-        for (int i = 0; i < str.size(); ++i) {
+        for (std::size_t i = 0; i < str.size(); ++i) {
             c = str[i];
             if (c <= '9') {
                 file += static_cast<int>(c - '0');

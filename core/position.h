@@ -25,7 +25,7 @@ public:
 private:
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
+    void serialize(Archive &ar, const unsigned int)
     {
         ar & BOOST_SERIALIZATION_NVP(file);
         ar & BOOST_SERIALIZATION_NVP(rank);

@@ -26,7 +26,7 @@ public:
      * if it's in opposite side, we may need to take care of the
      * coordinate system.
      */
-    const bool is_opposite_side() const;
+    bool is_opposite_side() const;
 
     position get_position() const;
 
@@ -69,7 +69,7 @@ protected:
 private:
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
+    void serialize(Archive &ar, const unsigned int)
     {
         ar & boost::serialization::make_nvp("m_opposite", const_cast<bool &>(m_opposite));
         ar & BOOST_SERIALIZATION_NVP(pos);

@@ -45,7 +45,7 @@ public:
      * after the opponent moved.
      * this function does nothing by default
      */
-    virtual void opponent_moved(const pos_move &, const abstract_player &opponent) {}
+    virtual void opponent_moved(const pos_move &, const abstract_player &) {}
 
     virtual int get_total_simulations() const { return 0; }
 
@@ -58,7 +58,7 @@ protected:
 private:
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int version)
+    void serialize(Archive &ar, const unsigned int)
     {
         ar & BOOST_SERIALIZATION_NVP(pieces);
         ar & boost::serialization::make_nvp("opposite_player", const_cast<bool &>(opposite_player));
