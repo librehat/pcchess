@@ -57,9 +57,11 @@ bool uct_player::think_next_move(pos_move &_move, const board &, const abstract_
 #if defined(_DEBUG) && defined(__linux__)
     static int i = 0;
     if (i == 0) {
+        start = steady_clock::now();
         ofstream fs("/tmp/t.xml");
         xml_archive_tree(fs, root);
         fs.close();
+        cout << "xml_archive_tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
     }
     i++;
 #endif
