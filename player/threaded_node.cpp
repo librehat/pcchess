@@ -44,8 +44,10 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
 
     children_mutex.lock();
     auto child_iter = find_child(next_move);
-    children_mutex.unlock();
-    if (child_iter == children.end()) {
+    if (child_iter != children.end()) {
+        children_mutex.unlock();
+        child_iter->expand(hist, score);
+    } else {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
         bool is_red = !n_our->is_opposite();
@@ -56,12 +58,9 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
         node *child = new threaded_node(n_our, n_opp, !my_turn, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
         child->set_our_move(my_turn ? next_move : our_move);
         child->set_opp_move(my_turn ? opp_move : next_move);
-
-        children_mutex.lock();
         children.push_back(child);
         children_mutex.unlock();
-    } else {
-        child_iter->expand(hist, score);
+        child->expand(hist, score);
     }
 }
 

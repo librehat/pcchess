@@ -117,6 +117,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
+        child->expand(hist, score);
     } else {
         child_iter->expand(hist, score);
     }
