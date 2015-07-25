@@ -11,6 +11,9 @@ class game
 {
 public:
     explicit game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_rounds = 0);
+
+    //copy data (banmoves, history, etc) from old_game except for the players and m_board
+    explicit game(abstract_player* _red, abstract_player* _black, const game &old_game);
     ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
@@ -34,6 +37,7 @@ public:
     void parse_fen(const std::string &fen);
 
     std::deque<pos_move> get_history() const;
+    unsigned int get_rounds_since_last_eat() const;
 
     static long int step_time;//maximum time for each step (milliseconds)
 
@@ -51,6 +55,14 @@ private:
     board m_board;
     abstract_player *const red;
     abstract_player *const black;
+
+    /*
+     * the player will lose the game if a banned move is made
+     * currently we only use these banmoves in UCCI mode and this feature is
+     * required by the UCCI league emulator.
+     */
+    std::vector<pos_move> red_banmoves;
+    std::vector<pos_move> black_banmoves;
 
     std::deque<pos_move> history;
     unsigned int rounds_since_last_eat;

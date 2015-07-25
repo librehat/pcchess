@@ -25,6 +25,21 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_
     }
 }
 
+game::game(abstract_player *_red, abstract_player *_black, const game &old_game) :
+    red(_red),
+    black(_black),
+    red_banmoves(old_game.red_banmoves),
+    black_banmoves(old_game.black_banmoves),
+    history(old_game.history),
+    rounds_since_last_eat(old_game.rounds_since_last_eat)
+{
+    if (red->is_opposite() || !black->is_opposite()) {
+        throw invalid_argument("player is in the wrong side");
+    } else {
+        setup_players();
+    }
+}
+
 long int game::step_time = 2000;
 unsigned int game::NO_EAT_DRAW_ROUNDS = 60;
 
@@ -46,7 +61,6 @@ abstract_player* game::playout(bool red_first)
             return second;
         } else {
             move_piece(next_move);
-            //first->add_history(next_move);
             second->opponent_moved(next_move, *first);
         }
         movable = second->think_next_move(next_move, m_board, *first);
@@ -54,7 +68,6 @@ abstract_player* game::playout(bool red_first)
             return first;
         } else {
             move_piece(next_move);
-            //second->add_history(next_move);
             first->opponent_moved(next_move, *second);
         }
     } while (rounds_since_last_eat < NO_EAT_DRAW_ROUNDS && NO_EAT_DRAW_ROUNDS != 0);
@@ -64,10 +77,10 @@ abstract_player* game::playout(bool red_first)
 
 void game::setup_players()
 {
-    auto our_pieces = red->get_pieces();
-    auto opp_pieces = black->get_pieces();
+    auto red_pieces = red->get_pieces();
+    auto black_pieces = black->get_pieces();
 
-    for (auto&& it : our_pieces) {//access by reference
+    for (auto&& it : red_pieces) {//access by reference
         position ipos = it->get_position();
         if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
@@ -75,7 +88,7 @@ void game::setup_players()
         m_board[ipos] = it;
     }
 
-    for (auto&& it : opp_pieces) {//access by reference
+    for (auto&& it : black_pieces) {//access by reference
         position ipos = it->get_position();
         if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
@@ -194,6 +207,11 @@ void game::parse_fen(const string &fen)
 deque<pos_move> game::get_history() const
 {
     return history;
+}
+
+unsigned int game::get_rounds_since_last_eat() const
+{
+    return rounds_since_last_eat;
 }
 
 void game::print_board(bool chinese_char) const
