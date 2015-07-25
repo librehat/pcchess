@@ -6,7 +6,7 @@
 #define SLOW_TREE_UCT_PLAYER_H
 
 #include "uct_player.h"
-#include <boost/mpi.hpp>
+#include <boost/mpi/communicator.hpp>
 
 class slow_tree_uct_player : public uct_player
 {

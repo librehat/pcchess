@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
+#include <boost/mpi/collectives.hpp>
 #include <boost/serialization/export.hpp>
 
 using namespace std;
@@ -168,7 +169,7 @@ void slow_tree_uct_player::do_slave_job()
             }
             request = world_comm.irecv(0, mpi::any_tag);
         } else {
-            static milliseconds nap(200);
+            static milliseconds nap(100);
             this_thread::sleep_for(nap);
         }
     } while (true);
@@ -216,14 +217,14 @@ void slow_tree_uct_player::slave_compute()
     }
 
     mpi::request request = world_comm.irecv(0, mpi::any_tag);
-    bool cont_comp = true;
+    bool cont_comp = true, no_more_sims = false;
     do {
-        if (!root->select()) {
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] have no more simulations, I'm going to take a nap for 100 ms" << endl;
-#endif
+        if (no_more_sims) {
             static milliseconds nap(100);
             this_thread::sleep_for(nap);
+        }
+        else if (!root->select()) {
+            no_more_sims = true;
         }
         boost::optional<mpi::status> req_ret = request.test();
         if (req_ret) {
@@ -231,6 +232,7 @@ void slow_tree_uct_player::slave_compute()
             case TAG_SYNC:
                 sync_tree();
                 request = world_comm.irecv(0, mpi::any_tag);//we may get a new order again
+                no_more_sims = false;//we may be able to do MCTS again
                 break;
             case TAG_COMP_FINISH:
                 cont_comp = false;
@@ -272,10 +274,6 @@ void slow_tree_uct_player::sync_tree()
 
     mpi::all_gather(world_comm, root, tree_vec);
 
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] gathered, merging now......" << endl;
-#endif
-
     int rank = world_comm.rank();
     for(int i = 0; i < world_size; ++i) {
         //don't merge itself
@@ -286,7 +284,17 @@ void slow_tree_uct_player::sync_tree()
         if (!root->is_basically_the_same(*(tree_vec[i]))) {
             root->merge(*(tree_vec[i]));
         }
-        delete tree_vec[i];
+    }
+
+    /*
+     * Somehow for rank 0, its root is just shallow copied to vector tree_vec,
+     * therefore we can't just delete all pointers in tree_vec.
+     * instead, delete all pointers that have different addresses than root
+     */
+    for (auto &&t : tree_vec) {
+        if (t != root) {
+            delete t;
+        }
     }
 
 #ifdef _DEBUG
