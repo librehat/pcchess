@@ -31,7 +31,9 @@ node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, unsigned
 
 node::~node()
 {
-    children.clear();
+    for (auto &&c : children) {
+        delete c.second;
+    }
     if (our_curr) {
         delete our_curr;
     }
@@ -45,16 +47,6 @@ double node::get_value() const
     return static_cast<double>(scores) / static_cast<double>(visits);
 }
 
-const pos_move& node::get_our_move() const
-{
-    return our_move;
-}
-
-const pos_move& node::get_opp_move() const
-{
-    return opp_move;
-}
-
 double node::get_uct_val() const
 {
 	if (parent) {
@@ -62,16 +54,6 @@ double node::get_uct_val() const
 	} else {
 		return 0;
 	}
-}
-
-void node::set_our_move(const pos_move &m)
-{
-    our_move = m;
-}
-
-void node::set_opp_move(const pos_move &m)
-{
-    opp_move = m;
 }
 
 bool node::select()
@@ -85,9 +67,9 @@ bool node::select()
          * best in this situation.
          */
         if (my_turn) {
-            return get_best_child_uct()->select();
+            return get_best_child_uct()->second->select();
         } else {
-            return get_worst_child_uct()->select();
+            return get_worst_child_uct()->second->select();
         }
     } else {
         return simulate();
@@ -104,7 +86,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
     pos_move next_move = hist.back();
     hist.pop_back();
 
-    auto child_iter = find_child(next_move);
+    auto child_iter = children.find(next_move);
     if (child_iter == children.end()) {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
@@ -114,12 +96,10 @@ void node::expand(deque<pos_move> &hist, const int &score)
         updater_sim.move_piece(next_move);
 
         node *child = new node(n_our, n_opp, !my_turn, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
-	    child->set_our_move(my_turn ? next_move : our_move);
-	    child->set_opp_move(my_turn ? opp_move : next_move);
-        children.push_back(child);
+        children.emplace(next_move, child);
         child->expand(hist, score);
     } else {
-        child_iter->expand(hist, score);
+        child_iter->second->expand(hist, score);
     }
 }
 
@@ -157,7 +137,7 @@ bool node::simulate()
     }
 }
 
-void node::merge(node &b)//FIXME: somehow it causes MPI address not mapped error
+void node::merge(node &b)
 {
     assert(is_same_place_in_tree(b));
     visits += b.visits;
@@ -165,29 +145,16 @@ void node::merge(node &b)//FIXME: somehow it causes MPI address not mapped error
 
     /* The node b will give its children to us, of which is either merged or pushed back as a new child */
     for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
-        bool merged = false;
-        for (auto src_it = children.begin(); src_it != children.end(); ++src_it) {
-            if (src_it->is_same_place_in_tree(*target_it)) {//we already have an equivalent node
-                merged = true;
-                node* target = b.release_child(target_it);
-                src_it->merge(*target);
-                delete target;
-                break;
-            }
+        auto src_it = children.find(target_it->first);
+        if (src_it != children.end()) {
+            src_it->second->merge(*(target_it->second));
+            delete target_it->second;
+        } else {
+            target_it->second->parent = this;
+            children.emplace(target_it->first, target_it->second);
         }
-
-        //this node is **new** to us
-        if (!merged) {
-            node* target = b.release_child(target_it);
-            target->parent = this;
-            children.push_back(target);
-        }
+        b.children.erase(target_it);
     }
-}
-
-node_iterator node::child_end()
-{
-    return children.end();
 }
 
 int node::children_size() const
@@ -204,39 +171,40 @@ void node::backpropagate(const int &score)
     }
 }
 
-node* node::release_child(node_iterator i)
+node* node::release_child(node::node_iterator i)
 {
     assert(i != children.end());
-    node* c = children.release(i).release();
+    node* c = i->second;
     c->parent = nullptr;
+    children.erase(i);
     return c;
 }
 
-node_iterator node::get_best_child()
+node::node_iterator node::get_best_child()
 {
     auto best = children.end();
     int current_max = 0;
     for (auto it = children.begin(); it != children.end(); ++it) {
-        if (it->visits > current_max) {
+        if (it->second->visits > current_max) {
             best = it;
-            current_max = it->visits;
+            current_max = it->second->visits;
         }
     }
     return best;
 }
 
-node_iterator node::get_best_child_uct()
+node::node_iterator node::get_best_child_uct()
 {
     if (children.empty()) {
         return children.end();
     }
 
     auto best_child = children.begin();
-    auto best_uct = children.front().get_uct_val();
+    auto best_uct = best_child->second->get_uct_val();
     auto it = children.begin();
     it++;
     for (; it != children.end(); ++it) {
-        auto uct = it->get_uct_val();
+        auto uct = it->second->get_uct_val();
         if (uct > best_uct) {
             best_child = it;
             best_uct = uct;
@@ -245,18 +213,18 @@ node_iterator node::get_best_child_uct()
     return best_child;
 }
 
-node_iterator node::get_worst_child_uct()
+node::node_iterator node::get_worst_child_uct()
 {
     if (children.empty()) {
         return children.end();
     }
 
     auto worst_child = children.begin();
-    auto worst_uct = children.front().get_uct_val();
+    auto worst_uct = worst_child->second->get_uct_val();
     auto it = children.begin();
     it++;
     for (; it != children.end(); ++it) {
-        auto uct = it->get_uct_val();
+        auto uct = it->second->get_uct_val();
         if (uct < worst_uct) {
             worst_child = it;
             worst_uct = uct;
@@ -265,26 +233,10 @@ node_iterator node::get_worst_child_uct()
     return worst_child;
 }
 
-node_iterator node::find_child(const pos_move &m)
-{
-    for (auto it = children.begin(); it != children.end(); ++it) {
-        if (my_turn) {
-            if (it->our_move == m) {
-                return it;
-            }
-        } else {
-            if (it->opp_move == m) {
-                return it;
-            }
-        }
-    }
-    return children.end();
-}
-
 bool node::is_same_place_in_tree(const node &b) const
 {
     /* true if they should be in the same place */
-    return !(my_turn != b.my_turn || depth != b.depth || our_move != b.our_move || opp_move != b.opp_move);
+    return !(my_turn != b.my_turn || depth != b.depth);
 }
 
 bool node::is_basically_the_same(const node &b) const

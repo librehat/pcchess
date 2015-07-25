@@ -2,29 +2,26 @@
 #define NODE_H
 
 #include <boost/utility.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
-#include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/unordered_map.hpp>
 #include "../core/position.h"
 #include "../core/abstract_player.h"
 #include <deque>
 #include <cstdint>
+#include <unordered_map>
 
 class node : boost::noncopyable
 {
 public:
+    typedef std::unordered_map<pos_move, node*>::iterator node_iterator;
+
     //WARN: the node will take memory control of _our and _opp pointers!
     explicit node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, unsigned int noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
-    const pos_move& get_our_move() const;
-    const pos_move& get_opp_move() const;
     double get_uct_val() const;
-
-    void set_our_move(const pos_move &m);
-    void set_opp_move(const pos_move &m);
 
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
@@ -35,22 +32,17 @@ public:
 
     virtual void backpropagate(const int &score);
     int children_size() const;
-    node* release_child(boost::ptr_list<node>::iterator i);
+    node* release_child(node_iterator i);
 
     /*
      * select child according to the visit times
      * be aware of the return value could be nullptr (if children is empty)
      */
-    boost::ptr_list<node>::iterator get_best_child();//best child which has highest visits
-    boost::ptr_list<node>::iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
-    boost::ptr_list<node>::iterator get_worst_child_uct();
-    boost::ptr_list<node>::iterator child_end();
-
-    /*
-     * find the children with same moves (our_move or opp_move, up to the parental my_turn value).
-     * return nullptr if no such child
-     */
-    boost::ptr_list<node>::iterator find_child(const pos_move &m);
+    node_iterator get_best_child();//best child which has highest visits
+    node_iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
+    node_iterator get_worst_child_uct();
+    inline node_iterator find_child(const pos_move &m) { return children.find(m); }
+    inline node_iterator child_end() { return children.end(); }
 
     bool is_same_place_in_tree(const node &b) const;
     bool is_basically_the_same(const node &b) const;//everything is the same except for those pointers such as parent
@@ -68,14 +60,11 @@ protected:
     const bool my_turn;
 
     node* parent;
-    boost::ptr_list<node> children;
+    std::unordered_map<pos_move, node*> children;
 
     //"current": the state in this node
     abstract_player* our_curr;
     abstract_player* opp_curr;
-
-    pos_move our_move;
-    pos_move opp_move;
 
     int depth;
     int visits;
@@ -97,8 +86,6 @@ private:
         ar & BOOST_SERIALIZATION_NVP(children);
         ar & BOOST_SERIALIZATION_NVP(our_curr);
         ar & BOOST_SERIALIZATION_NVP(opp_curr);
-        ar & BOOST_SERIALIZATION_NVP(our_move);
-        ar & BOOST_SERIALIZATION_NVP(opp_move);
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
@@ -108,7 +95,5 @@ private:
 
     static std::int64_t total_simulations;
 };
-
-typedef boost::ptr_list<node>::iterator node_iterator;
 
 #endif // NODE_H

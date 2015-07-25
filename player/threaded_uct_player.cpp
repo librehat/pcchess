@@ -46,11 +46,11 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &, const 
         return false;
     }
 
+    _move = best_child->first;
     node* new_root = root->release_child(best_child);
     delete root;
     root = new_root;
 
-    _move = root->get_our_move();
     return true;
 }
 

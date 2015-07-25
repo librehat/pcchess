@@ -22,7 +22,7 @@ bool threaded_node::select()
             bc = get_worst_child_uct();
         }
         children_mutex.unlock();
-        return bc->select();
+        return bc->second->select();
     } else {
         return simulate();
     }
@@ -43,10 +43,10 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
     hist.pop_back();
 
     children_mutex.lock();
-    auto child_iter = find_child(next_move);
+    auto child_iter = children.find(next_move);
     if (child_iter != children.end()) {
         children_mutex.unlock();
-        child_iter->expand(hist, score);
+        child_iter->second->expand(hist, score);
     } else {
         abstract_player* n_our = new random_player(*our_curr);
         abstract_player* n_opp = new random_player(*opp_curr);
@@ -56,9 +56,7 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
         updater_sim.move_piece(next_move);
 
         node *child = new threaded_node(n_our, n_opp, !my_turn, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
-        child->set_our_move(my_turn ? next_move : our_move);
-        child->set_opp_move(my_turn ? opp_move : next_move);
-        children.push_back(child);
+        children.emplace(next_move, child);
         children_mutex.unlock();
         child->expand(hist, score);
     }

@@ -47,12 +47,10 @@ bool uct_player::think_next_move(pos_move &_move, const board &, const abstract_
         return false;
     }
 
-    //this is the new tree root
+    _move = best_child->first;
     node* new_root = root->release_child(best_child);
     delete root;
     root = new_root;
-
-    _move = root->get_our_move();
 
 #if defined(_DEBUG) && defined(__linux__)
     static int i = 0;

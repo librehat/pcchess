@@ -1,4 +1,5 @@
 #include "position.h"
+#include <boost/functional/hash.hpp>
 
 class pos_move
 {
@@ -33,6 +34,23 @@ private:
 
 inline bool operator == (const pos_move &a, const pos_move &b) {
     return !(a != b);
+}
+
+namespace std
+{
+    template <>
+    struct hash<pos_move>
+    {
+        std::size_t operator()(const pos_move& m) const
+        {
+            std::size_t seed = 0;
+            boost::hash_combine(seed, m.from.file);
+            boost::hash_combine(seed, m.from.rank);
+            boost::hash_combine(seed, m.to.file);
+            boost::hash_combine(seed, m.to.rank);
+            return seed;
+        }
+    };
 }
 
 BOOST_IS_MPI_DATATYPE(pos_move)

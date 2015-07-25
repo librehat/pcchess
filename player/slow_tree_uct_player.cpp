@@ -84,19 +84,19 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
         return false;
     }
 
-    node* new_root = root->release_child(best_child);
+    _move = best_child->first;
     vector<mpi::request> request_vec;
     for (int i = 1; i < world_size; ++i) {
         request_vec.push_back(world_comm.isend(i, TAG_CHILD_SELEC));
     }
     for (int i = 1; i < world_size; ++i) {
         request_vec[i - 1].wait();
-        request_vec[i - 1] = world_comm.isend(i, TAG_CHILD_SELEC_DATA, new_root->get_our_move());
+        request_vec[i - 1] = world_comm.isend(i, TAG_CHILD_SELEC_DATA, _move);
     }
 
+    node* new_root = root->release_child(best_child);
     delete root;
     root = new_root;
-    _move = root->get_our_move();
 
     for (auto &&rt : request_vec) {
         rt.wait();
