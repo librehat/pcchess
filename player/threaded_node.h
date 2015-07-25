@@ -16,7 +16,7 @@ public:
 
     void backpropagate(const int &score);
 
-    static int get_total_simulations();
+    static std::int64_t get_total_simulations();
 
 private:
     //they're instantiated per instance (each instance has its own visits, scores, children)
@@ -30,7 +30,7 @@ private:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(node);
     }
 
-    static std::atomic<int> total_simulations;
+    static std::atomic<std::int64_t> total_simulations;
 };
 
 #endif //THREADED_NODE_H

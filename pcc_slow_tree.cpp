@@ -17,7 +17,7 @@ int main(int argc, char **argv)
      */
     mpi::environment env(argc, argv);
     mpi::communicator world_comm;
-    int rank = world_comm.rank();
+    std::ignore = env;
 
     //random_player rp(true);
     threaded_uct_player rp(true);
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     rp.init_pieces();
     stup.init_pieces();
 
-    if (rank == 0) {//master plays the game
+    if (world_comm.rank() == 0) {//master plays the game
         game g(&stup, &rp);
         abstract_player* winner = g.playout();
         if (winner == &stup) {
@@ -35,24 +35,12 @@ int main(int argc, char **argv)
         } else {
             cout << "Draw" << endl;
         }
-
-        for (int i = 1; i < world_comm.size(); ++i) {
-            world_comm.send(i, slow_tree_uct_player::TAG_EXIT);
-        }
 #ifdef _DEBUG
         g.print_board(true);
 #endif
+        cout << "Total Simulations: " << stup.get_total_simulations() << " vs " << rp.get_total_simulations() << endl;
     } else {
         stup.do_slave_job();
-    }
-
-    int sims = stup.get_total_simulations(), sum_sims = 0;
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] simulations : " << sims << endl;
-#endif
-    mpi::reduce(world_comm, sims, sum_sims, plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
-    if (rank == 0) {
-        cout << "Total Simulations: " << sum_sims << " v.s. " << rp.get_total_simulations() << endl;
     }
 
     return 0;

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int node::total_simulations = 0;
+int64_t node::total_simulations = 0;
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
@@ -302,7 +302,7 @@ bool node::operator !=(const node &b) const
     return parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr || !is_basically_the_same(b);
 }
 
-int node::get_total_simulations()
+int64_t node::get_total_simulations()
 {
     return total_simulations;
 }

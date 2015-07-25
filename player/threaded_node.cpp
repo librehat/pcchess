@@ -9,7 +9,7 @@ threaded_node::threaded_node(abstract_player *_our, abstract_player *_opp, bool 
     node(_our, _opp, _my_turn, noeat_half_rounds, _banmoves, _parent)
 {}
 
-atomic<int> threaded_node::total_simulations(0);
+atomic<int64_t> threaded_node::total_simulations(0);
 
 bool threaded_node::select()
 {
@@ -112,7 +112,7 @@ void threaded_node::backpropagate(const int &score)
     }
 }
 
-int threaded_node::get_total_simulations()
+int64_t threaded_node::get_total_simulations()
 {
     return total_simulations;
 }

@@ -12,9 +12,11 @@ class slow_tree_uct_player : public uct_player
 {
 public:
     explicit slow_tree_uct_player(long int sync_period_ms = 500, bool opposite = false);
+    ~slow_tree_uct_player();
 
     bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     void opponent_moved(const pos_move &m, const abstract_player &opponent, unsigned int no_eat_half_rounds);
+    std::int64_t get_total_simulations() const;
 
     void do_slave_job();
 
@@ -26,6 +28,7 @@ public:
     static const int TAG_COMP_LOOP = 30;
     static const int TAG_COMP_FINISH = 31;
     static const int TAG_BROADCAST_TREE = 40;
+    static const int TAG_REDUCE_SIMS = 50;
     static const int TAG_ERASE = 90;
     static const int TAG_EXIT = 0;
 

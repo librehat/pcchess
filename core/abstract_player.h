@@ -52,7 +52,7 @@ public:
         std::ignore = no_eat_half_rounds;
     }
 
-    virtual int get_total_simulations() const { return 0; }
+    virtual std::int64_t get_total_simulations() const { return 0; }
 
 protected:
     std::list<p_piece> pieces;

@@ -3,6 +3,7 @@
 #include "../core/game.h"
 #include "serialization_export.h"
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -52,6 +53,16 @@ bool uct_player::think_next_move(pos_move &_move, const board &, const abstract_
     root = new_root;
 
     _move = root->get_our_move();
+
+#if defined(_DEBUG) && defined(__linux__)
+    static int i = 0;
+    if (i == 0) {
+        ofstream fs("/tmp/t.xml");
+        xml_archive_tree(fs, root);
+        fs.close();
+    }
+    i++;
+#endif
     return true;
 }
 
@@ -72,7 +83,7 @@ void uct_player::opponent_moved(const pos_move &m, const abstract_player &oppone
     root = new_root;
 }
 
-int uct_player::get_total_simulations() const
+int64_t uct_player::get_total_simulations() const
 {
     return node::get_total_simulations();
 }

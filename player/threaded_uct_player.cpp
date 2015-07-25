@@ -71,7 +71,7 @@ void threaded_uct_player::opponent_moved(const pos_move &m, const abstract_playe
     root = new_root;
 }
 
-int threaded_uct_player::get_total_simulations() const
+int64_t threaded_uct_player::get_total_simulations() const
 {
     return threaded_node::get_total_simulations();
 }

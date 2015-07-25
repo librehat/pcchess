@@ -9,6 +9,7 @@
 #include "../core/position.h"
 #include "../core/abstract_player.h"
 #include <deque>
+#include <cstdint>
 
 class node : boost::noncopyable
 {
@@ -57,7 +58,7 @@ public:
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
 
-    static int get_total_simulations();
+    static std::int64_t get_total_simulations();
 
 protected:
     /*
@@ -105,7 +106,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(banmoves);
     }
 
-    static int total_simulations;
+    static std::int64_t total_simulations;
 };
 
 typedef boost::ptr_list<node>::iterator node_iterator;

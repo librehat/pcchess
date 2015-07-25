@@ -15,16 +15,19 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-    int opt, rounds = 1;
+    int opt, games = 1;
     bool enable_print = false, chinese_print = false;
 
-    while((opt = getopt(argc, argv, "r:t:pch")) != -1) {
+    while((opt = getopt(argc, argv, "g:t:pch")) != -1) {
         switch(opt) {
-        case 'r':
-            rounds = atoi(optarg);
+        case 'g':
+            games = atoi(optarg);
             break;
         case 't':
             game::step_time = atol(optarg);
+            break;
+        case 'n':
+            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<unsigned int>(atoi(optarg));
             break;
         case 'p':
             enable_print = true;
@@ -34,8 +37,9 @@ int main(int argc, char** argv)
             break;
         default:
             cout << "Command-line options:\n"
-                 << "  -r <number of rounds>\n"
+                 << "  -g <number of games>\n"
                  << "  -t <maximum think time (milliseconds)>\n"
+                 << "  -n <maximum rounds when no piece gets eaten>\tset to 0 to disable this feature\n"
                  << "  -p\tprint out the board after each round\n"
                  << "  -c\tuse Chinese characters in the board\n"
                  << endl;
@@ -46,9 +50,9 @@ int main(int argc, char** argv)
     int we_win = 0;
     int we_draw = 0;
     int we_lose = 0;
-    int our_sims = 0;
-    int opp_sims = 0;
-    for (int i = 0; i < rounds; ++i) {
+    int64_t our_sims = 0;
+    int64_t opp_sims = 0;
+    for (int i = 0; i < games; ++i) {
         threaded_uct_player red(false);
         uct_player black(true);
         red.init_pieces();
