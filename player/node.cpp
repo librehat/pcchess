@@ -190,7 +190,8 @@ int node::children_size() const
 void node::backpropagate(const int &score)
 {
     if (parent) {
-        parent->scores += score;//TODO should we backpropagate visits?
+        parent->visits += 1;
+        parent->scores += score;
         parent->backpropagate(score);
     }
 }

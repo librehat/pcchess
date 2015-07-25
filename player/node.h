@@ -31,7 +31,7 @@ public:
 
     void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree
 
-    void backpropagate(const int &score);
+    virtual void backpropagate(const int &score);
     int children_size() const;
     node* release_child(boost::ptr_list<node>::iterator i);
 

@@ -15,7 +15,12 @@ bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
         children_mutex.lock();
-        auto bc = get_best_child_uct();
+        node_iterator bc;
+        if (my_turn) {
+            bc = get_best_child_uct();
+        } else {
+            bc = get_worst_child_uct();
+        }
         children_mutex.unlock();
         return bc->select();
     } else {
@@ -82,10 +87,24 @@ bool threaded_node::simulate()
         visits++;
         scores += result;
         value_mutex.unlock();
+        backpropagate(result);
         return false;
     } else {
         expand(hist, result);//this very node is definitely the parental node
+        backpropagate(result);
         return true;
+    }
+}
+
+void threaded_node::backpropagate(const int &score)
+{
+    if (parent) {
+        threaded_node* p = dynamic_cast<threaded_node*>(parent);
+        p->value_mutex.lock();
+        p->visits += 1;
+        p->scores += score;
+        p->value_mutex.unlock();
+        p->backpropagate(score);
     }
 }
 

@@ -14,6 +14,8 @@ public:
     void expand(std::deque<pos_move> &hist, const int &score);
     bool simulate();
 
+    void backpropagate(const int &score);
+
     static int get_total_simulations();
 
 private:
