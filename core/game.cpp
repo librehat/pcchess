@@ -65,7 +65,7 @@ abstract_player* game::playout(bool red_first)
                 return second;
             }
             move_piece(next_move);
-            second->opponent_moved(next_move, *first);
+            second->opponent_moved(next_move, *first, half_rounds_since_last_eat);
         }
 
         movable = second->think_next_move(next_move, m_board, *first, half_rounds_since_last_eat, second_banmoves);
@@ -76,7 +76,7 @@ abstract_player* game::playout(bool red_first)
                 return first;
             }
             move_piece(next_move);
-            first->opponent_moved(next_move, *second);
+            first->opponent_moved(next_move, *second, half_rounds_since_last_eat);
         }
 
         //TODO banmoves should be updated after one round

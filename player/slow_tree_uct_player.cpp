@@ -107,7 +107,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     return true;
 }
 
-void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent)
+void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent, unsigned int no_eat_half_rounds)
 {
     if (!root) {
         return;
@@ -127,7 +127,7 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_play
         root = new_root;
     } else {
         delete root;
-        root = new node(new random_player(*this), new random_player(opponent), true);
+        root = new node(new random_player(*this), new random_player(opponent), true, no_eat_half_rounds);
         broadcast_tree();
     }
 }

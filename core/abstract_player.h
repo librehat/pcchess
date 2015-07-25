@@ -5,6 +5,7 @@
 #include "position.h"
 #include "pos_move.h"
 #include <list>
+#include <tuple>
 #include <boost/serialization/list.hpp>
 
 class abstract_player
@@ -45,7 +46,11 @@ public:
      * after the opponent moved.
      * this function does nothing by default
      */
-    virtual void opponent_moved(const pos_move &, const abstract_player &) {}
+    virtual void opponent_moved(const pos_move &, const abstract_player &opponent_player, unsigned int no_eat_half_rounds)
+    {
+        std::ignore = opponent_player;
+        std::ignore = no_eat_half_rounds;
+    }
 
     virtual int get_total_simulations() const { return 0; }
 

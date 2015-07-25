@@ -54,7 +54,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &, const 
     return true;
 }
 
-void threaded_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent)
+void threaded_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent, unsigned int no_eat_half_rounds)
 {
     if (!root) {
         return;
@@ -65,7 +65,7 @@ void threaded_uct_player::opponent_moved(const pos_move &m, const abstract_playe
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
     } else {
-        new_root = new threaded_node(new random_player(*this), new random_player(opponent), true);
+        new_root = new threaded_node(new random_player(*this), new random_player(opponent), true, no_eat_half_rounds);
     }
     delete root;
     root = new_root;
