@@ -150,11 +150,6 @@ void slow_tree_uct_player::do_slave_job()
             case TAG_COMP_LOOP:
                 slave_compute();
                 break;
-            case TAG_COMP_FINISH:
-    #ifdef _DEBUG
-                cout << "[" << world_comm.rank() << "] seems I finished my comp_loop earlier than expected, maybe I have no move to test" << endl;
-    #endif
-                break;
             case TAG_BROADCAST_TREE:
                 broadcast_tree();
                 break;
