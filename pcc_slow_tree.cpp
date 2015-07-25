@@ -39,6 +39,9 @@ int main(int argc, char **argv)
         for (int i = 1; i < world_comm.size(); ++i) {
             world_comm.send(i, slow_tree_uct_player::TAG_EXIT);
         }
+#ifdef _DEBUG
+        g.print_board(true);
+#endif
     } else {
         stup.do_slave_job();
     }
