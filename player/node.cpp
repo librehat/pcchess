@@ -12,13 +12,15 @@ int node::total_simulations = 0;
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
-node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, node *_parent) :
+node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
 	my_turn(_my_turn),
     parent(_parent),
     our_curr(_our),
     opp_curr(_opp),
     visits(0),
-    scores(0)
+    scores(0),
+    no_eat_half_rounds(noeat_half_rounds),
+    banmoves(_banmoves)
 {
     if (parent) {
         depth = parent->depth + 1;
@@ -108,10 +110,10 @@ void node::expand(deque<pos_move> &hist, const int &score)
         abstract_player* n_opp = new random_player(*opp_curr);
         bool is_red = !n_our->is_opposite();
 
-        game updater_sim(is_red ? n_our : n_opp, is_red ? n_opp : n_our);
+        game updater_sim(is_red ? n_our : n_opp, is_red ? n_opp : n_our, no_eat_half_rounds);
         updater_sim.move_piece(next_move);
 
-        node *child = new node(n_our, n_opp, !my_turn, this);
+        node *child = new node(n_our, n_opp, !my_turn, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
 	    child->set_our_move(my_turn ? next_move : our_move);
 	    child->set_opp_move(my_turn ? opp_move : next_move);
         children.push_back(child);
@@ -127,7 +129,7 @@ bool node::simulate()
     random_player t_opp(*opp_curr);
     bool is_red = !t_our.is_opposite();
 
-    game sim_game(is_red ? &t_our : &t_opp, is_red ? &t_opp : &t_our);
+    game sim_game(is_red ? &t_our : &t_opp, is_red ? &t_opp : &t_our, no_eat_half_rounds, is_red ? banmoves : vector<pos_move>(), is_red ? vector<pos_move>() : banmoves);
     abstract_player* winner = sim_game.playout(my_turn && is_red);
     int result = 0;
     if (winner == &t_our) {

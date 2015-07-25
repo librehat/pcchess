@@ -8,15 +8,16 @@
 #include "cannon.h"
 #include <iostream>
 #include <stdexcept>
+#include <algorithm>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 using namespace std;
 
-game::game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_rounds) :
+game::game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds) :
     red(_red),
     black(_black),
-    rounds_since_last_eat(not_eat_rounds)
+    half_rounds_since_last_eat(no_eat_half_rounds)
 {
     if (red->is_opposite() || !black->is_opposite()) {
         throw invalid_argument("player is in the wrong side");
@@ -25,13 +26,12 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int not_eat_
     }
 }
 
-game::game(abstract_player *_red, abstract_player *_black, const game &old_game) :
+game::game(abstract_player *_red, abstract_player *_black, unsigned int no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm) :
     red(_red),
     black(_black),
-    red_banmoves(old_game.red_banmoves),
-    black_banmoves(old_game.black_banmoves),
-    history(old_game.history),
-    rounds_since_last_eat(old_game.rounds_since_last_eat)
+    red_banmoves(red_bm),
+    black_banmoves(black_bm),
+    half_rounds_since_last_eat(no_eat_half_rounds)
 {
     if (red->is_opposite() || !black->is_opposite()) {
         throw invalid_argument("player is in the wrong side");
@@ -41,7 +41,7 @@ game::game(abstract_player *_red, abstract_player *_black, const game &old_game)
 }
 
 long int game::step_time = 2000;
-unsigned int game::NO_EAT_DRAW_ROUNDS = 60;
+unsigned int game::NO_EAT_DRAW_HALF_ROUNDS = 120;
 
 game::~game()
 {}
@@ -53,24 +53,36 @@ abstract_player* game::playout(bool red_first)
 
     abstract_player* first = red_first ? red : black;
     abstract_player* second = red_first ? black : red;
+    vector<pos_move> &first_banmoves = red_first ? red_banmoves : black_banmoves;
+    vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
     do {
-        rounds_since_last_eat++;
-        movable = first->think_next_move(next_move, m_board, *second);
+        movable = first->think_next_move(next_move, m_board, *second, half_rounds_since_last_eat, first_banmoves);
         if (!movable || first->is_checkmated()) {
             return second;
         } else {
+            if (find(first_banmoves.begin(), first_banmoves.end(), next_move) != first_banmoves.end()) {
+                return second;
+            }
             move_piece(next_move);
             second->opponent_moved(next_move, *first);
         }
-        movable = second->think_next_move(next_move, m_board, *first);
+
+        movable = second->think_next_move(next_move, m_board, *first, half_rounds_since_last_eat, second_banmoves);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
+            if (find(second_banmoves.begin(), second_banmoves.end(), next_move) != second_banmoves.end()) {
+                return first;
+            }
             move_piece(next_move);
             first->opponent_moved(next_move, *second);
         }
-    } while (rounds_since_last_eat < NO_EAT_DRAW_ROUNDS && NO_EAT_DRAW_ROUNDS != 0);
+
+        //TODO banmoves should be updated after one round
+        first_banmoves.clear();
+        second_banmoves.clear();
+    } while (half_rounds_since_last_eat < NO_EAT_DRAW_HALF_ROUNDS && NO_EAT_DRAW_HALF_ROUNDS != 0);
 
     return nullptr;
 }
@@ -116,13 +128,35 @@ void game::move_piece(const pos_move &_move)
         } else {
             red->remove(target);
         }
-        rounds_since_last_eat = 0;
+        half_rounds_since_last_eat = 0;
+    } else {
+        half_rounds_since_last_eat++;
     }
 
     m_board[_move.from] = nullptr;
     m_board[_move.to] = piece;
     piece->move_to_pos(_move.to);
     history.push_front(_move);
+}
+
+void game::set_red_banmoves(const std::vector<pos_move> &bm)
+{
+    red_banmoves = bm;
+}
+
+void game::set_black_banmoves(const std::vector<pos_move> &bm)
+{
+    black_banmoves = bm;
+}
+
+const vector<pos_move>& game::get_red_banmoves() const
+{
+    return red_banmoves;
+}
+
+const vector<pos_move>& game::get_black_banmoves() const
+{
+    return black_banmoves;
 }
 
 void game::parse_fen(const string &fen)
@@ -209,9 +243,9 @@ deque<pos_move> game::get_history() const
     return history;
 }
 
-unsigned int game::get_rounds_since_last_eat() const
+unsigned int game::get_half_rounds_since_last_eat() const
 {
-    return rounds_since_last_eat;
+    return half_rounds_since_last_eat;
 }
 
 void game::print_board(bool chinese_char) const

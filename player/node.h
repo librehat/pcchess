@@ -5,6 +5,7 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
 #include "../core/position.h"
 #include "../core/abstract_player.h"
 #include <deque>
@@ -13,7 +14,7 @@ class node : boost::noncopyable
 {
 public:
     //WARN: the node will take memory control of _our and _opp pointers!
-    explicit node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, node *_parent = nullptr);
+    explicit node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, unsigned int noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
@@ -79,6 +80,9 @@ protected:
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
 
+    unsigned int no_eat_half_rounds;
+    std::vector<pos_move> banmoves;//banmoves is always _our_ banmoves
+
     static const int select_threshold;
     static const double uct_constant;
 
@@ -97,6 +101,8 @@ private:
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
+        ar & BOOST_SERIALIZATION_NVP(no_eat_half_rounds);
+        ar & BOOST_SERIALIZATION_NVP(banmoves);
     }
 
     static int total_simulations;

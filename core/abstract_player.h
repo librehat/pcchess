@@ -38,7 +38,7 @@ public:
      * in arguments.
      * otherwise, return false if no move can be made
      */
-    virtual bool think_next_move(pos_move &m, const board &bd, const abstract_player &opponent) = 0;
+    virtual bool think_next_move(pos_move &m, const board &bd, const abstract_player &opponent, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves) = 0;
 
     /*
      * the sub-class player might want to change some strategies

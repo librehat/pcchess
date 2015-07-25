@@ -15,7 +15,7 @@ public:
     explicit uct_player(bool opposite = false);
     virtual ~uct_player();
 
-    virtual bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent);
+    virtual bool think_next_move(pos_move &_move, const board &, const abstract_player &opponent, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     virtual void opponent_moved(const pos_move &m, const abstract_player &opponent);
     virtual int get_total_simulations() const;
 
