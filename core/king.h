@@ -20,6 +20,7 @@ public:
     char abbr_name() const;
     std::string chinese_name() const;
     int value() const;
+    bool is_king() const { return true; }
     
 protected:
     void gen_moves(const board &m_board);

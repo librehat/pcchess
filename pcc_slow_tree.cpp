@@ -19,9 +19,8 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     std::ignore = env;
 
-    //random_player rp(true);
-    threaded_uct_player rp(true);
-    slow_tree_uct_player stup(800, false);
+    threaded_uct_player rp(0, false);
+    slow_tree_uct_player stup(800, true);
     rp.init_pieces();
     stup.init_pieces();
 

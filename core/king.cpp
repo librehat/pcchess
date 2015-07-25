@@ -2,8 +2,8 @@
 
 using namespace std;
 
-const position king::up = position(0, -1);
-const position king::down = position(0, 1);
+const position king::up = position(0, 1);
+const position king::down = position(0, -1);
 const position king::left = position(-1, 0);
 const position king::right = position(1, 0);
 
@@ -14,7 +14,7 @@ abstract_piece* king::make_a_copy() const
 
 char king::abbr_name() const
 {
-    return 'K';//use more widespread translation
+    return red_side ? 'K' : 'k';//use more widespread translation
 }
 
 string king::chinese_name() const
@@ -47,7 +47,7 @@ void king::gen_moves(const board &m_board)
             if (found_king) {
                 other_piece_between = true;
                 break;
-            } else if (m_board.at(pos_left.file, irank)->abbr_name() == 'G') {
+            } else if (m_board.at(pos_left.file, irank)->is_king()) {
                 found_king = true;
             }
         }
@@ -64,7 +64,7 @@ void king::gen_moves(const board &m_board)
             if (found_king) {
                 other_piece_between = true;
                 break;
-            } else if (m_board.at(pos_right.file, irank)->abbr_name() == 'G') {
+            } else if (m_board.at(pos_left.file, irank)->is_king()) {
                 found_king = true;
             }
         }
@@ -74,5 +74,5 @@ void king::gen_moves(const board &m_board)
         avail_moves.push_back(pos_right);
     }
     
-    remove_invalid_moves(m_board, 3, 5, m_opposite ? 0 : 7, m_opposite ? 2 : 9);
+    remove_invalid_moves(m_board, 3, 5, red_side ? 0 : 7, red_side ? 2 : 9);
 }

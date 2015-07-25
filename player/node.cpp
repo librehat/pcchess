@@ -12,11 +12,11 @@ int64_t node::total_simulations = 0;
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//need to be tuned based on experiments
 
-node::node(abstract_player *_our, abstract_player *_opp, bool _my_turn, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
+node::node(const string &fen, bool _my_turn, bool is_red_side, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
 	my_turn(_my_turn),
+    red_side(is_red_side),
     parent(_parent),
-    our_curr(_our),
-    opp_curr(_opp),
+    current_fen(fen),
     visits(0),
     scores(0),
     no_eat_half_rounds(noeat_half_rounds),
@@ -33,12 +33,6 @@ node::~node()
 {
     for (auto &&c : children) {
         delete c.second;
-    }
-    if (our_curr) {
-        delete our_curr;
-    }
-    if (opp_curr) {
-        delete opp_curr;
     }
 }
 
@@ -88,14 +82,12 @@ void node::expand(deque<pos_move> &hist, const int &score)
 
     auto child_iter = children.find(next_move);
     if (child_iter == children.end()) {
-        abstract_player* n_our = new random_player(*our_curr);
-        abstract_player* n_opp = new random_player(*opp_curr);
-        bool is_red = !n_our->is_opposite();
-
-        game updater_sim(is_red ? n_our : n_opp, is_red ? n_opp : n_our, no_eat_half_rounds);
+        random_player tr(true), tb(false);
+        game updater_sim(&tr, &tb, no_eat_half_rounds);
+        updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
 
-        node *child = new node(n_our, n_opp, !my_turn, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
+        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
         children.emplace(next_move, child);
         child->expand(hist, score);
     } else {
@@ -106,17 +98,17 @@ void node::expand(deque<pos_move> &hist, const int &score)
 bool node::simulate()
 {
     total_simulations++;
-    random_player t_our(*our_curr);
-    random_player t_opp(*opp_curr);
-    bool is_red = !t_our.is_opposite();
 
-    game sim_game(is_red ? &t_our : &t_opp, is_red ? &t_opp : &t_our, no_eat_half_rounds, is_red ? banmoves : vector<pos_move>(), is_red ? vector<pos_move>() : banmoves);
-    abstract_player* winner = sim_game.playout(my_turn && is_red);
+    random_player tr(true), tb(false);
+    game sim_game(&tr, &tb, no_eat_half_rounds, red_side ? banmoves : vector<pos_move>(), red_side ? vector<pos_move>() : banmoves);
+    sim_game.parse_fen(current_fen);
+    abstract_player* winner = sim_game.playout(!(my_turn ^ red_side));
+
     int result = 0;
-    if (winner == &t_our) {
-        result = 1;
-    } else if (winner == &t_opp){
-        result = -1;
+    if (winner == &tr) {
+        result = red_side ? 1 : -1;
+    } else if (winner == &tb) {
+        result = red_side ? -1 : 1;
     }
 
     auto hist = sim_game.get_history();
@@ -251,7 +243,7 @@ bool node::operator ==(const node &b) const
 
 bool node::operator !=(const node &b) const
 {
-    return parent != b.parent || children != b.children || our_curr != b.our_curr || opp_curr != b.opp_curr || !is_basically_the_same(b);
+    return parent != b.parent || children != b.children || !is_basically_the_same(b);
 }
 
 int64_t node::get_total_simulations()

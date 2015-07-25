@@ -18,15 +18,14 @@
 class abstract_piece
 {
 public:
-    explicit abstract_piece(int _file = 0, int _rank = 0, bool oppo = false);
+    explicit abstract_piece(int _file = 0, int _rank = 0, bool red = true);
     explicit abstract_piece(const abstract_piece &b);
     virtual ~abstract_piece();
 
     /*
-     * if it's in opposite side, we may need to take care of the
-     * coordinate system.
+     * we need to take care of the coordinate system for different sides
      */
-    bool is_opposite_side() const;
+    bool is_redside() const;
 
     position get_position() const;
 
@@ -44,6 +43,7 @@ public:
     virtual char abbr_name() const = 0;
     virtual std::string chinese_name() const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
+    virtual bool is_king() const { return false; }
 
     virtual abstract_piece* make_a_copy() const = 0;
 
@@ -51,7 +51,7 @@ public:
     bool operator !=(const abstract_piece &b);
 
 protected:
-    const bool m_opposite;
+    const bool red_side;
     position pos;
     std::vector<position> avail_moves;
 
@@ -71,7 +71,7 @@ private:
     template<class Archive>
     void serialize(Archive &ar, const unsigned int)
     {
-        ar & boost::serialization::make_nvp("m_opposite", const_cast<bool &>(m_opposite));
+        ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
         ar & BOOST_SERIALIZATION_NVP(pos);
         ar & BOOST_SERIALIZATION_NVP(avail_moves);
     }

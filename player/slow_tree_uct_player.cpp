@@ -14,8 +14,8 @@ namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
-slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool opposite) :
-    uct_player(opposite),
+slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
+    uct_player(red),
     sync_period(sync_period_ms)
 {
     assert(sync_period > 0);
@@ -32,7 +32,7 @@ slow_tree_uct_player::~slow_tree_uct_player()
 
 mpi::communicator slow_tree_uct_player::world_comm;
 
-bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const abstract_player &opponent, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
+bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const string &fen, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
 {
     static const thread_local milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -40,7 +40,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     static const thread_local int world_size = world_comm.size();
 
     if (!root) {
-        root = new node(new random_player(*this), new random_player(opponent), true, no_eat_half_rounds, banmoves);
+        root = new node(fen, true, red_side, no_eat_half_rounds, banmoves);
         broadcast_tree();
     }
 
@@ -105,7 +105,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     return true;
 }
 
-void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_player &opponent, unsigned int no_eat_half_rounds)
+void slow_tree_uct_player::opponent_moved(const pos_move &m)
 {
 #ifdef _DEBUG
     cout << "opponent_moved" << endl;
@@ -125,13 +125,9 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m, const abstract_play
             world_comm.send(i, TAG_OPPMOV_DATA, m);
         }
         new_root = root->release_child(root_iter);
-        delete root;
-        root = new_root;
-    } else {
-        delete root;
-        root = new node(new random_player(*this), new random_player(opponent), true, no_eat_half_rounds);
-        broadcast_tree();
     }
+    delete root;
+    root = new_root;
 }
 
 void slow_tree_uct_player::do_slave_job()

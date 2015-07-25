@@ -2,13 +2,13 @@
 
 using namespace std;
 
-abstract_piece::abstract_piece(int _file, int _rank, bool oppo) :
-    m_opposite(oppo),
+abstract_piece::abstract_piece(int _file, int _rank, bool red) :
+    red_side(red),
     pos(_file, _rank)
 {}
 
 abstract_piece::abstract_piece(const abstract_piece &b) :
-    m_opposite(b.m_opposite),
+    red_side(b.red_side),
     pos(b.pos),
     avail_moves(b.avail_moves)
 {}
@@ -16,9 +16,9 @@ abstract_piece::abstract_piece(const abstract_piece &b) :
 abstract_piece::~abstract_piece()
 {}
 
-bool abstract_piece::is_opposite_side() const
+bool abstract_piece::is_redside() const
 {
-    return m_opposite;
+    return red_side;
 }
 
 position abstract_piece::get_position() const
@@ -54,7 +54,7 @@ bool abstract_piece::can_i_move(const board &m_board) const
         auto piece = m_board.at(pos.file, irank);
         if (piece) {
             if (found_one_g) {
-                if (piece->abbr_name() == 'G') {//another General
+                if (piece->is_king()) {
                     break;
                 }
                 
@@ -62,7 +62,7 @@ bool abstract_piece::can_i_move(const board &m_board) const
                 if (*piece == *this) {
                     am_i_in_between = true;
                 }
-            } else if (piece->abbr_name() == 'G') {
+            } else if (piece->is_king()) {
                 found_one_g = true;
             }
         }
@@ -81,7 +81,7 @@ void abstract_piece::remove_invalid_moves(const board &m_board, int min_file, in
             auto target_piece = m_board.at(*it);
             if (target_piece) {
                 //can't capture same-side pieces
-                if (target_piece->is_opposite_side() == this->m_opposite) {
+                if (target_piece->red_side == this->red_side) {
                     invalid = true;
                 }
             }
@@ -112,5 +112,5 @@ bool abstract_piece::operator ==(const abstract_piece &b)
 
 bool abstract_piece::operator !=(const abstract_piece &b)
 {
-    return m_opposite != b.m_opposite && pos != b.pos && avail_moves != b.avail_moves;
+    return red_side != b.red_side && pos != b.pos && avail_moves != b.avail_moves;
 }

@@ -9,7 +9,7 @@ abstract_piece* cannon::make_a_copy() const
 
 char cannon::abbr_name() const
 {
-    return 'C';
+    return red_side ? 'C' : 'c';
 }
 
 string cannon::chinese_name() const

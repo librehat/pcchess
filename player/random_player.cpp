@@ -4,15 +4,15 @@
 
 using namespace std;
 
-random_player::random_player(bool opposite) :
-    abstract_player(opposite)
+random_player::random_player(bool red) :
+    abstract_player(red)
 {}
 
 random_player::random_player(const abstract_player &b) :
     abstract_player(b)
 {}
 
-bool random_player::think_next_move(pos_move &_move, const board &bd, const abstract_player &, unsigned int, const vector<pos_move> &)
+bool random_player::think_next_move(pos_move &_move, const board &bd, const string &, unsigned int, const vector<pos_move> &)
 {
     random_device device;
     static thread_local mt19937 generator(device());

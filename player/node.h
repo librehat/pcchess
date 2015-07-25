@@ -1,23 +1,23 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <boost/utility.hpp>
+#include "../core/position.h"
+#include "../core/abstract_player.h"
+#include <boost/noncopyable.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/unordered_map.hpp>
-#include "../core/position.h"
-#include "../core/abstract_player.h"
+#include <boost/serialization/string.hpp>
+#include <unordered_map>
 #include <deque>
 #include <cstdint>
-#include <unordered_map>
 
 class node : boost::noncopyable
 {
 public:
     typedef std::unordered_map<pos_move, node*>::iterator node_iterator;
 
-    //WARN: the node will take memory control of _our and _opp pointers!
-    explicit node(abstract_player* _our = nullptr, abstract_player* _opp = nullptr, bool _my_turn = true, unsigned int noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
+    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, unsigned int noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
@@ -58,13 +58,13 @@ protected:
      * if not, all my children's our_move are the same, but they have different opp_move
      */
     const bool my_turn;
+    const bool red_side;
 
     node* parent;
     std::unordered_map<pos_move, node*> children;
 
-    //"current": the state in this node
-    abstract_player* our_curr;
-    abstract_player* opp_curr;
+    //use FEN string could save a LOT of data!
+    std::string current_fen;
 
     int depth;
     int visits;
@@ -82,10 +82,10 @@ private:
     void serialize(Archive & ar, const unsigned int)
     {
         ar & boost::serialization::make_nvp("my_turn", const_cast<bool &>(my_turn));
+        ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
-        ar & BOOST_SERIALIZATION_NVP(our_curr);
-        ar & BOOST_SERIALIZATION_NVP(opp_curr);
+        ar & BOOST_SERIALIZATION_NVP(current_fen);
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);

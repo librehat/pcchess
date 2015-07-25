@@ -11,14 +11,14 @@
 
 using namespace std;
 
-abstract_player::abstract_player(bool opposite) :
-    opposite_player(opposite),
+abstract_player::abstract_player(bool red) :
+    red_side(red),
     checked(false),
     checkmated(false)
 {}
 
 abstract_player::abstract_player(const abstract_player &b) :
-    opposite_player(b.opposite_player),
+    red_side(b.red_side),
     checked(b.checked),
     checkmated(b.checkmated)
 {
@@ -42,7 +42,7 @@ abstract_player::~abstract_player()
 
 void abstract_player::add(p_piece p)
 {
-    if(p->is_opposite_side() != opposite_player) {
+    if(p->is_redside() != red_side) {
         throw invalid_argument("piece to add belongs to different side");
     }
     pieces.push_back(p);
@@ -72,55 +72,55 @@ void abstract_player::init_pieces()
     p_piece p;
 
     //pawns
-    p = p_piece(new pawn(0, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(0, red_side ? 3 : 6, red_side));
     pieces.push_back(p);
-    p = p_piece(new pawn(2, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(2, red_side ? 3 : 6, red_side));
     pieces.push_back(p);
-    p = p_piece(new pawn(4, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(4, red_side ? 3 : 6, red_side));
     pieces.push_back(p);
-    p = p_piece(new pawn(6, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(6, red_side ? 3 : 6, red_side));
     pieces.push_back(p);
-    p = p_piece(new pawn(8, opposite_player ? 3 : 6, opposite_player));
+    p = p_piece(new pawn(8, red_side ? 3 : 6, red_side));
     pieces.push_back(p);
 
     //cannons
-    p = p_piece(new cannon(1, opposite_player ? 2 : 7, opposite_player));
+    p = p_piece(new cannon(1, red_side ? 2 : 7, red_side));
     pieces.push_back(p);
-    p = p_piece(new cannon(7, opposite_player ? 2 : 7, opposite_player));
+    p = p_piece(new cannon(7, red_side ? 2 : 7, red_side));
     pieces.push_back(p);
 
     //chariots
-    p = p_piece(new chariot(0, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new chariot(0, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
-    p = p_piece(new chariot(8, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new chariot(8, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
 
     //horses
-    p = p_piece(new horse(1, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new horse(1, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
-    p = p_piece(new horse(7, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new horse(7, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
 
     //elephants
-    p = p_piece(new elephant(2, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new elephant(2, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
-    p = p_piece(new elephant(6, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new elephant(6, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
 
     //advisors
-    p = p_piece(new advisor(3, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new advisor(3, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
-    p = p_piece(new advisor(5, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new advisor(5, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
 
     //king (general)
-    p = p_piece(new king(4, opposite_player ? 0 : 9, opposite_player));
+    p = p_piece(new king(4, red_side ? 0 : 9, red_side));
     pieces.push_back(p);
 }
 
-bool abstract_player::is_opposite() const
+bool abstract_player::is_redside() const
 {
-    return opposite_player;
+    return red_side;
 }
 
 bool abstract_player::is_checked() const

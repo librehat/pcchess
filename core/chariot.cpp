@@ -9,7 +9,7 @@ abstract_piece* chariot::make_a_copy() const
 
 char chariot::abbr_name() const
 {
-    return 'R';
+    return red_side ? 'R' : 'r';
 }
 
 string chariot::chinese_name() const

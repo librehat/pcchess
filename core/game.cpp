@@ -19,7 +19,7 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_h
     black(_black),
     half_rounds_since_last_eat(no_eat_half_rounds)
 {
-    if (red->is_opposite() || !black->is_opposite()) {
+    if (!red->is_redside() || black->is_redside()) {
         throw invalid_argument("player is in the wrong side");
     } else {
         setup_players();
@@ -33,7 +33,7 @@ game::game(abstract_player *_red, abstract_player *_black, unsigned int no_eat_h
     black_banmoves(black_bm),
     half_rounds_since_last_eat(no_eat_half_rounds)
 {
-    if (red->is_opposite() || !black->is_opposite()) {
+    if (!red->is_redside() || black->is_redside()) {
         throw invalid_argument("player is in the wrong side");
     } else {
         setup_players();
@@ -57,7 +57,7 @@ abstract_player* game::playout(bool red_first)
     vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
     do {
-        movable = first->think_next_move(next_move, m_board, *second, half_rounds_since_last_eat, first_banmoves);
+        movable = first->think_next_move(next_move, m_board, get_fen(), half_rounds_since_last_eat, first_banmoves);
         if (!movable || first->is_checkmated()) {
             return second;
         } else {
@@ -65,10 +65,10 @@ abstract_player* game::playout(bool red_first)
                 return second;
             }
             move_piece(next_move);
-            second->opponent_moved(next_move, *first, half_rounds_since_last_eat);
+            second->opponent_moved(next_move);
         }
 
-        movable = second->think_next_move(next_move, m_board, *first, half_rounds_since_last_eat, second_banmoves);
+        movable = second->think_next_move(next_move, m_board, get_fen(), half_rounds_since_last_eat, second_banmoves);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
@@ -76,7 +76,7 @@ abstract_player* game::playout(bool red_first)
                 return first;
             }
             move_piece(next_move);
-            first->opponent_moved(next_move, *second, half_rounds_since_last_eat);
+            first->opponent_moved(next_move);
         }
 
         //TODO banmoves should be updated after one round
@@ -118,15 +118,15 @@ void game::move_piece(const pos_move &_move)
 {
     p_piece piece = m_board[_move.from];
     if (!piece){
-        throw runtime_error("Error. The piece to move is nullptr on the board.");
+        throw invalid_argument("the piece to move is nullptr on the board");
     }
 
     p_piece target = m_board[_move.to];
     if (target) {//capture the target
-        if (target->is_opposite_side()) {//black side is always the opposite
-            black->remove(target);
-        } else {
+        if (target->is_redside()) {
             red->remove(target);
+        } else {
+            black->remove(target);
         }
         half_rounds_since_last_eat = 0;
     } else {
@@ -163,12 +163,13 @@ void game::parse_fen(const string &fen)
 {
     vector<string> rank_str;
     boost::split(rank_str, fen, boost::is_any_of("/"), boost::token_compress_off);
+
     if (rank_str.size() != 10) {
-        cerr << "FEN string is incorrect or it's splitted incorrectly." << endl;
+        cerr << "invalid FEN string: " << fen << endl;
         return;
     }
 
-    for (int rank = 0; rank < 10; ++rank) {
+    for (int rank = 9; rank >= 0; --rank) {
         const string &str = rank_str.at(rank);
         int file = 0;
         char c;
@@ -177,7 +178,6 @@ void game::parse_fen(const string &fen)
             if (c <= '9') {
                 file += static_cast<int>(c - '0');
             } else {
-                file++;
                 p_piece p;
                 switch (c) {//upper-case: red side; lower-case: black side
                 case 'K':
@@ -192,10 +192,10 @@ void game::parse_fen(const string &fen)
                 case 'p':
                     p = new pawn(file, rank, true);
                     break;
-                case 'E':
+                case 'B':
                     p = new elephant(file, rank, false);
                     break;
-                case 'e':
+                case 'b':
                     p = new elephant(file, rank, true);
                     break;
                 case 'A':
@@ -210,10 +210,10 @@ void game::parse_fen(const string &fen)
                 case 'r':
                     p = new chariot(file, rank, true);
                     break;
-                case 'H':
+                case 'N':
                     p = new horse(file, rank, false);
                     break;
-                case 'h':
+                case 'n':
                     p = new horse(file, rank, true);
                     break;
                 case 'C':
@@ -225,17 +225,49 @@ void game::parse_fen(const string &fen)
                 default:
                     cerr << "Unknown character in FEN string: " << c;
                 }
-                if (p->is_opposite_side()) {
-                    black->add(p);
-                } else {
+                if (p->is_redside()) {
                     red->add(p);
+                } else {
+                    black->add(p);
                 }
+                file++;
             }
         }
         if (file != 9) {
             cerr << "Current field's FEN string is incorrect!" << endl;
         }
     }
+    setup_players();
+}
+
+string game::get_fen() const
+{
+    std::string fen;
+    int space = 0;
+    for (int rank = 9; rank >= 0; --rank) {
+        for (int file = 0; file < 9; ++file) {
+            auto p = m_board.at(file, rank);
+            if (p) {
+                if (space != 0) {
+                    fen.push_back(static_cast<char>(space) + '0');
+                    space = 0;
+                }
+                fen.push_back(p->abbr_name());
+            } else {
+                space++;
+            }
+        }
+        if (space != 0) {
+            fen.push_back(static_cast<char>(space) + '0');
+            space = 0;
+        }
+        fen.push_back('/');
+    }
+    fen.pop_back();//remove last '/'
+#ifdef _DEBUG
+    cout << "generated FEN: " << fen << endl;
+#endif
+    return fen;
 }
 
 deque<pos_move> game::get_history() const

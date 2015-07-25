@@ -39,6 +39,7 @@ public:
      * http://www.xqbase.com/protocol/cchess_fen.htm
      */
     void parse_fen(const std::string &fen);
+    std::string get_fen() const;//generate FEN string of current situation
 
     std::deque<pos_move> get_history() const;
     unsigned int get_half_rounds_since_last_eat() const;

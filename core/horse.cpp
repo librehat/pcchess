@@ -2,14 +2,14 @@
 
 using namespace std;
 
-const position horse::l2u1 = position(-2, -1);
-const position horse::l1u2 = position(-1, -2);
-const position horse::r2u1 = position( 2, -1);
-const position horse::r1u2 = position( 1, -2);
-const position horse::l2d1 = position(-2,  1);
-const position horse::l1d2 = position(-1,  2);
-const position horse::r2d1 = position( 2,  1);
-const position horse::r1d2 = position( 1,  2);
+const position horse::l2u1 = position(-2, 1);
+const position horse::l1u2 = position(-1, 2);
+const position horse::r2u1 = position( 2, 1);
+const position horse::r1u2 = position( 1, 2);
+const position horse::l2d1 = position(-2, -1);
+const position horse::l1d2 = position(-1, -2);
+const position horse::r2d1 = position( 2, -1);
+const position horse::r1d2 = position( 1, -2);
 
 abstract_piece* horse::make_a_copy() const
 {
@@ -18,7 +18,7 @@ abstract_piece* horse::make_a_copy() const
 
 char horse::abbr_name() const
 {
-    return 'H';
+    return red_side ? 'N' : 'n';//H in WXF document
 }
 
 string horse::chinese_name() const
