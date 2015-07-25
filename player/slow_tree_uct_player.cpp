@@ -45,6 +45,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     request_vec.clear();
 
     long int synced_point = 0, next_sync_point = sync_period;
+    bool no_more_sims = false;
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
@@ -60,13 +61,13 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
             sync_tree();
             synced_point = current_point;
             next_sync_point = synced_point + sync_period;
+            no_more_sims = false;
         }
-        if (!root->select()) {
-#ifdef _DEBUG
-            cout << "don't have more work to do, sleep......" << endl;
-#endif
-            this_thread::sleep_for(think_time - elapsed);//we may need to wait for other nodes
-            break;
+        if (no_more_sims) {
+            static milliseconds nap(100);
+            this_thread::sleep_for(nap);
+        } else if (!root->select()) {
+            no_more_sims = true;
         }
     }
     for (int i = 1; i < world_size; ++i) {
