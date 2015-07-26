@@ -19,7 +19,8 @@ int main(int argc, char **argv)
     std::ignore = env;
 
     root_uct_player tr(true);
-    threaded_uct_player tb(0, false);
+    //threaded_uct_player tb(0, false);
+    random_player tb(false);
     tr.init_pieces();
     tb.init_pieces();
 

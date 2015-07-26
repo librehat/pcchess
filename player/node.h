@@ -20,6 +20,8 @@ public:
     explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, node *_parent = nullptr);
     virtual ~node();
 
+    node* make_shallow_copy() const;//used for root_uct_player
+
     double get_value() const;
     double get_uct_val() const;
 

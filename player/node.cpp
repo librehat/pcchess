@@ -37,6 +37,13 @@ node::~node()
     }
 }
 
+node* node::make_shallow_copy() const
+{
+    node* n = new node(current_fen, my_turn, red_side, no_eat_half_rounds, parent);
+    n->depth = depth;
+    return n;
+}
+
 double node::get_value() const
 {
     return static_cast<double>(scores) / static_cast<double>(visits);

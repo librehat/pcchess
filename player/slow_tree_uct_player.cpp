@@ -19,7 +19,7 @@ slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
     sync_period(sync_period_ms)
 {
     assert(sync_period > 0);
-    node::set_max_depth(6);
+    node::set_max_depth(3);
 }
 
 bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
@@ -54,9 +54,6 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
 
         long int current_point = elapsed.count();
         if (synced_point < current_point && current_point >= next_sync_point) {
-#ifdef _DEBUG
-            cout << "sync in the loop, time count: " << current_point << endl;
-#endif
             master_send_order(SYNC);
             sync_tree();
             synced_point = current_point;
@@ -66,7 +63,13 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
     }
     master_send_order(COMP_FINISH);
     master_send_order(SYNC);
+#ifdef _DEBUG
+    start = steady_clock::now();
+#endif
     sync_tree();
+#ifdef _DEBUG
+    cout << "synchronisation after computation took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
+#endif
 
     auto best_child = root->get_best_child();
     if (best_child == root->child_end()) {
@@ -115,7 +118,7 @@ void slow_tree_uct_player::do_slave_job()
 {
     mpi::request request = world_comm.irecv(0, mpi::any_tag);
     do {
-        boost::optional<mpi::status> req_ret = request.test();
+        boost::optional<mpi::status> req_ret = world_comm.irecv(0, mpi::any_tag);
         if (req_ret) {
             switch (req_ret.get().tag()) {
             case SYNC:
@@ -234,14 +237,7 @@ void slow_tree_uct_player::sync_tree()
 #endif
 
     vector<node*> tree_vec;
-#ifdef _DEBUG
-    auto start = steady_clock::now();
-#endif
     mpi::all_gather(world_comm, root, tree_vec);//TODO: need to reduce the packet size
-#ifdef _DEBUG
-    cout << "[" << rank << "] all_gather took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
-#endif
-
     for(int i = 0; i < world_size; ++i) {
         //don't merge itself
         if (rank == i) {

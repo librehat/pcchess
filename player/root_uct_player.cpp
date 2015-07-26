@@ -14,7 +14,7 @@ BOOST_CLASS_EXPORT_GUID(root_uct_player, "root_uct_player")
 root_uct_player::root_uct_player(bool red) :
     uct_player(red)
 {
-    node::set_max_depth(12);
+    node::set_max_depth(3);//three moves can cover our move after the next move
 }
 
 root_uct_player::~root_uct_player()
@@ -31,11 +31,15 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
     static milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
 
+    master_send_order(BROADCAST_TREE);
     if (!root) {
         root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        mpi::broadcast(world_comm, root, 0);
+    } else {
+        node* shallow_root = root->make_shallow_copy();
+        mpi::broadcast(world_comm, shallow_root, 0);
+        delete shallow_root;
     }
-    master_send_order(BROADCAST_TREE);
-    mpi::broadcast(world_comm, root, 0);
 #ifdef _DEBUG
     cout << "broadcasting tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
 #endif
@@ -57,6 +61,10 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
     master_send_order(GATHER_TREE);
     vector<node*> root_vec;
     mpi::gather(world_comm, root, root_vec, 0);
+#ifdef _DEBUG
+    cout << "gathering tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
+    start = steady_clock::now();
+#endif
     for (int i = 1; i < world_comm.size(); ++i) {//skip myself
         root->merge(*(root_vec[i]));
     }
@@ -66,7 +74,7 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
         }
     }
 #ifdef _DEBUG
-    cout << "gathering and merging tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
+    cout << "merging tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
 #endif
 
     auto best_child = root->get_best_child();
@@ -141,6 +149,9 @@ void root_uct_player::slave_compute()
             }
         } else {
             if (!root->select()) {
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] no more select, take a nap" << endl;
+#endif
                 static milliseconds nap(100);
                 this_thread::sleep_for(nap);
             }
