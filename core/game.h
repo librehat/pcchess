@@ -34,7 +34,7 @@ public:
 
     /*
      * Parse position FEN string according to UCCI protocol
-     * The players' piece list should be empty before calling this function,
+     * The players' piece vector should be empty before calling this function,
      * because this function would add pieces to players and board according
      * to the FEN string.
      * For details about FEN, check

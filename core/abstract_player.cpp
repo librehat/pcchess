@@ -16,29 +16,32 @@ abstract_player::abstract_player(bool red) :
     red_side(red),
     checked(false),
     checkmated(false)
-{}
+{
+    pieces.reserve(16);
+}
 
 abstract_player::abstract_player(const abstract_player &b) :
     red_side(b.red_side),
     checked(b.checked),
     checkmated(b.checkmated)
 {
+    pieces.reserve(16);
 	for (auto &&it : b.pieces) {
         p_piece p = it->make_a_copy();
-		pieces.push_back(p);
+        pieces.push_back(p);
 	}
 #ifdef _DEBUG
     if (pieces.empty()) {
-        cout << "New player's pieces list is empty after copy construction." << endl;
+        cout << "New player's pieces vector is empty after copy construction." << endl;
     }
 #endif
 }
 
 abstract_player::~abstract_player()
 {
-	for (auto &&it : pieces) {
-		delete it;
-	}
+    for (auto &&p : pieces) {
+        delete p;
+    }
 }
 
 void abstract_player::add(p_piece p)
@@ -66,7 +69,7 @@ void abstract_player::remove(p_piece p)
 void abstract_player::init_pieces()
 {
     if (!pieces.empty()) {
-        throw runtime_error("pieces list is not empty when init_pieces is called");
+        throw runtime_error("pieces vector is not empty when init_pieces is called");
     }
 
     //pawns
@@ -115,7 +118,7 @@ bool abstract_player::is_checkmated() const
     return checkmated;
 }
 
-const list<p_piece>& abstract_player::get_pieces() const
+const std::vector<p_piece> &abstract_player::get_pieces() const
 {
     return pieces;
 }

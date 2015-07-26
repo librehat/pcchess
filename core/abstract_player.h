@@ -4,9 +4,6 @@
 #include "abstract_piece.h"
 #include "position.h"
 #include "pos_move.h"
-#include <list>
-#include <tuple>
-#include <boost/serialization/list.hpp>
 
 class abstract_player
 {
@@ -23,7 +20,7 @@ public:
     void remove(p_piece p);//if p doesn't belong to this player, it'll throw an error
 
     /*
-     * initialise the pieces list to a normal beginning situation
+     * initialise the pieces vector to a normal beginning situation
      * no need to call add function multiple times
      */
     void init_pieces();
@@ -31,7 +28,7 @@ public:
     bool is_redside() const;
     bool is_checked() const;
     bool is_checkmated() const;
-    const std::list<p_piece> &get_pieces() const;
+    const std::vector<p_piece> &get_pieces() const;
 
     /*
      * sub-class has to implement this pure virtual function
@@ -51,7 +48,7 @@ public:
     virtual std::int64_t get_total_simulations() const { return 0; }
 
 protected:
-    std::list<p_piece> pieces;
+    std::vector<p_piece> pieces;
     const bool red_side;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
