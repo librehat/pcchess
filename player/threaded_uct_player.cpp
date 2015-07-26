@@ -27,6 +27,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, unsi
 
     if (!root) {
         root = new threaded_node(game::generate_fen(bd), true, red_side, no_eat_half_rounds, banmoves);
+        node::set_root_depth(root);
     }
 
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -48,6 +49,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, unsi
 
     _move = best_child->first;
     node* new_root = root->release_child(best_child);
+    node::set_root_depth(new_root);
     delete root;
     root = new_root;
 
@@ -64,6 +66,7 @@ void threaded_uct_player::opponent_moved(const pos_move &m)
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
+        node::set_root_depth(new_root);
     }
     delete root;
     root = new_root;

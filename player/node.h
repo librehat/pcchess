@@ -51,6 +51,7 @@ public:
     bool operator != (const node &b) const;
 
     static std::int64_t get_total_simulations();
+    static void set_root_depth(const node * const r);//remember to call this function when you change the root node
 
 protected:
     /*
@@ -66,15 +67,18 @@ protected:
     //use FEN string could save a LOT of data!
     std::string current_fen;
 
-    int depth;
+    int depth;//to get the _depth_, this needs to minus the root's depth
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
 
     unsigned int no_eat_half_rounds;
     std::vector<pos_move> banmoves;//banmoves is always _our_ banmoves
 
+    static int root_depth;
+
     static const int select_threshold;
     static const double uct_constant;
+    static const int max_depth;
 
 private:
     friend class boost::serialization::access;

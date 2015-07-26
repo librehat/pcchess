@@ -31,6 +31,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int 
 
     if (!root) {
         root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds, banmoves);
+        node::set_root_depth(root);
     }
 
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -49,9 +50,10 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int 
 
     _move = best_child->first;
     node* new_root = root->release_child(best_child);
+    node::set_root_depth(new_root);
     delete root;
     root = new_root;
-
+/*
 #if defined(_DEBUG) && defined(__linux__)
     static int i = 0;
     if (i == 0) {
@@ -62,7 +64,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int 
         cout << "xml_archive_tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
     }
     i++;
-#endif
+#endif*/
     return true;
 }
 
@@ -76,6 +78,7 @@ void uct_player::opponent_moved(const pos_move &m)
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
+        node::set_root_depth(new_root);
     }
     delete root;
     root = new_root;

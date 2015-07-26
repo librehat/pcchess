@@ -9,8 +9,10 @@
 using namespace std;
 
 int64_t node::total_simulations = 0;
+int node::root_depth = 0;
 const int node::select_threshold = 100;
-const double node::uct_constant = 0.7;//need to be tuned based on experiments
+const double node::uct_constant = 0.7;//TODO tuned
+const int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 
 node::node(const string &fen, bool _my_turn, bool is_red_side, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
 	my_turn(_my_turn),
@@ -74,6 +76,9 @@ void node::expand(deque<pos_move> &hist, const int &score)
 {
 	visits++;
 	scores += score;
+    if (depth - root_depth > max_depth) {
+        return;
+    }
     if (hist.empty()) {
         return;
     }
@@ -119,11 +124,6 @@ bool node::simulate()
         return false;
     } else {
         expand(hist, result);//this very node is definitely the parental node
-#ifdef _DEBUG
-        if (!hist.empty()) {
-            cerr << "[node] hist is not empty after expand step" << endl;
-        }
-#endif
         backpropagate(result);
         return true;
     }
@@ -228,7 +228,7 @@ node::node_iterator node::get_worst_child_uct()
 bool node::is_same_place_in_tree(const node &b) const
 {
     /* true if they should be in the same place */
-    return !(my_turn != b.my_turn || depth != b.depth);
+    return !(my_turn != b.my_turn || depth != b.depth || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds != b.no_eat_half_rounds || banmoves != b.banmoves);
 }
 
 bool node::is_basically_the_same(const node &b) const
@@ -249,4 +249,12 @@ bool node::operator !=(const node &b) const
 int64_t node::get_total_simulations()
 {
     return total_simulations;
+}
+
+void node::set_root_depth(const node * const r)
+{
+    if(!r) {
+        throw invalid_argument("pointer r is nullptr");
+    }
+    root_depth = r->depth;
 }

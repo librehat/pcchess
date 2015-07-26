@@ -33,8 +33,12 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
     value_mutex.lock();
     visits++;
     scores += score;
+    bool reach_limit = depth - root_depth > max_depth;
     value_mutex.unlock();
 
+    if (reach_limit) {
+        return;
+    }
     if (hist.empty()) {
         return;
     }
@@ -86,11 +90,6 @@ bool threaded_node::simulate()
         return false;
     } else {
         expand(hist, result);//this very node is definitely the parental node
-#ifdef _DEBUG
-        if (!hist.empty()) {
-            cerr << "[threaded_node] hist is not empty after expand step" << endl;
-        }
-#endif
         backpropagate(result);
         return true;
     }

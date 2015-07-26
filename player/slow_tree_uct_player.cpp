@@ -95,6 +95,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uns
     }
 
     node* new_root = root->release_child(best_child);
+    node::set_root_depth(new_root);
     delete root;
     root = new_root;
 
@@ -125,6 +126,7 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
             world_comm.send(i, TAG_OPPMOV_DATA, m);
         }
         new_root = root->release_child(root_iter);
+        node::set_root_depth(new_root);
     }
     delete root;
     root = new_root;
@@ -188,6 +190,7 @@ void slow_tree_uct_player::slave_opponent_moved()
     auto root_iter = root->find_child(mov);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
+        node::set_root_depth(new_root);
     }
     delete root;
     root = new_root;
@@ -199,6 +202,7 @@ void slow_tree_uct_player::slave_select_child()
     world_comm.recv(0, TAG_CHILD_SELEC_DATA, mov);
     auto root_iter = root->find_child(mov);
     auto new_root = root->release_child(root_iter);
+    node::set_root_depth(new_root);
     delete root;
     root = new_root;
 }
@@ -258,6 +262,7 @@ void slow_tree_uct_player::broadcast_tree()
         }
     }
     mpi::broadcast(world_comm, root, 0);
+    node::set_root_depth(root);
 }
 
 void slow_tree_uct_player::sync_tree()
