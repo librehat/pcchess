@@ -52,6 +52,7 @@ public:
 
     static std::int64_t get_total_simulations();
     static void set_root_depth(const node * const r);//remember to call this function when you change the root node
+    static void set_max_depth(const int &d);
 
 protected:
     /*
@@ -75,10 +76,10 @@ protected:
     std::vector<pos_move> banmoves;//banmoves is always _our_ banmoves
 
     static int root_depth;
+    static int max_depth;
 
     static const int select_threshold;
     static const double uct_constant;
-    static const int max_depth;
 
 private:
     friend class boost::serialization::access;

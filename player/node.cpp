@@ -10,9 +10,9 @@ using namespace std;
 
 int64_t node::total_simulations = 0;
 int node::root_depth = 0;
+int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
-const int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 
 node::node(const string &fen, bool _my_turn, bool is_red_side, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
 	my_turn(_my_turn),
@@ -257,4 +257,9 @@ void node::set_root_depth(const node * const r)
         throw invalid_argument("pointer r is nullptr");
     }
     root_depth = r->depth;
+}
+
+void node::set_max_depth(const int &d)
+{
+    max_depth = d;
 }

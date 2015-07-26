@@ -11,7 +11,7 @@
 class slow_tree_uct_player : public uct_player
 {
 public:
-    explicit slow_tree_uct_player(long int sync_period_ms = 500, bool red = true);
+    explicit slow_tree_uct_player(long int sync_period_ms = 1000, bool red = true);
     ~slow_tree_uct_player();
 
     bool think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
@@ -20,27 +20,28 @@ public:
 
     void do_slave_job();
 
-    static const int TAG_SYNC = 1;
-    static const int TAG_OPPMOV = 10;
-    static const int TAG_OPPMOV_DATA = 11;
-    static const int TAG_CHILD_SELEC = 20;
-    static const int TAG_CHILD_SELEC_DATA = 21;
-    static const int TAG_COMP_LOOP = 30;
-    static const int TAG_COMP_FINISH = 31;
-    static const int TAG_BROADCAST_TREE = 40;
-    static const int TAG_REDUCE_SIMS = 50;
-    static const int TAG_ERASE = 90;
-    static const int TAG_EXIT = 0;
-
 private:
     long int sync_period;
+
+    void master_send_order(const int &tag) const;
 
     void slave_opponent_moved();
     void slave_select_child();
     void slave_compute();
+    void slave_broadcast_tree();
 
-    void broadcast_tree();
     void sync_tree();
+
+    static const int TAG_SYNC;
+    static const int TAG_OPPMOV;
+    static const int TAG_OPPMOV_DATA;
+    static const int TAG_CHILD_SELEC;
+    static const int TAG_CHILD_SELEC_DATA;
+    static const int TAG_COMP_LOOP;
+    static const int TAG_COMP_FINISH;
+    static const int TAG_BROADCAST_TREE;
+    static const int TAG_REDUCE_SIMS;
+    static const int TAG_EXIT;
 
     friend class boost::serialization::access;
     template<class Archive>
