@@ -14,7 +14,7 @@
 
 using namespace std;
 
-game::game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds) :
+game::game(abstract_player* _red, abstract_player* _black, int8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
     half_rounds_since_last_eat(no_eat_half_rounds)
@@ -26,7 +26,7 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_h
     }
 }
 
-game::game(abstract_player *_red, abstract_player *_black, const string &fen, unsigned int no_eat_half_rounds) :
+game::game(abstract_player *_red, abstract_player *_black, const string &fen, int8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
     half_rounds_since_last_eat(no_eat_half_rounds)
@@ -38,7 +38,7 @@ game::game(abstract_player *_red, abstract_player *_black, const string &fen, un
     }
 }
 
-game::game(abstract_player *_red, abstract_player *_black, unsigned int no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm) :
+game::game(abstract_player *_red, abstract_player *_black, int8_t no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm) :
     red(_red),
     black(_black),
     red_banmoves(red_bm),
@@ -53,7 +53,7 @@ game::game(abstract_player *_red, abstract_player *_black, unsigned int no_eat_h
 }
 
 long int game::step_time = 2000;
-unsigned int game::NO_EAT_DRAW_HALF_ROUNDS = 120;
+int8_t game::NO_EAT_DRAW_HALF_ROUNDS = 120;
 
 game::~game()
 {}
@@ -191,9 +191,9 @@ void game::parse_fen(const string &fen)
      */
     reverse(rank_str.begin(), rank_str.end());
 
-    for (int rank = 0; rank < board::RANK_NUM; ++rank) {
+    for (int8_t rank = 0; rank < board::RANK_NUM; ++rank) {
         const string &str = rank_str[rank];
-        int file = 0;
+        int8_t file = 0;
         char c;
         for (std::size_t i = 0; i < str.size(); ++i) {
             c = str[i];
@@ -270,9 +270,9 @@ string game::get_fen() const
 string game::generate_fen(const board &bd)
 {
     std::string fen;
-    int space = 0;
-    for (int rank = board::RANK_NUM - 1; rank >= 0; --rank) {
-        for (int file = 0; file < board::FILE_NUM; ++file) {
+    int8_t space = 0;
+    for (int8_t rank = board::RANK_NUM - 1; rank >= 0; --rank) {
+        for (int8_t file = 0; file < board::FILE_NUM; ++file) {
             auto p = bd.at(file, rank);
             if (p) {
                 if (space != 0) {
@@ -299,15 +299,15 @@ deque<pos_move> game::get_history() const
     return history;
 }
 
-unsigned int game::get_half_rounds_since_last_eat() const
+int8_t game::get_half_rounds_since_last_eat() const
 {
     return half_rounds_since_last_eat;
 }
 
 void game::print_board(bool chinese_char) const
 {
-    for(int j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
-        for (int i = 0; i < board::FILE_NUM; ++i) {//file
+    for(int8_t j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
+        for (int8_t i = 0; i < board::FILE_NUM; ++i) {//file
             if (m_board.at(i, j)) {
                 if (chinese_char) {
                     cout << m_board.at(i, j)->chinese_name();

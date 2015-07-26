@@ -2,7 +2,7 @@
 
 using namespace std;
 
-abstract_piece::abstract_piece(int _file, int _rank, bool red) :
+abstract_piece::abstract_piece(int8_t _file, int8_t _rank, bool red) :
     red_side(red),
     pos(_file, _rank)
 {}
@@ -47,10 +47,10 @@ void abstract_piece::update_moves(const board &m_board)
 
 bool abstract_piece::can_i_move(const board &m_board) const
 {
-    int pieces_in_between = 0;
+    int8_t pieces_in_between = 0;
     bool found_one_g = false;
     bool am_i_in_between = false;
-    for (int irank = 0; irank < board::RANK_NUM; irank++) {
+    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
         auto piece = m_board.at(pos.file, irank);
         if (piece) {
             if (found_one_g) {
@@ -71,7 +71,7 @@ bool abstract_piece::can_i_move(const board &m_board) const
     return !am_i_in_between || pieces_in_between != 1;
 }
 
-void abstract_piece::remove_invalid_moves(const board &m_board, int min_file, int max_file, int min_rank, int max_rank)
+void abstract_piece::remove_invalid_moves(const board &m_board, int8_t min_file, int8_t max_file, int8_t min_rank, int8_t max_rank)
 {
     for (auto it = avail_moves.begin(); it != avail_moves.end();) {
         bool invalid = false;

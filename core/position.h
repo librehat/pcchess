@@ -1,21 +1,20 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <array>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/mpi/datatype.hpp>
+#include <cstdint>
 
 class position
 {
 public:
-    explicit position(int _file = 0, int _rank = 0);
-    explicit position(char _file, int _rank = 0);
+    explicit position(std::int8_t _file = 0, std::int8_t _rank = 0);
     position(const position &b);
-    int file;
-    int rank;
+    std::int8_t file;
+    std::int8_t rank;
 
-    bool not_in_range(int min_file, int max_file, int min_rank, int max_rank) const;
+    bool not_in_range(std::int8_t min_file, std::int8_t max_file, std::int8_t min_rank, std::int8_t max_rank) const;
 
     position& operator= (const position &b);
     position operator+ (const position &b);

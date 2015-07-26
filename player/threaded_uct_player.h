@@ -13,7 +13,7 @@ class threaded_uct_player : public uct_player
 public:
     explicit threaded_uct_player(int _threads = 0, bool red = true);
 
-    bool think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
+    bool think_next_move(pos_move &_move, const board &bd, std::int8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     void opponent_moved(const pos_move &m);
     std::int64_t get_total_simulations() const;
 

@@ -18,7 +18,7 @@
 class abstract_piece
 {
 public:
-    explicit abstract_piece(int _file = 0, int _rank = 0, bool red = true);
+    explicit abstract_piece(std::int8_t _file = 0, std::int8_t _rank = 0, bool red = true);
     explicit abstract_piece(const abstract_piece &b);
     virtual ~abstract_piece();
 
@@ -64,7 +64,7 @@ protected:
     
     virtual void gen_moves(const board &m_board) = 0;
     //invalid: out of the given scope, default to the board
-    void remove_invalid_moves(const board &m_board, int min_file = 0, int max_file = 8, int min_rank = 0, int max_rank = 9);
+    void remove_invalid_moves(const board &m_board, std::int8_t min_file = 0, std::int8_t max_file = 8, std::int8_t min_rank = 0, std::int8_t max_rank = 9);
 
 private:
     friend class boost::serialization::access;

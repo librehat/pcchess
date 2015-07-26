@@ -27,7 +27,7 @@ int main(int argc, char** argv)
             game::step_time = atol(optarg);
             break;
         case 'n':
-            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<unsigned int>(atoi(optarg));
+            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<int8_t>(atoi(optarg));
             break;
         case 'p':
             enable_print = true;

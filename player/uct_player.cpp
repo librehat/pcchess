@@ -24,7 +24,7 @@ uct_player::~uct_player()
     }
 }
 
-bool uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
+bool uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &banmoves)
 {
     milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals

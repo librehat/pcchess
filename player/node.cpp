@@ -14,7 +14,7 @@ int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
-node::node(const string &fen, bool _my_turn, bool is_red_side, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
+node::node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
 	my_turn(_my_turn),
     red_side(is_red_side),
     parent(_parent),

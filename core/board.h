@@ -13,17 +13,17 @@ public:
     board();
     ~board();
 
-    p_piece at(const int &file, const int &rank) const;
+    p_piece at(const std::int8_t &file, const std::int8_t &rank) const;
     p_piece at(const position &pos) const;
 
-    p_piece* operator [] (const int &file);
+    p_piece* operator [] (const std::int8_t &file);
     p_piece& operator [] (const position &pos);
 
     bool operator !=(const board&);
 
-    static const int RANK_NUM = 10;
-    static const int FILE_NUM = 9;
-    static const int NUM = FILE_NUM * RANK_NUM;
+    static const std::int8_t RANK_NUM = 10;
+    static const std::int8_t FILE_NUM = 9;
+    static const std::int8_t NUM = FILE_NUM * RANK_NUM;
 
 private:
     p_piece* data;

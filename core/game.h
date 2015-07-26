@@ -10,9 +10,9 @@
 class game
 {
 public:
-    explicit game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds = 0);
-    explicit game(abstract_player* _red, abstract_player* _black, const std::string &fen, unsigned int no_eat_half_rounds);
-    explicit game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm);
+    explicit game(abstract_player* _red, abstract_player* _black, std::int8_t no_eat_half_rounds = 0);
+    explicit game(abstract_player* _red, abstract_player* _black, const std::string &fen, std::int8_t no_eat_half_rounds);
+    explicit game(abstract_player* _red, abstract_player* _black, std::int8_t no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm);
     ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
@@ -44,7 +44,7 @@ public:
     std::string get_fen() const;//an easy overloaded function to call generate_fen with this game's m_board
 
     std::deque<pos_move> get_history() const;
-    unsigned int get_half_rounds_since_last_eat() const;
+    std::int8_t get_half_rounds_since_last_eat() const;
 
     static std::string generate_fen(const board &bd);//generate FEN string from given board
 
@@ -56,7 +56,7 @@ public:
      * default: 120 (AKA 60 rounds. this could be changed depending on the specific game)
      * set to 0 to disable this rule (WARN: could result in an endless loop)
      */
-    static unsigned int NO_EAT_DRAW_HALF_ROUNDS;
+    static std::int8_t NO_EAT_DRAW_HALF_ROUNDS;
 
 private:
     void setup_players();
@@ -74,7 +74,7 @@ private:
     std::vector<pos_move> black_banmoves;
 
     std::deque<pos_move> history;
-    unsigned int half_rounds_since_last_eat;
+    std::int8_t half_rounds_since_last_eat;
 };
 
 #endif //GAME_H

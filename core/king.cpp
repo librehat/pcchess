@@ -42,7 +42,7 @@ void king::gen_moves(const board &m_board)
      */
     bool found_king = false;
     bool other_piece_between = false;
-    for (int irank = 0; irank < board::RANK_NUM; irank++) {
+    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
         if (m_board.at(pos_left.file, irank)) {
             if (found_king) {
                 other_piece_between = true;
@@ -59,7 +59,7 @@ void king::gen_moves(const board &m_board)
     
     found_king = false;
     other_piece_between = false;
-    for (int irank = 0; irank < board::RANK_NUM; irank++) {
+    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
         if (m_board.at(pos_right.file, irank)) {
             if (found_king) {
                 other_piece_between = true;

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-threaded_node::threaded_node(const string &fen, bool _my_turn, bool is_red_side, unsigned int noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
+threaded_node::threaded_node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
     node(fen, _my_turn, is_red_side, noeat_half_rounds, _banmoves, _parent)
 {}
 

@@ -17,7 +17,7 @@ class node : boost::noncopyable
 public:
     typedef std::unordered_map<pos_move, node*>::iterator node_iterator;
 
-    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, unsigned int noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
+    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
@@ -72,7 +72,7 @@ protected:
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
 
-    unsigned int no_eat_half_rounds;
+    std::int8_t no_eat_half_rounds;
     std::vector<pos_move> banmoves;//banmoves is always _our_ banmoves
 
     static int root_depth;

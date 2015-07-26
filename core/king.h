@@ -12,7 +12,7 @@
 class king : public abstract_piece
 {
 public:
-    explicit king(int _file = 0, int _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    explicit king(std::int8_t _file = 0, std::int8_t _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
     explicit king(const king &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
