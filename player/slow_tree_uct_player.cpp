@@ -19,7 +19,7 @@ slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
     sync_period(sync_period_ms)
 {
     assert(sync_period > 0);
-    node::set_max_depth(3);
+    node::set_max_depth(20);
 }
 
 bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
@@ -31,10 +31,11 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
 
     if (!root) {
         root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
-        master_send_order(BROADCAST_TREE);
+        node::set_root_depth(root);
 #ifdef _DEBUG
         cout << "[0] broadcast_tree" << endl;
 #endif
+        master_send_order(BROADCAST_TREE);
         mpi::broadcast(world_comm, root, 0);
     }
 
@@ -92,46 +93,48 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
 
 void slow_tree_uct_player::opponent_moved(const pos_move &m)
 {
-#ifdef _DEBUG
-    cout << "opponent_moved" << endl;
-#endif
-
     if (!root) {
         return;
+    }
+
+    master_send_order(OPPMOV);
+    for (int i = 1; i < world_comm.size(); ++i) {
+        world_comm.send(i, OPPMOV_DATA, m);
     }
 
     node *new_root = nullptr;
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
-        master_send_order(OPPMOV);
-        for (int i = 1; i < world_comm.size(); ++i) {
-            world_comm.send(i, OPPMOV_DATA, m);
-        }
         new_root = root->release_child(root_iter);
-        node::set_root_depth(new_root);
+    } else {
+        new_root = root->gen_child_with_a_move(m);
+        new_root->set_parent(nullptr);
     }
     delete root;
     root = new_root;
+    node::set_root_depth(root);
+    master_send_order(SYNC);
+    sync_tree();
 }
 
 void slow_tree_uct_player::do_slave_job()
 {
     mpi::request request = world_comm.irecv(0, mpi::any_tag);
     do {
-        boost::optional<mpi::status> req_ret = world_comm.irecv(0, mpi::any_tag);
+        boost::optional<mpi::status> req_ret = request.test();
         if (req_ret) {
             switch (req_ret.get().tag()) {
             case SYNC:
                 sync_tree();
                 break;
+            case COMP_LOOP:
+                slave_compute();
+                break;
             case OPPMOV:
                 slave_opponent_moved();
                 break;
             case CHILD_SELEC:
-                slave_select_child();
-                break;
-            case COMP_LOOP:
-                slave_compute();
+                slave_child_select();
                 break;
             case BROADCAST_TREE:
                 slave_broadcast_tree();
@@ -142,6 +145,7 @@ void slow_tree_uct_player::do_slave_job()
             case EXIT:
                 return;
             default:
+                cerr << "unknown tag: " << req_ret.get().tag() << endl;
                 throw invalid_argument("received an invalid mpi tag in do_slave_job()");
             }
             request = world_comm.irecv(0, mpi::any_tag);
@@ -150,42 +154,6 @@ void slow_tree_uct_player::do_slave_job()
             this_thread::sleep_for(nap);
         }
     } while (true);
-}
-
-void slow_tree_uct_player::slave_opponent_moved()
-{
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] slave_opponent_moved" << endl;
-#endif
-
-    pos_move mov;
-    world_comm.recv(0, OPPMOV_DATA, mov);
-    if (!root) {
-        throw runtime_error("root is nullptr");
-    }
-
-    node *new_root = nullptr;
-    auto root_iter = root->find_child(mov);
-    if (root_iter != root->child_end()) {
-        new_root = root->release_child(root_iter);
-        node::set_root_depth(new_root);
-    }
-    delete root;
-    root = new_root;
-}
-
-void slow_tree_uct_player::slave_select_child()
-{
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] slave_select_child" << endl;
-#endif
-    pos_move mov;
-    world_comm.recv(0, CHILD_SELEC_DATA, mov);
-    auto root_iter = root->find_child(mov);
-    auto new_root = root->release_child(root_iter);
-    node::set_root_depth(new_root);
-    delete root;
-    root = new_root;
 }
 
 void slow_tree_uct_player::slave_compute()
@@ -227,6 +195,40 @@ void slow_tree_uct_player::slave_compute()
     } while (cont_comp);
 }
 
+void slow_tree_uct_player::slave_opponent_moved()
+{
+    pos_move m;
+    world_comm.recv(0, OPPMOV_DATA, m);
+
+    node* new_root = nullptr;
+    auto root_iter = root->find_child(m);
+    if (root_iter != root->child_end()) {
+        new_root = root->release_child(root_iter);
+    } else {
+        new_root = root->gen_child_with_a_move(m);
+        new_root->set_parent(nullptr);
+    }
+    delete root;
+    root = new_root;
+    node::set_root_depth(root);
+}
+
+void slow_tree_uct_player::slave_child_select()
+{
+    pos_move m;
+    world_comm.recv(0, CHILD_SELEC_DATA, m);
+    auto new_root = root->release_child(root->find_child(m));
+    delete root;
+    root = new_root;
+    node::set_root_depth(root);
+}
+
+/*
+ * The synchronisation is not performed on the whole tree, hence in our implementation,
+ * we just synchronise one-depth (aka root and its children)
+ *
+ * << Scalability and Parallelization of Monte-Carlo Tree Search >> page 10
+ */
 void slow_tree_uct_player::sync_tree()
 {
     static int world_size = world_comm.size();
@@ -236,27 +238,26 @@ void slow_tree_uct_player::sync_tree()
     cout << "[" << rank << "] sync_tree" << endl;
 #endif
 
+    node* shallow_root = root->make_shallow_copy_with_children();
+    shallow_root->set_parent(nullptr);
     vector<node*> tree_vec;
-    mpi::all_gather(world_comm, root, tree_vec);//TODO: need to reduce the packet size
+    mpi::all_gather(world_comm, shallow_root, tree_vec);
     for(int i = 0; i < world_size; ++i) {
-        //don't merge itself
         if (rank == i) {
             continue;
         }
-        //merge only if they're different (they might be basically the same if nothing happened between two syncs)
-        if (!root->is_basically_the_same(*(tree_vec[i]))) {
-            root->merge(*(tree_vec[i]));//FIXME: the logic is wrong
-        }
+        root->merge(*(tree_vec[i]), true);
     }
 
     /*
-     * Somehow for rank 0, its root is just shallow copied to vector tree_vec,
+     * Somehow for rank 0, the T is just shallow copied to vector tree_vec,
      * therefore we can't just delete all pointers in tree_vec.
-     * instead, delete all pointers that have different addresses than root
+     * instead, delete all pointers that have different addresses than T
      */
     for (auto &&t : tree_vec) {
-        if (t != root) {
+        if (t != shallow_root) {
             delete t;
         }
     }
+    delete shallow_root;
 }

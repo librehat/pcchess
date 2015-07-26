@@ -56,22 +56,6 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, int8
     return true;
 }
 
-void threaded_uct_player::opponent_moved(const pos_move &m)
-{
-    if (!root) {
-        return;
-    }
-
-    node *new_root = nullptr;
-    auto root_iter = root->find_child(m);
-    if (root_iter != root->child_end()) {
-        new_root = root->release_child(root_iter);
-        node::set_root_depth(new_root);
-    }
-    delete root;
-    root = new_root;
-}
-
 int64_t threaded_uct_player::get_total_simulations() const
 {
     return threaded_node::get_total_simulations();

@@ -44,6 +44,27 @@ node* node::make_shallow_copy() const
     return n;
 }
 
+node* node::make_shallow_copy_with_children() const
+{
+    node* n = this->make_shallow_copy();
+    for (auto it = children.begin(); it != children.end(); ++it) {
+        node* c = it->second->make_shallow_copy();
+        c->parent = n;
+        n->children.emplace(it->first, c);
+    }
+    return n;
+}
+
+node* node::gen_child_with_a_move(const pos_move &m)
+{
+    random_player tr(true), tb(false);
+    game updater_sim(&tr, &tb, no_eat_half_rounds);
+    updater_sim.parse_fen(current_fen);
+    updater_sim.move_piece(m);
+    node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+    return child;
+}
+
 double node::get_value() const
 {
     return static_cast<double>(scores) / static_cast<double>(visits);
@@ -93,12 +114,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
 
     auto child_iter = children.find(next_move);
     if (child_iter == children.end()) {
-        random_player tr(true), tb(false);
-        game updater_sim(&tr, &tb, no_eat_half_rounds);
-        updater_sim.parse_fen(current_fen);
-        updater_sim.move_piece(next_move);
-
-        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+        node *child = gen_child_with_a_move(next_move);
         children.emplace(next_move, child);
         child->expand(hist, score);
     } else {
@@ -135,17 +151,22 @@ bool node::simulate()
     }
 }
 
-void node::merge(node &b)
+void node::merge(node &b, bool average_mode)
 {
     assert(is_same_place_in_tree(b));
-    visits += b.visits;
-    scores += b.scores;
+    if (average_mode) {
+        visits += ((b.visits - visits) / 2);
+        scores += ((b.scores - scores) / 2);
+    } else {
+        visits += b.visits;
+        scores += b.scores;
+    }
 
     /* The node b will give its children to us, of which is either merged or pushed back as a new child */
     for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
         auto src_it = children.find(target_it->first);
         if (src_it != children.end()) {
-            src_it->second->merge(*(target_it->second));
+            src_it->second->merge(*(target_it->second), average_mode);
             delete target_it->second;
         } else {
             target_it->second->parent = this;

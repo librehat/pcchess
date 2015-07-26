@@ -21,6 +21,8 @@ public:
     virtual ~node();
 
     node* make_shallow_copy() const;//used for root_uct_player
+    node* make_shallow_copy_with_children() const;//used for slow_tree_uct_player
+    node* gen_child_with_a_move(const pos_move &m);
 
     double get_value() const;
     double get_uct_val() const;
@@ -30,11 +32,12 @@ public:
     virtual void expand(std::deque<pos_move> &hist, const int &score);
     virtual bool simulate();
 
-    void merge(node &b);//merge another node into this node. The target node needs to be in the same place in tree
+    void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
     virtual void backpropagate(const int &score);
     int children_size() const;
     node* release_child(node_iterator i);
+    inline void set_parent(node *n) { parent = n; }
 
     /*
      * select child according to the visit times

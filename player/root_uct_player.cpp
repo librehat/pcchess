@@ -14,7 +14,7 @@ BOOST_CLASS_EXPORT_GUID(root_uct_player, "root_uct_player")
 root_uct_player::root_uct_player(bool red) :
     uct_player(red)
 {
-    node::set_max_depth(3);//three moves can cover our move after the next move
+    node::set_max_depth(6);
 }
 
 root_uct_player::~root_uct_player()
@@ -34,9 +34,11 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
     master_send_order(BROADCAST_TREE);
     if (!root) {
         root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        node::set_root_depth(root);
         mpi::broadcast(world_comm, root, 0);
     } else {
         node* shallow_root = root->make_shallow_copy();
+        shallow_root->set_parent(nullptr);
         mpi::broadcast(world_comm, shallow_root, 0);
         delete shallow_root;
     }
