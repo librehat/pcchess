@@ -17,7 +17,7 @@ class node : boost::noncopyable
 public:
     typedef std::unordered_map<pos_move, node*>::iterator node_iterator;
 
-    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, const std::vector<pos_move> &_banmoves = std::vector<pos_move>(), node *_parent = nullptr);
+    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, node *_parent = nullptr);
     virtual ~node();
 
     double get_value() const;
@@ -67,19 +67,19 @@ protected:
 
     //use FEN string could save a LOT of data!
     std::string current_fen;
-
     int depth;//to get the _depth_, this needs to minus the root's depth
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
-
     std::int8_t no_eat_half_rounds;
-    std::vector<pos_move> banmoves;//banmoves is always _our_ banmoves
 
     static int root_depth;
     static int max_depth;
 
     static const int select_threshold;
     static const double uct_constant;
+
+    static bool compare_visits(const std::unordered_map<pos_move, node*>::value_type & x, const std::unordered_map<pos_move, node*>::value_type & y);
+    static bool compare_uct(const std::unordered_map<pos_move, node*>::value_type & x, const std::unordered_map<pos_move, node*>::value_type & y);
 
 private:
     friend class boost::serialization::access;
@@ -95,7 +95,6 @@ private:
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
         ar & BOOST_SERIALIZATION_NVP(no_eat_half_rounds);
-        ar & BOOST_SERIALIZATION_NVP(banmoves);
     }
 
     static std::int64_t total_simulations;

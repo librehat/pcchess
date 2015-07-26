@@ -14,15 +14,14 @@ int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
-node::node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, const vector<pos_move> &_banmoves, node *_parent) :
+node::node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, node *_parent) :
 	my_turn(_my_turn),
     red_side(is_red_side),
     parent(_parent),
     current_fen(fen),
     visits(0),
     scores(0),
-    no_eat_half_rounds(noeat_half_rounds),
-    banmoves(_banmoves)
+    no_eat_half_rounds(noeat_half_rounds)
 {
     if (parent) {
         depth = parent->depth + 1;
@@ -92,7 +91,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
         updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
 
-        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), vector<pos_move>(), this);
+        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
         children.emplace(next_move, child);
         child->expand(hist, score);
     } else {
@@ -105,7 +104,7 @@ bool node::simulate()
     total_simulations++;
 
     random_player tr(true), tb(false);
-    game sim_game(&tr, &tb, no_eat_half_rounds, red_side ? banmoves : vector<pos_move>(), red_side ? vector<pos_move>() : banmoves);
+    game sim_game(&tr, &tb, no_eat_half_rounds);
     sim_game.parse_fen(current_fen);
     abstract_player* winner = sim_game.playout(!(my_turn ^ red_side));
 
@@ -174,61 +173,23 @@ node* node::release_child(node::node_iterator i)
 
 node::node_iterator node::get_best_child()
 {
-    auto best = children.end();
-    int current_max = 0;
-    for (auto it = children.begin(); it != children.end(); ++it) {
-        if (it->second->visits > current_max) {
-            best = it;
-            current_max = it->second->visits;
-        }
-    }
-    return best;
+    return max_element(children.begin(), children.end(), compare_visits);
 }
 
 node::node_iterator node::get_best_child_uct()
 {
-    if (children.empty()) {
-        return children.end();
-    }
-
-    auto best_child = children.begin();
-    auto best_uct = best_child->second->get_uct_val();
-    auto it = children.begin();
-    it++;
-    for (; it != children.end(); ++it) {
-        auto uct = it->second->get_uct_val();
-        if (uct > best_uct) {
-            best_child = it;
-            best_uct = uct;
-        }
-    }
-    return best_child;
+    return max_element(children.begin(), children.end(), compare_uct);
 }
 
 node::node_iterator node::get_worst_child_uct()
 {
-    if (children.empty()) {
-        return children.end();
-    }
-
-    auto worst_child = children.begin();
-    auto worst_uct = worst_child->second->get_uct_val();
-    auto it = children.begin();
-    it++;
-    for (; it != children.end(); ++it) {
-        auto uct = it->second->get_uct_val();
-        if (uct < worst_uct) {
-            worst_child = it;
-            worst_uct = uct;
-        }
-    }
-    return worst_child;
+    return min_element(children.begin(), children.end(), compare_uct);
 }
 
 bool node::is_same_place_in_tree(const node &b) const
 {
     /* true if they should be in the same place */
-    return !(my_turn != b.my_turn || depth != b.depth || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds != b.no_eat_half_rounds || banmoves != b.banmoves);
+    return !(my_turn != b.my_turn || depth != b.depth || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds != b.no_eat_half_rounds);
 }
 
 bool node::is_basically_the_same(const node &b) const
@@ -262,4 +223,14 @@ void node::set_root_depth(const node * const r)
 void node::set_max_depth(const int &d)
 {
     max_depth = d;
+}
+
+bool node::compare_visits(const unordered_map<pos_move, node *>::value_type &x, const unordered_map<pos_move, node *>::value_type &y)
+{
+    return x.second->visits < y.second->visits;
+}
+
+bool node::compare_uct(const unordered_map<pos_move, node *>::value_type &x, const unordered_map<pos_move, node *>::value_type &y)
+{
+    return x.second->get_uct_val() < y.second->get_uct_val();
 }
