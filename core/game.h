@@ -11,6 +11,7 @@ class game
 {
 public:
     explicit game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds = 0);
+    explicit game(abstract_player* _red, abstract_player* _black, const std::string &fen, unsigned int no_eat_half_rounds);
     explicit game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm);
     ~game();
 
@@ -34,8 +35,9 @@ public:
     /*
      * Parse position FEN string according to UCCI protocol
      * The players' piece list should be empty before calling this function,
-     * because this function would add pieces to players according to the
-     * FEN string. For details, check
+     * because this function would add pieces to players and board according
+     * to the FEN string.
+     * For details about FEN, check
      * http://www.xqbase.com/protocol/cchess_fen.htm
      */
     void parse_fen(const std::string &fen);

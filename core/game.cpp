@@ -26,6 +26,18 @@ game::game(abstract_player* _red, abstract_player* _black, unsigned int no_eat_h
     }
 }
 
+game::game(abstract_player *_red, abstract_player *_black, const string &fen, unsigned int no_eat_half_rounds) :
+    red(_red),
+    black(_black),
+    half_rounds_since_last_eat(no_eat_half_rounds)
+{
+    if (!red->is_redside() || black->is_redside()) {
+        throw invalid_argument("player is in the wrong side");
+    } else {
+        parse_fen(fen);
+    }
+}
+
 game::game(abstract_player *_red, abstract_player *_black, unsigned int no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm) :
     red(_red),
     black(_black),
@@ -116,12 +128,12 @@ void game::move_piece(const position &from, const position &to)
 
 void game::move_piece(const pos_move &_move)
 {
-    p_piece piece = m_board[_move.from];
+    auto piece = m_board[_move.from];
     if (!piece){
         throw invalid_argument("the piece to move is nullptr on the board");
     }
 
-    p_piece target = m_board[_move.to];
+    auto target = m_board[_move.to];
     if (target) {//capture the target
         if (target->is_redside()) {
             red->remove(target);
@@ -173,8 +185,14 @@ void game::parse_fen(const string &fen)
         return;
     }
 
-    for (int rank = 9; rank >= 0; --rank) {
-        const string &str = rank_str.at(rank);
+    /*
+     * the first line is rank 9, then 8... the order is reversed
+     * so we firstly reverse this vector in order to be straightforward
+     */
+    reverse(rank_str.begin(), rank_str.end());
+
+    for (int rank = 0; rank < board::RANK_NUM; ++rank) {
+        const string &str = rank_str[rank];
         int file = 0;
         char c;
         for (std::size_t i = 0; i < str.size(); ++i) {
@@ -185,46 +203,46 @@ void game::parse_fen(const string &fen)
                 p_piece p;
                 switch (c) {//upper-case: red side; lower-case: black side
                 case 'K':
-                    p = new king(file, rank, false);
-                    break;
-                case 'k':
                     p = new king(file, rank, true);
                     break;
-                case 'P':
-                    p = new pawn(file, rank, false);
+                case 'k':
+                    p = new king(file, rank, false);
                     break;
-                case 'p':
+                case 'P':
                     p = new pawn(file, rank, true);
                     break;
-                case 'B':
-                    p = new elephant(file, rank, false);
+                case 'p':
+                    p = new pawn(file, rank, false);
                     break;
-                case 'b':
+                case 'B':
                     p = new elephant(file, rank, true);
                     break;
-                case 'A':
-                    p = new advisor(file, rank, false);
+                case 'b':
+                    p = new elephant(file, rank, false);
                     break;
-                case 'a':
+                case 'A':
                     p = new advisor(file, rank, true);
                     break;
-                case 'R':
-                    p = new chariot(file, rank, false);
+                case 'a':
+                    p = new advisor(file, rank, false);
                     break;
-                case 'r':
+                case 'R':
                     p = new chariot(file, rank, true);
                     break;
-                case 'N':
-                    p = new horse(file, rank, false);
+                case 'r':
+                    p = new chariot(file, rank, false);
                     break;
-                case 'n':
+                case 'N':
                     p = new horse(file, rank, true);
                     break;
+                case 'n':
+                    p = new horse(file, rank, false);
+                    break;
                 case 'C':
-                    p = new cannon(file, rank, false);
+                    p = new cannon(file, rank, true);
                     break;
                 case 'c':
-                    p = new cannon(file, rank, true);
+                    p = new cannon(file, rank, false);
                     break;
                 default:
                     cerr << "Unknown character in FEN string: " << c;
@@ -253,8 +271,8 @@ string game::generate_fen(const board &bd)
 {
     std::string fen;
     int space = 0;
-    for (int rank = 9; rank >= 0; --rank) {
-        for (int file = 0; file < 9; ++file) {
+    for (int rank = board::RANK_NUM - 1; rank >= 0; --rank) {
+        for (int file = 0; file < board::FILE_NUM; ++file) {
             auto p = bd.at(file, rank);
             if (p) {
                 if (space != 0) {
@@ -273,9 +291,6 @@ string game::generate_fen(const board &bd)
         fen.push_back('/');
     }
     fen.pop_back();//remove last '/'
-#ifdef _DEBUG
-    cout << "generated FEN: " << fen << endl;
-#endif
     return fen;
 }
 
@@ -291,8 +306,8 @@ unsigned int game::get_half_rounds_since_last_eat() const
 
 void game::print_board(bool chinese_char) const
 {
-    for(int j = 0; j <= 9 ; ++j) {//rank
-        for (int i = 0; i <= 8; ++i) {//file
+    for(int j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
+        for (int i = 0; i < board::FILE_NUM; ++i) {//file
             if (m_board.at(i, j)) {
                 if (chinese_char) {
                     cout << m_board.at(i, j)->chinese_name();
@@ -302,11 +317,11 @@ void game::print_board(bool chinese_char) const
             } else {
                 cout << (chinese_char ? "＋" : "+");
             }
-            if (i != 8) {
+            if (i != board::FILE_NUM - 1) {
                 cout << (chinese_char ? "－" : "-");
             }
         }
-        if (j != 9) {
+        if (j != 0) {
             if (chinese_char) {
                 cout << "\n｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
             } else {
