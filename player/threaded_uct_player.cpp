@@ -20,13 +20,13 @@ threaded_uct_player::threaded_uct_player(int _threads, bool red) :
     thread_vec.resize(threads);
 }
 
-bool threaded_uct_player::think_next_move(pos_move &_move, const board &, const string &fen, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
+bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
 {
     milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
 
     if (!root) {
-        root = new threaded_node(fen, true, red_side, no_eat_half_rounds, banmoves);
+        root = new threaded_node(game::generate_fen(bd), true, red_side, no_eat_half_rounds, banmoves);
     }
 
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);

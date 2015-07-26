@@ -12,7 +12,7 @@ public:
     explicit random_player(bool red = true);
     explicit random_player(const abstract_player &b);
 
-    bool think_next_move(pos_move &_move, const board &bd, const std::string &fen, unsigned int no_eat_rounds, const std::vector<pos_move> &banmoves);
+    bool think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_rounds, const std::vector<pos_move> &banmoves);
 
 private:
     friend class boost::serialization::access;

@@ -12,7 +12,7 @@ random_player::random_player(const abstract_player &b) :
     abstract_player(b)
 {}
 
-bool random_player::think_next_move(pos_move &_move, const board &bd, const string &, unsigned int, const vector<pos_move> &)
+bool random_player::think_next_move(pos_move &_move, const board &bd, unsigned int, const vector<pos_move> &)
 {
     random_device device;
     static thread_local mt19937 generator(device());

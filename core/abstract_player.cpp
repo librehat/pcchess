@@ -8,6 +8,7 @@
 #include "king.h"
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -50,72 +51,53 @@ void abstract_player::add(p_piece p)
 
 void abstract_player::remove(p_piece p)
 {
-    for (auto &&ip : pieces) {
-        if (ip == p) {
-            if (p->abbr_name() == 'K') {
-                checkmated = true;
-            }
-            pieces.remove(p);
-            delete p;
-            return;
+    auto ip = find(pieces.begin(), pieces.end(), p);
+    if (ip != pieces.end()) {
+        if (p->is_king()) {
+            checkmated = true;
         }
+        pieces.erase(ip);
+        delete p;
+    } else {
+        throw invalid_argument("piece to remove doesn't belong to this player");
     }
-    throw invalid_argument("The piece to remove doesn't belong to this player");
 }
 
 void abstract_player::init_pieces()
 {
     if (!pieces.empty()) {
-        throw runtime_error("Error. pieces list is not empty when init_pieces is called.");
+        throw runtime_error("pieces list is not empty when init_pieces is called");
     }
 
-    p_piece p;
-
     //pawns
-    p = p_piece(new pawn(0, red_side ? 3 : 6, red_side));
-    pieces.push_back(p);
-    p = p_piece(new pawn(2, red_side ? 3 : 6, red_side));
-    pieces.push_back(p);
-    p = p_piece(new pawn(4, red_side ? 3 : 6, red_side));
-    pieces.push_back(p);
-    p = p_piece(new pawn(6, red_side ? 3 : 6, red_side));
-    pieces.push_back(p);
-    p = p_piece(new pawn(8, red_side ? 3 : 6, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new pawn(0, red_side ? 3 : 6, red_side));
+    pieces.push_back(new pawn(2, red_side ? 3 : 6, red_side));
+    pieces.push_back(new pawn(4, red_side ? 3 : 6, red_side));
+    pieces.push_back(new pawn(6, red_side ? 3 : 6, red_side));
+    pieces.push_back(new pawn(8, red_side ? 3 : 6, red_side));
 
     //cannons
-    p = p_piece(new cannon(1, red_side ? 2 : 7, red_side));
-    pieces.push_back(p);
-    p = p_piece(new cannon(7, red_side ? 2 : 7, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new cannon(1, red_side ? 2 : 7, red_side));
+    pieces.push_back(new cannon(7, red_side ? 2 : 7, red_side));
 
     //chariots
-    p = p_piece(new chariot(0, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
-    p = p_piece(new chariot(8, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new chariot(0, red_side ? 0 : 9, red_side));
+    pieces.push_back(new chariot(8, red_side ? 0 : 9, red_side));
 
     //horses
-    p = p_piece(new horse(1, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
-    p = p_piece(new horse(7, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new horse(1, red_side ? 0 : 9, red_side));
+    pieces.push_back(new horse(7, red_side ? 0 : 9, red_side));
 
     //elephants
-    p = p_piece(new elephant(2, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
-    p = p_piece(new elephant(6, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new elephant(2, red_side ? 0 : 9, red_side));
+    pieces.push_back(new elephant(6, red_side ? 0 : 9, red_side));
 
     //advisors
-    p = p_piece(new advisor(3, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
-    p = p_piece(new advisor(5, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new advisor(3, red_side ? 0 : 9, red_side));
+    pieces.push_back(new advisor(5, red_side ? 0 : 9, red_side));
 
     //king (general)
-    p = p_piece(new king(4, red_side ? 0 : 9, red_side));
-    pieces.push_back(p);
+    pieces.push_back(new king(4, red_side ? 0 : 9, red_side));
 }
 
 bool abstract_player::is_redside() const

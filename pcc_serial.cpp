@@ -53,8 +53,8 @@ int main(int argc, char** argv)
     int64_t our_sims = 0;
     int64_t opp_sims = 0;
     for (int i = 0; i < games; ++i) {
-        random_player red(true);
-        uct_player black(false);
+        uct_player red(true);
+        random_player black(false);
         red.init_pieces();
         black.init_pieces();
         game g(&red, &black);

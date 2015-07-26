@@ -39,10 +39,12 @@ public:
      * http://www.xqbase.com/protocol/cchess_fen.htm
      */
     void parse_fen(const std::string &fen);
-    std::string get_fen() const;//generate FEN string of current situation
+    std::string get_fen() const;//an easy overloaded function to call generate_fen with this game's m_board
 
     std::deque<pos_move> get_history() const;
     unsigned int get_half_rounds_since_last_eat() const;
+
+    static std::string generate_fen(const board &bd);//generate FEN string from given board
 
     static long int step_time;//maximum time for each step (milliseconds)
 

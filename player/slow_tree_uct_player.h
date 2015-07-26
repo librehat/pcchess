@@ -14,7 +14,7 @@ public:
     explicit slow_tree_uct_player(long int sync_period_ms = 500, bool red = true);
     ~slow_tree_uct_player();
 
-    bool think_next_move(pos_move &_move, const board &, const std::string &fen, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
+    bool think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     void opponent_moved(const pos_move &m);
     std::int64_t get_total_simulations() const;
 

@@ -32,7 +32,7 @@ slow_tree_uct_player::~slow_tree_uct_player()
 
 mpi::communicator slow_tree_uct_player::world_comm;
 
-bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const string &fen, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
+bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, unsigned int no_eat_half_rounds, const vector<pos_move> &banmoves)
 {
     static const thread_local milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -40,7 +40,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &, const
     static const thread_local int world_size = world_comm.size();
 
     if (!root) {
-        root = new node(fen, true, red_side, no_eat_half_rounds, banmoves);
+        root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds, banmoves);
         broadcast_tree();
     }
 

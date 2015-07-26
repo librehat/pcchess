@@ -57,7 +57,7 @@ abstract_player* game::playout(bool red_first)
     vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
     do {
-        movable = first->think_next_move(next_move, m_board, get_fen(), half_rounds_since_last_eat, first_banmoves);
+        movable = first->think_next_move(next_move, m_board, half_rounds_since_last_eat, first_banmoves);
         if (!movable || first->is_checkmated()) {
             return second;
         } else {
@@ -68,7 +68,7 @@ abstract_player* game::playout(bool red_first)
             second->opponent_moved(next_move);
         }
 
-        movable = second->think_next_move(next_move, m_board, get_fen(), half_rounds_since_last_eat, second_banmoves);
+        movable = second->think_next_move(next_move, m_board, half_rounds_since_last_eat, second_banmoves);
         if (!movable || second->is_checkmated()) {
             return first;
         } else {
@@ -161,6 +161,10 @@ const vector<pos_move>& game::get_black_banmoves() const
 
 void game::parse_fen(const string &fen)
 {
+    if (!red->get_pieces().empty() || !black->get_pieces().empty()) {
+        cerr << "player's pieces is not empty before calling parse_fen" << endl;
+    }
+
     vector<string> rank_str;
     boost::split(rank_str, fen, boost::is_any_of("/"), boost::token_compress_off);
 
@@ -242,11 +246,16 @@ void game::parse_fen(const string &fen)
 
 string game::get_fen() const
 {
+    return generate_fen(m_board);
+}
+
+string game::generate_fen(const board &bd)
+{
     std::string fen;
     int space = 0;
     for (int rank = 9; rank >= 0; --rank) {
         for (int file = 0; file < 9; ++file) {
-            auto p = m_board.at(file, rank);
+            auto p = bd.at(file, rank);
             if (p) {
                 if (space != 0) {
                     fen.push_back(static_cast<char>(space) + '0');
