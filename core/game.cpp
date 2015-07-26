@@ -17,7 +17,8 @@ using namespace std;
 game::game(abstract_player* _red, abstract_player* _black, int8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
-    half_rounds_since_last_eat(no_eat_half_rounds)
+    half_rounds_since_last_eat(no_eat_half_rounds),
+    rounds(0)
 {
     if (!red->is_redside() || black->is_redside()) {
         throw invalid_argument("player is in the wrong side");
@@ -29,26 +30,13 @@ game::game(abstract_player* _red, abstract_player* _black, int8_t no_eat_half_ro
 game::game(abstract_player *_red, abstract_player *_black, const string &fen, int8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
-    half_rounds_since_last_eat(no_eat_half_rounds)
+    half_rounds_since_last_eat(no_eat_half_rounds),
+    rounds(0)
 {
     if (!red->is_redside() || black->is_redside()) {
         throw invalid_argument("player is in the wrong side");
     } else {
         parse_fen(fen);
-    }
-}
-
-game::game(abstract_player *_red, abstract_player *_black, int8_t no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm) :
-    red(_red),
-    black(_black),
-    red_banmoves(red_bm),
-    black_banmoves(black_bm),
-    half_rounds_since_last_eat(no_eat_half_rounds)
-{
-    if (!red->is_redside() || black->is_redside()) {
-        throw invalid_argument("player is in the wrong side");
-    } else {
-        setup_players();
     }
 }
 
@@ -69,6 +57,8 @@ abstract_player* game::playout(bool red_first)
     vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
     do {
+        rounds++;
+
         movable = first->think_next_move(next_move, m_board, half_rounds_since_last_eat, first_banmoves);
         if (!movable || first->is_checkmated()) {
             return second;
@@ -302,6 +292,11 @@ deque<pos_move> game::get_history() const
 int8_t game::get_half_rounds_since_last_eat() const
 {
     return half_rounds_since_last_eat;
+}
+
+int game::get_rounds() const
+{
+    return rounds;
 }
 
 void game::print_board(bool chinese_char) const

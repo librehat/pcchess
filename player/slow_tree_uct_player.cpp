@@ -14,33 +14,13 @@ namespace mpi = boost::mpi;
 
 BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
-const int slow_tree_uct_player::TAG_SYNC = 1;
-const int slow_tree_uct_player::TAG_OPPMOV = 10;
-const int slow_tree_uct_player::TAG_OPPMOV_DATA = 11;
-const int slow_tree_uct_player::TAG_CHILD_SELEC = 20;
-const int slow_tree_uct_player::TAG_CHILD_SELEC_DATA = 21;
-const int slow_tree_uct_player::TAG_COMP_LOOP = 30;
-const int slow_tree_uct_player::TAG_COMP_FINISH = 31;
-const int slow_tree_uct_player::TAG_BROADCAST_TREE = 40;
-const int slow_tree_uct_player::TAG_REDUCE_SIMS = 50;
-const int slow_tree_uct_player::TAG_EXIT = 0;
-
 slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
-    uct_player(red),
+    root_uct_player(red),
     sync_period(sync_period_ms)
 {
     assert(sync_period > 0);
-    node::set_max_depth(12);
+    node::set_max_depth(6);
 }
-
-slow_tree_uct_player::~slow_tree_uct_player()
-{
-    if (world_comm.rank() == 0) {
-        master_send_order(TAG_EXIT);
-    }
-}
-
-mpi::communicator slow_tree_uct_player::world_comm;
 
 bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
 {
@@ -51,14 +31,14 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
 
     if (!root) {
         root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
-        master_send_order(TAG_BROADCAST_TREE);
+        master_send_order(BROADCAST_TREE);
 #ifdef _DEBUG
         cout << "[0] broadcast_tree" << endl;
 #endif
         mpi::broadcast(world_comm, root, 0);
     }
 
-    master_send_order(TAG_COMP_LOOP);
+    master_send_order(COMP_LOOP);
     long int synced_point = 0, next_sync_point = sync_period;
     bool no_more_sims = false;
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -77,15 +57,15 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
 #ifdef _DEBUG
             cout << "sync in the loop, time count: " << current_point << endl;
 #endif
-            master_send_order(TAG_SYNC);
+            master_send_order(SYNC);
             sync_tree();
             synced_point = current_point;
             next_sync_point = synced_point + sync_period;
             no_more_sims = false;
         }
     }
-    master_send_order(TAG_COMP_FINISH);
-    master_send_order(TAG_SYNC);
+    master_send_order(COMP_FINISH);
+    master_send_order(SYNC);
     sync_tree();
 
     auto best_child = root->get_best_child();
@@ -94,9 +74,9 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
     }
 
     _move = best_child->first;
-    master_send_order(TAG_CHILD_SELEC);
-    for (int i = 1; i < world_size; ++i) {
-        world_comm.send(i, TAG_CHILD_SELEC_DATA, _move);
+    master_send_order(CHILD_SELEC);
+    for (int j = 1; j < world_size; ++j) {
+        world_comm.send(j, CHILD_SELEC_DATA, _move);
     }
 
     node* new_root = root->release_child(best_child);
@@ -120,28 +100,15 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
     node *new_root = nullptr;
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
-        master_send_order(TAG_OPPMOV);
+        master_send_order(OPPMOV);
         for (int i = 1; i < world_comm.size(); ++i) {
-            world_comm.send(i, TAG_OPPMOV_DATA, m);
+            world_comm.send(i, OPPMOV_DATA, m);
         }
         new_root = root->release_child(root_iter);
         node::set_root_depth(new_root);
     }
     delete root;
     root = new_root;
-}
-
-void slow_tree_uct_player::master_send_order(const int &tag) const
-{
-    if (world_comm.rank() != 0) {
-        cerr << "non-master node called master_send_order function" << endl;
-        return;
-    }
-
-    static int world_size = world_comm.size();
-    for (int i = 1; i < world_size; ++i) {
-        world_comm.send(i, tag);
-    }
 }
 
 void slow_tree_uct_player::do_slave_job()
@@ -151,25 +118,25 @@ void slow_tree_uct_player::do_slave_job()
         boost::optional<mpi::status> req_ret = request.test();
         if (req_ret) {
             switch (req_ret.get().tag()) {
-            case TAG_SYNC:
+            case SYNC:
                 sync_tree();
                 break;
-            case TAG_OPPMOV:
+            case OPPMOV:
                 slave_opponent_moved();
                 break;
-            case TAG_CHILD_SELEC:
+            case CHILD_SELEC:
                 slave_select_child();
                 break;
-            case TAG_COMP_LOOP:
+            case COMP_LOOP:
                 slave_compute();
                 break;
-            case TAG_BROADCAST_TREE:
+            case BROADCAST_TREE:
                 slave_broadcast_tree();
                 break;
-            case TAG_REDUCE_SIMS:
+            case REDUCE_SIMS:
                 mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
                 break;
-            case TAG_EXIT:
+            case EXIT:
                 return;
             default:
                 throw invalid_argument("received an invalid mpi tag in do_slave_job()");
@@ -189,7 +156,7 @@ void slow_tree_uct_player::slave_opponent_moved()
 #endif
 
     pos_move mov;
-    world_comm.recv(0, TAG_OPPMOV_DATA, mov);
+    world_comm.recv(0, OPPMOV_DATA, mov);
     if (!root) {
         throw runtime_error("root is nullptr");
     }
@@ -210,7 +177,7 @@ void slow_tree_uct_player::slave_select_child()
     cout << "[" << world_comm.rank() << "] slave_select_child" << endl;
 #endif
     pos_move mov;
-    world_comm.recv(0, TAG_CHILD_SELEC_DATA, mov);
+    world_comm.recv(0, CHILD_SELEC_DATA, mov);
     auto root_iter = root->find_child(mov);
     auto new_root = root->release_child(root_iter);
     node::set_root_depth(new_root);
@@ -234,12 +201,12 @@ void slow_tree_uct_player::slave_compute()
         boost::optional<mpi::status> req_ret = request.test();
         if (req_ret) {
             switch (req_ret.get().tag()) {
-            case TAG_SYNC:
+            case SYNC:
                 sync_tree();
                 request = world_comm.irecv(0, mpi::any_tag);//we may get a new order again
                 no_more_sims = false;//we may be able to do MCTS again
                 break;
-            case TAG_COMP_FINISH:
+            case COMP_FINISH:
                 cont_comp = false;
                 break;
             default:
@@ -257,19 +224,6 @@ void slow_tree_uct_player::slave_compute()
     } while (cont_comp);
 }
 
-void slow_tree_uct_player::slave_broadcast_tree()
-{
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] broadcast_tree" << endl;
-#endif
-    if (root) {
-        delete root;
-        root = nullptr;
-    }
-    mpi::broadcast(world_comm, root, 0);
-    node::set_root_depth(root);
-}
-
 void slow_tree_uct_player::sync_tree()
 {
     static int world_size = world_comm.size();
@@ -283,8 +237,7 @@ void slow_tree_uct_player::sync_tree()
 #ifdef _DEBUG
     auto start = steady_clock::now();
 #endif
-    //TODO need to optimise! it takes too long when tree gets bigger
-    mpi::all_gather(world_comm, root, tree_vec);
+    mpi::all_gather(world_comm, root, tree_vec);//TODO: need to reduce the packet size
 #ifdef _DEBUG
     cout << "[" << rank << "] all_gather took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
 #endif
@@ -296,7 +249,7 @@ void slow_tree_uct_player::sync_tree()
         }
         //merge only if they're different (they might be basically the same if nothing happened between two syncs)
         if (!root->is_basically_the_same(*(tree_vec[i]))) {
-            root->merge(*(tree_vec[i]));
+            root->merge(*(tree_vec[i]));//FIXME: the logic is wrong
         }
     }
 
@@ -310,16 +263,4 @@ void slow_tree_uct_player::sync_tree()
             delete t;
         }
     }
-}
-
-int64_t slow_tree_uct_player::get_total_simulations() const
-{
-    if (world_comm.rank() != 0) {
-        throw runtime_error("non-root's get_total_simulations() gets called");
-    }
-
-    master_send_order(TAG_REDUCE_SIMS);
-    int64_t local_sims = node::get_total_simulations(), sum_sims = 0;
-    mpi::reduce(world_comm, local_sims, sum_sims, plus<int>(), 0);
-    return sum_sims;
 }

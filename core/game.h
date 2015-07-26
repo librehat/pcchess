@@ -12,7 +12,6 @@ class game
 public:
     explicit game(abstract_player* _red, abstract_player* _black, std::int8_t no_eat_half_rounds = 0);
     explicit game(abstract_player* _red, abstract_player* _black, const std::string &fen, std::int8_t no_eat_half_rounds);
-    explicit game(abstract_player* _red, abstract_player* _black, std::int8_t no_eat_half_rounds, const std::vector<pos_move> &red_bm, const std::vector<pos_move> &black_bm);
     ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
@@ -45,6 +44,7 @@ public:
 
     std::deque<pos_move> get_history() const;
     std::int8_t get_half_rounds_since_last_eat() const;
+    int get_rounds() const;
 
     static std::string generate_fen(const board &bd);//generate FEN string from given board
 
@@ -75,6 +75,7 @@ private:
 
     std::deque<pos_move> history;
     std::int8_t half_rounds_since_last_eat;
+    int rounds;
 };
 
 #endif //GAME_H
