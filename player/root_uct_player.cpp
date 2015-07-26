@@ -13,7 +13,9 @@ BOOST_CLASS_EXPORT_GUID(root_uct_player, "root_uct_player")
 
 root_uct_player::root_uct_player(bool red) :
     uct_player(red)
-{}
+{
+    node::set_max_depth(12);
+}
 
 root_uct_player::~root_uct_player()
 {
@@ -34,6 +36,9 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
     }
     master_send_order(BROADCAST_TREE);
     mpi::broadcast(world_comm, root, 0);
+#ifdef _DEBUG
+    cout << "broadcasting tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
+#endif
 
     master_send_order(COMP_LOOP);
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -45,8 +50,24 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
         }
     }
     master_send_order(COMP_FINISH);
-    master_send_order(UPLOAD);
-    //TODO deal with
+
+#ifdef _DEBUG
+    start = steady_clock::now();
+#endif
+    master_send_order(GATHER_TREE);
+    vector<node*> root_vec;
+    mpi::gather(world_comm, root, root_vec, 0);
+    for (int i = 1; i < world_comm.size(); ++i) {//skip myself
+        root->merge(*(root_vec[i]));
+    }
+    for (auto &&i : root_vec) {
+        if (i != root) {
+            delete i;
+        }
+    }
+#ifdef _DEBUG
+    cout << "gathering and merging tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
+#endif
 
     auto best_child = root->get_best_child();
     if (best_child == root->child_end()) {
@@ -69,8 +90,8 @@ void root_uct_player::do_slave_job()
         boost::optional<mpi::status> req_ret = request.test();
         if (req_ret) {
             switch (req_ret.get().tag()) {
-            case UPLOAD:
-                world_comm.send(0, UPLOAD_DATA, root);
+            case GATHER_TREE:
+                mpi::gather(world_comm, root, 0);
                 break;
             case COMP_LOOP:
                 slave_compute();
