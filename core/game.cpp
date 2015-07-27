@@ -60,24 +60,30 @@ abstract_player* game::playout(bool red_first)
         rounds++;
 
         movable = first->think_next_move(next_move, m_board, half_rounds_since_last_eat, first_banmoves);
-        if (!movable || first->is_checkmated()) {
+        if (!movable) {
             return second;
         } else {
             if (find(first_banmoves.begin(), first_banmoves.end(), next_move) != first_banmoves.end()) {
                 return second;
             }
             move_piece(next_move);
+            if (second->is_checkmated()) {
+                return first;
+            }
             second->opponent_moved(next_move);
         }
 
         movable = second->think_next_move(next_move, m_board, half_rounds_since_last_eat, second_banmoves);
-        if (!movable || second->is_checkmated()) {
+        if (!movable) {
             return first;
         } else {
             if (find(second_banmoves.begin(), second_banmoves.end(), next_move) != second_banmoves.end()) {
                 return first;
             }
             move_piece(next_move);
+            if (first->is_checkmated()) {
+                return second;
+            }
             first->opponent_moved(next_move);
         }
 
