@@ -3,13 +3,10 @@
 #include <chrono>
 #include <thread>
 #include <boost/mpi/collectives.hpp>
-#include <boost/serialization/export.hpp>
 
 using namespace std;
 using namespace chrono;
 namespace mpi = boost::mpi;
-
-BOOST_CLASS_EXPORT_GUID(root_uct_player, "root_uct_player")
 
 root_uct_player::root_uct_player(bool red) :
     uct_player(red)

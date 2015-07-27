@@ -6,13 +6,10 @@
 #include <thread>
 #include <fstream>
 #include <boost/mpi/collectives.hpp>
-#include <boost/serialization/export.hpp>
 
 using namespace std;
 using namespace chrono;
 namespace mpi = boost::mpi;
-
-BOOST_CLASS_EXPORT_GUID(slow_tree_uct_player, "slow_tree_uct_player")
 
 slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
     root_uct_player(red),
