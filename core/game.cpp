@@ -302,6 +302,7 @@ int game::get_rounds() const
 void game::print_board(bool chinese_char) const
 {
     for(int8_t j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
+        cout << to_string(j) << " ";
         for (int8_t i = 0; i < board::FILE_NUM; ++i) {//file
             if (m_board.at(i, j)) {
                 if (chinese_char) {
@@ -318,11 +319,50 @@ void game::print_board(bool chinese_char) const
         }
         if (j != 0) {
             if (chinese_char) {
-                cout << "\n｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
+                cout << "\n　｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
             } else {
-                cout << "\n| | | | | | | | |\n";
+                cout << "\n  | | | | | | | | |\n";
             }
         }
     }
+    cout << "\n  ";
+    for (int8_t i = 0; i < board::FILE_NUM; ++i) {
+        if (chinese_char) {
+            cout << get_full_width_letter(static_cast<char>(i + 'a')) << "　";
+        } else {
+            cout << static_cast<char>(i + 'a') << ' ';
+        }
+    }
     cout << endl;
+}
+
+string game::get_full_width_letter(const char &a)
+{
+    int8_t del = a - 'a';
+    switch (del) {
+    case 0:
+        return string("ａ");
+    case 1:
+        return string("ｂ");
+    case 2:
+        return string("ｃ");
+    case 3:
+        return string("ｄ");
+    case 4:
+        return string("ｅ");
+    case 5:
+        return string("ｆ");
+    case 6:
+        return string("ｇ");
+    case 7:
+        return string("ｈ");
+    case 8:
+        return string("ｉ");
+    case 9:
+        return string("ｊ");
+    case 10:
+        return string("ｋ");
+    default:
+        return string("??");
+    }
 }

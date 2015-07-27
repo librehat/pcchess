@@ -60,6 +60,7 @@ public:
 
 private:
     void setup_players();
+    static std::string get_full_width_letter(const char &a);//convert the given character to a full-width string
 
     board m_board;
     abstract_player *const red;
