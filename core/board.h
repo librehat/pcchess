@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include "position.h"
+#include <array>
 
 class abstract_piece;
 
@@ -11,7 +12,6 @@ class board
 {
 public:
     board();
-    ~board();
 
     p_piece at(const std::int8_t &file, const std::int8_t &rank) const;
     p_piece at(const position &pos) const;
@@ -29,8 +29,17 @@ public:
 
     static std::string get_full_width_letter(const char &);
 
+
+    typedef std::array<p_piece, NUM>::iterator iterator;
+    typedef std::array<p_piece, NUM>::const_iterator const_iterator;
+
+    iterator begin() { return data.begin(); }
+    const_iterator begin() const { return data.cbegin(); }
+    iterator end() { return data.end(); }
+    const_iterator end() const { return data.cend(); }
+
 private:
-    p_piece* data;
+    std::array<p_piece, NUM> data;
 };
 
 #endif // BOARD_H

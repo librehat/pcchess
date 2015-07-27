@@ -7,16 +7,9 @@ using namespace std;
 
 board::board()
 {
-    data = new p_piece[NUM];
-
     for (int i = 0; i < NUM; i++) {
         data[i] = nullptr;
     }
-}
-
-board::~board()
-{
-    delete [] data;
 }
 
 p_piece* board::operator [](const int8_t &file)
@@ -24,7 +17,7 @@ p_piece* board::operator [](const int8_t &file)
     if (file >= FILE_NUM || file < 0) {
         throw std::out_of_range("board file index out of range");
     }
-    return data + file * RANK_NUM;
+    return data.data() + file * RANK_NUM;
 }
 
 p_piece& board::operator [] (const position &pos)
