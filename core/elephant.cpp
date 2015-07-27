@@ -24,7 +24,7 @@ char elephant::abbr_name() const
 
 string elephant::chinese_name() const
 {
-    return string("象");
+    return red_side ? string("相") : string("象");
 }
 
 int elephant::value() const

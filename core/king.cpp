@@ -19,7 +19,7 @@ char king::abbr_name() const
 
 string king::chinese_name() const
 {
-    return string("將");
+    return red_side ? string("帥") : string("將");
 }
 
 int king::value() const

@@ -14,7 +14,7 @@ char cannon::abbr_name() const
 
 string cannon::chinese_name() const
 {
-    return string("炮");
+    return red_side ? string("炮") : string("砲");
 }
 
 int cannon::value() const

@@ -19,7 +19,7 @@ char advisor::abbr_name() const
 
 string advisor::chinese_name() const
 {
-    return string("士");
+    return red_side ? string("仕") : string("士");
 }
 
 int advisor::value() const

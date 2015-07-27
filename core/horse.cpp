@@ -23,7 +23,7 @@ char horse::abbr_name() const
 
 string horse::chinese_name() const
 {
-    return string("馬");
+    return red_side ? string("傌") : string("馬");
 }
 
 int horse::value() const

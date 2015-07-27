@@ -14,7 +14,7 @@ char chariot::abbr_name() const
 
 string chariot::chinese_name() const
 {
-    return string("車");
+    return red_side ? string("俥") : string("車");
 }
 
 int chariot::value() const
