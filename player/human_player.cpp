@@ -9,6 +9,9 @@ bool human_player::think_next_move(pos_move &m, const board &bd, int8_t no_eat_h
     auto all_avail_moves = get_all_available_moves(bd);
 
     string move_str;
+    if (is_in_check()) {
+        cout << "==> Your king is in check" << endl;
+    }
     cout << "==> It has been " << no_eat_half_rounds / 2 << " rounds without any pieces eaten." << endl
          << "==> Please input your next move using ICCI notation (i.e. a0a1)." << endl
          << "==> If you want to resign, please input r." << endl
