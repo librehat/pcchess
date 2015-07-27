@@ -7,6 +7,7 @@
 #include "player/random_player.h"
 #include "player/uct_player.h"
 #include "player/threaded_uct_player.h"
+#include "player/human_player.h"
 #include "unistd.h"
 #include <iostream>
 #include <fstream>
@@ -53,7 +54,8 @@ int main(int argc, char** argv)
     int64_t our_sims = 0;
     int64_t opp_sims = 0;
     for (int i = 0; i < games; ++i) {
-        uct_player red(true);
+        //uct_player red(true);
+        human_player red(true);
         random_player black(false);
         red.init_pieces();
         black.init_pieces();

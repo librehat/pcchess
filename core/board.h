@@ -21,9 +21,13 @@ public:
 
     bool operator !=(const board&);
 
+    void print_out(bool chinese_char = false) const;//print current chess board into stdout
+
     static const std::int8_t RANK_NUM = 10;
     static const std::int8_t FILE_NUM = 9;
     static const std::int8_t NUM = FILE_NUM * RANK_NUM;
+
+    static std::string get_full_width_letter(const char &);
 
 private:
     p_piece* data;
