@@ -59,7 +59,7 @@ abstract_player* game::playout(bool red_first)
     do {
         rounds++;
 
-        first->set_checked(is_player_checked(red_first));
+        first->set_check(is_player_in_check(red_first));
         movable = first->think_next_move(next_move, m_board, half_rounds_since_last_eat, first_banmoves);
         if (!movable) {
             return second;
@@ -74,7 +74,7 @@ abstract_player* game::playout(bool red_first)
             second->opponent_moved(next_move);
         }
 
-        second->set_checked(is_player_checked(!red_first));
+        second->set_check(is_player_in_check(!red_first));
         movable = second->think_next_move(next_move, m_board, half_rounds_since_last_eat, second_banmoves);
         if (!movable) {
             return first;
@@ -312,7 +312,7 @@ void game::print_board(bool chinese_char) const
     m_board.print_out(chinese_char);
 }
 
-bool game::is_player_checked(const bool &_red)
+bool game::is_player_in_check(const bool &_red)
 {
     auto &we = _red ? red : black;
     auto &op = _red ? black : red;

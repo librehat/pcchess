@@ -119,7 +119,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
         updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
         if (my_turn) {
-            if (updater_sim.is_player_checked(red_side)) {
+            if (updater_sim.is_player_in_check(red_side)) {
                 return;//we're checked! don't make this move
             }
         }

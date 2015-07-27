@@ -46,7 +46,7 @@ public:
     std::int8_t get_half_rounds_since_last_eat() const;
     int get_rounds() const;
 
-    bool is_player_checked(const bool &red);
+    bool is_player_in_check(const bool &red);
 
     static std::string generate_fen(const board &bd);//generate FEN string from given board
 

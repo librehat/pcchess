@@ -26,12 +26,12 @@ public:
     void init_pieces();
 
     bool is_redside() const;
-    bool is_checked() const;
+    inline bool is_in_check() const { return in_check; }
     bool is_checkmated() const;
     const std::vector<p_piece> &get_pieces() const { return pieces; }
     position get_king_position();
 
-    inline void set_checked(const bool &c) { checked = c; }
+    inline void set_check(const bool &c) { in_check = c; }
 
     /*
      * sub-class has to implement this pure virtual function
@@ -55,7 +55,7 @@ public:
 protected:
     std::vector<p_piece> pieces;
     const bool red_side;
-    bool checked;//if our general is checked
+    bool in_check;//if our general is in check
     bool checkmated;//if our general is dead
 
     p_piece pking;
@@ -67,7 +67,7 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(pieces);
         ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
-        ar & BOOST_SERIALIZATION_NVP(checked);
+        ar & BOOST_SERIALIZATION_NVP(in_check);
         ar & BOOST_SERIALIZATION_NVP(checkmated);
         ar & BOOST_SERIALIZATION_NVP(pking);
     }

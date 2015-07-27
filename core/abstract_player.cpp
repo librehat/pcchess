@@ -14,7 +14,7 @@ using namespace std;
 
 abstract_player::abstract_player(bool red) :
     red_side(red),
-    checked(false),
+    in_check(false),
     checkmated(false),
     pking(nullptr)
 {
@@ -23,7 +23,7 @@ abstract_player::abstract_player(bool red) :
 
 abstract_player::abstract_player(const abstract_player &b) :
     red_side(b.red_side),
-    checked(b.checked),
+    in_check(b.in_check),
     checkmated(b.checkmated),
     pking(nullptr)
 {
@@ -109,11 +109,6 @@ void abstract_player::init_pieces()
 bool abstract_player::is_redside() const
 {
     return red_side;
-}
-
-bool abstract_player::is_checked() const
-{
-    return checked;
 }
 
 bool abstract_player::is_checkmated() const
