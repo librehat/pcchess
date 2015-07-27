@@ -11,8 +11,8 @@ bool human_player::think_next_move(pos_move &m, const board &bd, int8_t no_eat_h
         p->update_moves(bd);
         if (p->is_movable()) {
             auto from = p->get_position();
-            for (auto &&m : p->get_avail_moves()) {
-                all_avail_moves.emplace_back(from, m);
+            for (auto &&am : p->get_avail_moves()) {
+                all_avail_moves.emplace_back(from, am);
             }
         }
     }
