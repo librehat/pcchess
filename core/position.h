@@ -21,6 +21,11 @@ public:
     position operator- (const position &b);
     bool operator< (const position &b) const;
 
+    friend std::ostream& operator<<(std::ostream &os, const position &p)
+    {
+        return os << static_cast<char>(p.file + 'a') << static_cast<char>(p.rank + '0');
+    }
+
 private:
     friend class boost::serialization::access;
     template<class Archive>

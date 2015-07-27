@@ -1,3 +1,6 @@
+#ifndef POS_MOVE_H
+#define POS_MOVE_H
+
 #include "position.h"
 #include <boost/functional/hash.hpp>
 
@@ -20,6 +23,11 @@ public:
 
     inline bool operator != (const pos_move &b) const {
         return from != b.from || to != b.to;
+    }
+
+    friend std::ostream& operator<<(std::ostream &os, const pos_move &m)
+    {
+        return os << m.get_iccs();
     }
 
 private:
@@ -54,3 +62,5 @@ namespace std
 }
 
 BOOST_IS_MPI_DATATYPE(pos_move)
+
+#endif //POS_MOVE_H

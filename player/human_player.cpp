@@ -35,3 +35,8 @@ bool human_player::think_next_move(pos_move &m, const board &bd, int8_t no_eat_h
     m = pos_move(move_str);
     return true;
 }
+
+void human_player::opponent_moved(const pos_move &m)
+{
+    cout << "==> The opponent moved " << m << endl;
+}

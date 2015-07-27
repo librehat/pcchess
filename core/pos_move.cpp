@@ -17,11 +17,7 @@ pos_move::pos_move(const string &iccs)
 
 string pos_move::get_iccs() const
 {
-    std::string iccs;
-    iccs.resize(4);
-    iccs[0] = static_cast<char>(from.file + 'a');
-    iccs[1] = static_cast<char>(from.rank + '0');
-    iccs[2] = static_cast<char>(to.file + 'a');
-    iccs[3] = static_cast<char>(to.rank + '0');
-    return iccs;
+    ostringstream stream;
+    stream << from << to;
+    return stream.str();
 }
