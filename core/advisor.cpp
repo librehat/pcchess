@@ -29,10 +29,10 @@ int advisor::value() const
 
 void advisor::gen_moves(const board &m_board)
 {
-    avail_moves.push_back(pos + upleft);
-    avail_moves.push_back(pos + upright);
-    avail_moves.push_back(pos + downleft);
-    avail_moves.push_back(pos + downright);
+    avail_pos.push_back(pos + upleft);
+    avail_pos.push_back(pos + upright);
+    avail_pos.push_back(pos + downleft);
+    avail_pos.push_back(pos + downright);
     remove_invalid_moves(m_board, 3, 5, red_side ? 0 : 7, red_side ? 2 : 9);
 }
 

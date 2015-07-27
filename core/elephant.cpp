@@ -35,16 +35,16 @@ int elephant::value() const
 void elephant::gen_moves(const board &m_board)
 {
     if (!m_board.at(pos + up_left_centre)) {
-        avail_moves.push_back(pos + up_left);
+        avail_pos.push_back(pos + up_left);
     }
     if (!m_board.at(pos + up_right_centre)) {
-        avail_moves.push_back(pos + up_right);
+        avail_pos.push_back(pos + up_right);
     }
     if (!m_board.at(pos + down_left_centre)) {
-        avail_moves.push_back(pos + down_left);
+        avail_pos.push_back(pos + down_left);
     }
     if (!m_board.at(pos + down_right_centre)) {
-        avail_moves.push_back(pos + down_right);
+        avail_pos.push_back(pos + down_right);
     }
     remove_invalid_moves(m_board, 0, 8, red_side ? 0 : 5, red_side ? 4 : 9);//elephant can't across the river
 }

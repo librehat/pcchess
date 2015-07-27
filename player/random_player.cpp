@@ -17,17 +17,7 @@ bool random_player::think_next_move(pos_move &_move, const board &bd, int8_t, co
     random_device device;
     static thread_local mt19937 generator(device());
 
-    vector<pos_move> all_avail_moves;
-    for (auto &&p : pieces) {
-        p->update_moves(bd);
-        if (p->is_movable()) {
-            auto from = p->get_position();
-        	for (auto &&m : p->get_avail_moves()) {
-                all_avail_moves.emplace_back(from, m);
-        	}
-        }
-    }
-
+    auto all_avail_moves = get_all_available_moves(bd);
     int moves = all_avail_moves.size();
     if (moves == 0) {
         return false;

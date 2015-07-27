@@ -31,14 +31,14 @@ void cannon::search_moves(const bool forward, const bool is_rank, const board &m
         if (p == pos)   continue;
         if(m_board.at(p)) {//a piece in the way
             if (mount_found) {//a piece that can be taken
-                avail_moves.push_back(p);
+                avail_pos.push_back(p);
                 break;//cannon can't go further
             } else {
                 mount_found = true;
             }
         } else {
             if (!mount_found) {//cannon can only move freely before the mount
-                avail_moves.push_back(p);
+                avail_pos.push_back(p);
             }
             //else simply continue path searching
         }

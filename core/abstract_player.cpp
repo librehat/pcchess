@@ -15,7 +15,8 @@ using namespace std;
 abstract_player::abstract_player(bool red) :
     red_side(red),
     checked(false),
-    checkmated(false)
+    checkmated(false),
+    pking(nullptr)
 {
     pieces.reserve(16);
 }
@@ -23,7 +24,8 @@ abstract_player::abstract_player(bool red) :
 abstract_player::abstract_player(const abstract_player &b) :
     red_side(b.red_side),
     checked(b.checked),
-    checkmated(b.checkmated)
+    checkmated(b.checkmated),
+    pking(nullptr)
 {
     pieces.reserve(16);
 	for (auto &&it : b.pieces) {
@@ -101,6 +103,7 @@ void abstract_player::init_pieces()
 
     //king (general)
     pieces.push_back(new king(4, red_side ? 0 : 9, red_side));
+    pking = pieces.back();
 }
 
 bool abstract_player::is_redside() const
@@ -118,7 +121,45 @@ bool abstract_player::is_checkmated() const
     return checkmated;
 }
 
-const std::vector<p_piece> &abstract_player::get_pieces() const
+position abstract_player::get_king_position()
 {
-    return pieces;
+    if (!pking) {
+        auto k = find_if(pieces.begin(), pieces.end(), [&](const p_piece &p) {
+                return p->is_king();
+        });
+        if (k != pieces.end()) {
+            pking = *k;
+        } else {
+            throw runtime_error("this player doesn't have a king");
+        }
+    }
+
+    return pking->get_position();
+}
+
+vector<position> abstract_player::get_all_available_target_positions(const board &bd) const
+{
+    vector<position> all_avail_pos;
+    for (auto &&p : pieces) {
+        p->update_moves(bd);
+        auto& tp = p->get_avail_target_positions();
+        all_avail_pos.insert(all_avail_pos.end(), tp.begin(), tp.end());
+    }
+    return all_avail_pos;
+}
+
+vector<pos_move> abstract_player::get_all_available_moves(const board &bd) const
+{
+    vector<pos_move> all_avail_moves;
+    for (auto &&p : pieces) {
+        p->update_moves(bd);
+        if (p->is_movable()) {
+            auto& from = p->get_position();
+            auto& tp = p->get_avail_target_positions();
+            for (auto &&m : tp) {
+                all_avail_moves.emplace_back(from, m);
+            }
+        }
+    }
+    return all_avail_moves;
 }

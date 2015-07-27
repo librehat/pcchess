@@ -29,8 +29,8 @@ int king::value() const
 
 void king::gen_moves(const board &m_board)
 {
-    avail_moves.push_back(pos + up);
-    avail_moves.push_back(pos + down);
+    avail_pos.push_back(pos + up);
+    avail_pos.push_back(pos + down);
     
     position pos_left = pos + left;
     position pos_right = pos + right;
@@ -54,7 +54,7 @@ void king::gen_moves(const board &m_board)
     }
     
     if (other_piece_between || !found_king) {
-        avail_moves.push_back(pos_left);
+        avail_pos.push_back(pos_left);
     }
     
     found_king = false;
@@ -71,7 +71,7 @@ void king::gen_moves(const board &m_board)
     }
     
     if (other_piece_between || !found_king) {
-        avail_moves.push_back(pos_right);
+        avail_pos.push_back(pos_right);
     }
     
     remove_invalid_moves(m_board, 3, 5, red_side ? 0 : 7, red_side ? 2 : 9);

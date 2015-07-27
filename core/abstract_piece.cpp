@@ -10,7 +10,7 @@ abstract_piece::abstract_piece(int8_t _file, int8_t _rank, bool red) :
 abstract_piece::abstract_piece(const abstract_piece &b) :
     red_side(b.red_side),
     pos(b.pos),
-    avail_moves(b.avail_moves)
+    avail_pos(b.avail_pos)
 {}
 
 abstract_piece::~abstract_piece()
@@ -21,7 +21,7 @@ bool abstract_piece::is_redside() const
     return red_side;
 }
 
-position abstract_piece::get_position() const
+const position &abstract_piece::get_position() const
 {
     return pos;
 }
@@ -39,7 +39,7 @@ void abstract_piece::move_to_pos(const position &new_pos)
 
 void abstract_piece::update_moves(const board &m_board)
 {
-    avail_moves.clear();
+    avail_pos.clear();
     if (can_i_move(m_board)) {
         gen_moves(m_board);
     }
@@ -73,7 +73,7 @@ bool abstract_piece::can_i_move(const board &m_board) const
 
 void abstract_piece::remove_invalid_moves(const board &m_board, int8_t min_file, int8_t max_file, int8_t min_rank, int8_t max_rank)
 {
-    for (auto it = avail_moves.begin(); it != avail_moves.end();) {
+    for (auto it = avail_pos.begin(); it != avail_pos.end();) {
         bool invalid = false;
         if (it->not_in_range(min_file, max_file, min_rank, max_rank)) {
             invalid = true;
@@ -88,21 +88,21 @@ void abstract_piece::remove_invalid_moves(const board &m_board, int8_t min_file,
         }
 
         if (invalid) {
-            it = avail_moves.erase(it);
+            it = avail_pos.erase(it);
         } else {
             ++it;
         }
     }
 }
 
-const vector<position>& abstract_piece::get_avail_moves() const
+const vector<position>& abstract_piece::get_avail_target_positions() const
 {
-    return avail_moves;
+    return avail_pos;
 }
 
 bool abstract_piece::is_movable() const
 {
-    return !avail_moves.empty();
+    return !avail_pos.empty();
 }
 
 bool abstract_piece::operator ==(const abstract_piece &b)
@@ -112,5 +112,5 @@ bool abstract_piece::operator ==(const abstract_piece &b)
 
 bool abstract_piece::operator !=(const abstract_piece &b)
 {
-    return red_side != b.red_side && pos != b.pos && avail_moves != b.avail_moves;
+    return red_side != b.red_side && pos != b.pos && avail_pos != b.avail_pos;
 }

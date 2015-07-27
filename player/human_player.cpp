@@ -6,16 +6,7 @@ using namespace std;
 bool human_player::think_next_move(pos_move &m, const board &bd, int8_t no_eat_half_rounds, const std::vector<pos_move> &)
 {
     bd.print_out(true);
-    vector<pos_move> all_avail_moves;
-    for (auto &&p : pieces) {
-        p->update_moves(bd);
-        if (p->is_movable()) {
-            auto from = p->get_position();
-            for (auto &&am : p->get_avail_moves()) {
-                all_avail_moves.emplace_back(from, am);
-            }
-        }
-    }
+    auto all_avail_moves = get_all_available_moves(bd);
 
     string move_str;
     cout << "==> It has been " << no_eat_half_rounds / 2 << " rounds without any pieces eaten." << endl

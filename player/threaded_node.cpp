@@ -15,7 +15,7 @@ bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
         children_mutex.lock();
-        node_iterator bc;
+        iterator bc;
         if (my_turn) {
             bc = get_best_child_uct();
         } else {
@@ -46,22 +46,29 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
     pos_move next_move = hist.back();
     hist.pop_back();
 
+    node *child;
     children_mutex.lock();
     auto child_iter = children.find(next_move);
     if (child_iter != children.end()) {
+        child = child_iter->second;
         children_mutex.unlock();
-        child_iter->second->expand(hist, score);
     } else {
+        children_mutex.unlock();
         random_player tr(true), tb(false);
         game updater_sim(&tr, &tb, no_eat_half_rounds);
         updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
-
-        node *child = new threaded_node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+        if (my_turn) {
+            if (updater_sim.is_player_checked(red_side)) {
+                return;//we're checked! don't make this move
+            }
+        }
+        child = new threaded_node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+        children_mutex.lock();
         children.emplace(next_move, child);
         children_mutex.unlock();
-        child->expand(hist, score);
     }
+    child->expand(hist, score);
 }
 
 bool threaded_node::simulate()

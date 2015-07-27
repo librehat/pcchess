@@ -27,7 +27,7 @@ public:
      */
     bool is_redside() const;
 
-    position get_position() const;
+    const position& get_position() const;
 
     void move_to_pos(int newfile, int newrank);
     void move_to_pos(const position &new_pos);
@@ -37,7 +37,7 @@ public:
      * give the board data to this function
      */
     void update_moves(const board &m_board);
-    const std::vector<position>& get_avail_moves() const;
+    const std::vector<position>& get_avail_target_positions() const;
     bool is_movable() const;//check if avail_moves is empty
 
     virtual char abbr_name() const = 0;
@@ -53,7 +53,7 @@ public:
 protected:
     const bool red_side;
     position pos;
-    std::vector<position> avail_moves;
+    std::vector<position> avail_pos;
 
     /*
      * a piece can't move if it's the only piece separate generals
@@ -73,7 +73,7 @@ private:
     {
         ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
         ar & BOOST_SERIALIZATION_NVP(pos);
-        ar & BOOST_SERIALIZATION_NVP(avail_moves);
+        ar & BOOST_SERIALIZATION_NVP(avail_pos);
     }
 };
 

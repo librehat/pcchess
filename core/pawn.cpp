@@ -38,14 +38,14 @@ bool pawn::can_move_horizontally()
 void pawn::gen_moves(const board &m_board)
 {
     if (can_move_horizontally()) {
-        avail_moves.push_back(position(pos + left));
-        avail_moves.push_back(position(pos + right));
+        avail_pos.push_back(position(pos + left));
+        avail_pos.push_back(position(pos + right));
     }
     if (red_side) {
-        avail_moves.push_back(position(pos + up));
+        avail_pos.push_back(position(pos + up));
     }
     else {
-        avail_moves.push_back(position(pos - up));
+        avail_pos.push_back(position(pos - up));
     }
     remove_invalid_moves(m_board);
 }

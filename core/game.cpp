@@ -51,14 +51,15 @@ abstract_player* game::playout(bool red_first)
     pos_move next_move;
     bool movable = false;
 
-    abstract_player* first = red_first ? red : black;
-    abstract_player* second = red_first ? black : red;
+    auto& first = red_first ? red : black;
+    auto& second = red_first ? black : red;
     vector<pos_move> &first_banmoves = red_first ? red_banmoves : black_banmoves;
     vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
     do {
         rounds++;
 
+        first->set_checked(is_player_checked(red_first));
         movable = first->think_next_move(next_move, m_board, half_rounds_since_last_eat, first_banmoves);
         if (!movable) {
             return second;
@@ -73,6 +74,7 @@ abstract_player* game::playout(bool red_first)
             second->opponent_moved(next_move);
         }
 
+        second->set_checked(is_player_checked(!red_first));
         movable = second->think_next_move(next_move, m_board, half_rounds_since_last_eat, second_banmoves);
         if (!movable) {
             return first;
@@ -308,4 +310,13 @@ int game::get_rounds() const
 void game::print_board(bool chinese_char) const
 {
     m_board.print_out(chinese_char);
+}
+
+bool game::is_player_checked(const bool &_red)
+{
+    auto &we = _red ? red : black;
+    auto &op = _red ? black : red;
+    auto op_avail_moves = op->get_all_available_target_positions(m_board);
+    auto king_pos = we->get_king_position();
+    return find(op_avail_moves.begin(), op_avail_moves.end(), king_pos) != op_avail_moves.end();
 }

@@ -15,7 +15,7 @@
 class node : boost::noncopyable
 {
 public:
-    typedef std::unordered_map<pos_move, node*>::iterator node_iterator;
+    typedef std::unordered_map<pos_move, node*>::iterator iterator;
 
     explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, node *_parent = nullptr);
     virtual ~node();
@@ -36,18 +36,18 @@ public:
 
     virtual void backpropagate(const int &score);
     int children_size() const;
-    node* release_child(node_iterator i);
+    node* release_child(iterator i);
     inline void set_parent(node *n) { parent = n; }
 
     /*
      * select child according to the visit times
      * be aware of the return value could be nullptr (if children is empty)
      */
-    node_iterator get_best_child();//best child which has highest visits
-    node_iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
-    node_iterator get_worst_child_uct();
-    inline node_iterator find_child(const pos_move &m) { return children.find(m); }
-    inline node_iterator child_end() { return children.end(); }
+    iterator get_best_child();//best child which has highest visits
+    iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
+    iterator get_worst_child_uct();
+    inline iterator find_child(const pos_move &m) { return children.find(m); }
+    inline iterator child_end() { return children.end(); }
 
     bool is_same_place_in_tree(const node &b) const;
     bool is_basically_the_same(const node &b) const;//everything is the same except for those pointers such as parent

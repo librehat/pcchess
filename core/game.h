@@ -46,6 +46,8 @@ public:
     std::int8_t get_half_rounds_since_last_eat() const;
     int get_rounds() const;
 
+    bool is_player_checked(const bool &red);
+
     static std::string generate_fen(const board &bd);//generate FEN string from given board
 
     static long int step_time;//maximum time for each step (milliseconds)

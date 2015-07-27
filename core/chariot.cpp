@@ -28,7 +28,7 @@ void chariot::search_moves(const bool forward, const bool is_rank, const board &
          is_rank ? (p.rank += forward ? 1 : -1) : (p.file += forward ? 1 : -1)
     ) {
         if (p == pos)   continue;
-        avail_moves.push_back(p);
+        avail_pos.push_back(p);
         if(m_board.at(p))   break;
     }
 }

@@ -28,7 +28,10 @@ public:
     bool is_redside() const;
     bool is_checked() const;
     bool is_checkmated() const;
-    const std::vector<p_piece> &get_pieces() const;
+    const std::vector<p_piece> &get_pieces() const { return pieces; }
+    position get_king_position();
+
+    inline void set_checked(const bool &c) { checked = c; }
 
     /*
      * sub-class has to implement this pure virtual function
@@ -46,12 +49,16 @@ public:
     virtual void opponent_moved(const pos_move &) {}
 
     virtual std::int64_t get_total_simulations() const { return 0; }
+    std::vector<position> get_all_available_target_positions(const board &bd) const;
+    std::vector<pos_move> get_all_available_moves(const board &bd) const;
 
 protected:
     std::vector<p_piece> pieces;
     const bool red_side;
     bool checked;//if our general is checked
     bool checkmated;//if our general is dead
+
+    p_piece pking;
 
 private:
     friend class boost::serialization::access;
@@ -62,6 +69,7 @@ private:
         ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
         ar & BOOST_SERIALIZATION_NVP(checked);
         ar & BOOST_SERIALIZATION_NVP(checkmated);
+        ar & BOOST_SERIALIZATION_NVP(pking);
     }
 };
 

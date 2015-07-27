@@ -114,7 +114,16 @@ void node::expand(deque<pos_move> &hist, const int &score)
 
     auto child_iter = children.find(next_move);
     if (child_iter == children.end()) {
-        node *child = gen_child_with_a_move(next_move);
+        random_player tr(true), tb(false);
+        game updater_sim(&tr, &tb, no_eat_half_rounds);
+        updater_sim.parse_fen(current_fen);
+        updater_sim.move_piece(next_move);
+        if (my_turn) {
+            if (updater_sim.is_player_checked(red_side)) {
+                return;//we're checked! don't make this move
+            }
+        }
+        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
         children.emplace(next_move, child);
         child->expand(hist, score);
     } else {
@@ -190,7 +199,7 @@ void node::backpropagate(const int &score)
     }
 }
 
-node* node::release_child(node::node_iterator i)
+node* node::release_child(node::iterator i)
 {
     assert(i != children.end());
     node* c = i->second;
@@ -199,17 +208,17 @@ node* node::release_child(node::node_iterator i)
     return c;
 }
 
-node::node_iterator node::get_best_child()
+node::iterator node::get_best_child()
 {
     return max_element(children.begin(), children.end(), compare_visits);
 }
 
-node::node_iterator node::get_best_child_uct()
+node::iterator node::get_best_child_uct()
 {
     return max_element(children.begin(), children.end(), compare_uct);
 }
 
-node::node_iterator node::get_worst_child_uct()
+node::iterator node::get_worst_child_uct()
 {
     return min_element(children.begin(), children.end(), compare_uct);
 }
