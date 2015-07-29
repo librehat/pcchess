@@ -88,6 +88,7 @@ protected:
 
 private:
     friend class boost::serialization::access;
+    friend class std::hash<node>;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int)
     {
@@ -104,5 +105,20 @@ private:
 
     static std::int64_t total_simulations;
 };
+
+namespace std
+{
+    template <>
+    struct hash<node>
+    {
+        std::size_t operator()(const node& n) const
+        {
+            std::size_t seed = 0;
+            boost::hash_combine(seed, n.current_fen);
+            boost::hash_combine(seed, n.depth);
+            return seed;
+        }
+    };
+}
 
 #endif // NODE_H
