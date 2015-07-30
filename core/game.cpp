@@ -14,7 +14,7 @@
 
 using namespace std;
 
-game::game(abstract_player* _red, abstract_player* _black, int8_t no_eat_half_rounds) :
+game::game(abstract_player* _red, abstract_player* _black, uint8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
     half_rounds_since_last_eat(no_eat_half_rounds),
@@ -27,7 +27,7 @@ game::game(abstract_player* _red, abstract_player* _black, int8_t no_eat_half_ro
     }
 }
 
-game::game(abstract_player *_red, abstract_player *_black, const string &fen, int8_t no_eat_half_rounds) :
+game::game(abstract_player *_red, abstract_player *_black, const string &fen, uint8_t no_eat_half_rounds) :
     red(_red),
     black(_black),
     half_rounds_since_last_eat(no_eat_half_rounds),
@@ -41,13 +41,23 @@ game::game(abstract_player *_red, abstract_player *_black, const string &fen, in
 }
 
 long int game::step_time = 2000;
-int8_t game::NO_EAT_DRAW_HALF_ROUNDS = 120;
+uint8_t game::NO_EAT_DRAW_HALF_ROUNDS = 120;
 
 game::~game()
 {}
 
 abstract_player* game::playout(bool red_first)
 {
+    /*
+     * "validate" the game state before start
+     * this could prevent game from useless playing since one side is already lost before start
+     */
+    if (!red->get_king()) {
+        return black;
+    } else if (!black->get_king()) {
+        return red;
+    }
+
     pos_move next_move;
     bool movable = false;
 
@@ -297,7 +307,7 @@ deque<pos_move> game::get_history() const
     return history;
 }
 
-int8_t game::get_half_rounds_since_last_eat() const
+uint8_t game::get_half_rounds_since_last_eat() const
 {
     return half_rounds_since_last_eat;
 }

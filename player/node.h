@@ -5,19 +5,18 @@
 #include "../core/abstract_player.h"
 #include <boost/noncopyable.hpp>
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/string.hpp>
-#include <unordered_map>
+#include <boost/serialization/vector.hpp>
+#include <vector>
 #include <deque>
 #include <cstdint>
 
 class node : boost::noncopyable
 {
 public:
-    typedef std::unordered_map<pos_move, node*>::iterator iterator;
+    typedef std::vector<node*>::iterator iterator;
 
-    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, node *_parent = nullptr);
+    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node *_parent = nullptr);
     virtual ~node();
 
     node* make_shallow_copy() const;//used for root_uct_player
@@ -26,6 +25,7 @@ public:
 
     double get_value() const;
     double get_uct_val() const;
+    pos_move get_move() const { return mov; }
 
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
@@ -46,7 +46,7 @@ public:
     iterator get_best_child();//best child which has highest visits
     iterator get_best_child_uct();//return best child which has maximum value of get_uct_val()
     iterator get_worst_child_uct();
-    inline iterator find_child(const pos_move &m) { return children.find(m); }
+    iterator find_child(const pos_move &m);
     inline iterator child_end() { return children.end(); }
 
     bool is_same_place_in_tree(const node &b) const;
@@ -68,14 +68,15 @@ protected:
     const bool red_side;
 
     node* parent;
-    std::unordered_map<pos_move, node*> children;
+    std::vector<node*> children;
 
     //use FEN string could save a LOT of data!
     std::string current_fen;
+    pos_move mov;
     int depth;//to get the _depth_, this needs to minus the root's depth
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
-    std::int8_t no_eat_half_rounds;
+    std::uint8_t no_eat_half_rounds;
 
     static int root_depth;
     static int max_depth;
@@ -83,8 +84,8 @@ protected:
     static const int select_threshold;
     static const double uct_constant;
 
-    static bool compare_visits(const std::unordered_map<pos_move, node*>::value_type & x, const std::unordered_map<pos_move, node*>::value_type & y);
-    static bool compare_uct(const std::unordered_map<pos_move, node*>::value_type & x, const std::unordered_map<pos_move, node*>::value_type & y);
+    static bool compare_visits(const std::vector<node*>::value_type & x, const std::vector<node*>::value_type & y);
+    static bool compare_uct(const std::vector<node*>::value_type & x, const std::vector<node*>::value_type & y);
 
 private:
     friend class boost::serialization::access;
@@ -97,6 +98,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
         ar & BOOST_SERIALIZATION_NVP(current_fen);
+        ar & BOOST_SERIALIZATION_NVP(mov);
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
@@ -115,6 +117,7 @@ namespace std
         {
             std::size_t seed = 0;
             boost::hash_combine(seed, n.current_fen);
+            //boost::hash_combine(seed, n.mov);
             boost::hash_combine(seed, n.depth);
             return seed;
         }

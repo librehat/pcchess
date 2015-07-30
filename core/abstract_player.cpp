@@ -48,7 +48,7 @@ abstract_player::~abstract_player()
 
 void abstract_player::add(p_piece p)
 {
-    if(p->is_redside() != red_side) {
+    if (p->is_redside() != red_side) {
         throw invalid_argument("piece to add belongs to different side");
     }
     pieces.push_back(p);
@@ -103,30 +103,27 @@ void abstract_player::init_pieces()
 
     //king (general)
     pieces.push_back(new king(4, red_side ? 0 : 9, red_side));
-    pking = pieces.back();
 }
 
-bool abstract_player::is_redside() const
+p_piece abstract_player::get_king()
 {
-    return red_side;
-}
-
-bool abstract_player::is_checkmated() const
-{
-    return checkmated;
+    if (!pking) {
+        auto kit = find_if(pieces.begin(), pieces.end(), [](const p_piece &p){ return p->is_king(); });
+        if (kit != pieces.end()) {
+            pking = *kit;
+        }
+    }
+    return pking;
 }
 
 position abstract_player::get_king_position()
 {
     if (!pking) {
-        auto k = find_if(pieces.begin(), pieces.end(), [&](const p_piece &p) {
-                return p->is_king();
-        });
-        if (k != pieces.end()) {
-            pking = *k;
-        } else {
+        auto kit = find_if(pieces.begin(), pieces.end(), [](const p_piece &p){ return p->is_king(); });
+        if (kit == pieces.end()) {
             throw runtime_error("this player doesn't have a king");
         }
+        pking = *kit;
     }
 
     return pking->get_position();

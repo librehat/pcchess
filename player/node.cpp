@@ -14,7 +14,7 @@ int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
-node::node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, node *_parent) :
+node::node(const string &fen, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
 	my_turn(_my_turn),
     red_side(is_red_side),
     parent(_parent),
@@ -32,8 +32,8 @@ node::node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half
 
 node::~node()
 {
-    for (auto &&c : children) {
-        delete c.second;
+    for (auto && i : children) {
+        delete i;
     }
 }
 
@@ -41,6 +41,7 @@ node* node::make_shallow_copy() const
 {
     node* n = new node(current_fen, my_turn, red_side, no_eat_half_rounds, parent);
     n->depth = depth;
+    n->mov = mov;
     return n;
 }
 
@@ -48,9 +49,9 @@ node* node::make_shallow_copy_with_children() const
 {
     node* n = this->make_shallow_copy();
     for (auto it = children.begin(); it != children.end(); ++it) {
-        node* c = it->second->make_shallow_copy();
+        node* c = (*it)->make_shallow_copy();
         c->parent = n;
-        n->children.emplace(it->first, c);
+        n->children.push_back(c);
     }
     return n;
 }
@@ -90,9 +91,9 @@ bool node::select()
          * best in this situation.
          */
         if (my_turn) {
-            return get_best_child_uct()->second->select();
+            return (*get_best_child_uct())->select();
         } else {
-            return get_worst_child_uct()->second->select();
+            return (*get_worst_child_uct())->select();
         }
     } else {
         return simulate();
@@ -112,7 +113,8 @@ void node::expand(deque<pos_move> &hist, const int &score)
     pos_move next_move = hist.back();
     hist.pop_back();
 
-    auto child_iter = children.find(next_move);
+    node *child;
+    auto child_iter = find_child(next_move);
     if (child_iter == children.end()) {
         random_player tr(true), tb(false);
         game updater_sim(&tr, &tb, no_eat_half_rounds);
@@ -123,12 +125,13 @@ void node::expand(deque<pos_move> &hist, const int &score)
                 return;//we're checked! don't make this move
             }
         }
-        node *child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
-        children.emplace(next_move, child);
-        child->expand(hist, score);
+        child = new node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+        child->mov = next_move;
+        children.push_back(child);
     } else {
-        child_iter->second->expand(hist, score);
+        child = *child_iter;
     }
+    child->expand(hist, score);
 }
 
 bool node::simulate()
@@ -173,15 +176,16 @@ void node::merge(node &b, bool average_mode)
 
     /* The node b will give its children to us, of which is either merged or pushed back as a new child */
     for (auto target_it = b.children.begin(); target_it != b.children.end(); target_it = b.children.begin()) {
-        auto src_it = children.find(target_it->first);
+        auto src_it = find_child((*target_it)->mov);
         if (src_it != children.end()) {
-            src_it->second->merge(*(target_it->second), average_mode);
-            delete target_it->second;
+            (*src_it)->merge(**target_it, average_mode);
+            delete *target_it;
+            b.children.erase(target_it);
         } else {
-            target_it->second->parent = this;
-            children.emplace(target_it->first, target_it->second);
+            node* n = b.release_child(target_it);
+            n->parent = this;
+            children.push_back(n);
         }
-        b.children.erase(target_it);
     }
 }
 
@@ -202,7 +206,7 @@ void node::backpropagate(const int &score)
 node* node::release_child(node::iterator i)
 {
     assert(i != children.end());
-    node* c = i->second;
+    node* c = *i;
     c->parent = nullptr;
     children.erase(i);
     return c;
@@ -221,6 +225,13 @@ node::iterator node::get_best_child_uct()
 node::iterator node::get_worst_child_uct()
 {
     return min_element(children.begin(), children.end(), compare_uct);
+}
+
+node::iterator node::find_child(const pos_move &m)
+{
+    return find_if(children.begin(), children.end(), [&](const node* const &n){
+        return n->mov == m;
+    });
 }
 
 bool node::is_same_place_in_tree(const node &b) const
@@ -262,12 +273,12 @@ void node::set_max_depth(const int &d)
     max_depth = d;
 }
 
-bool node::compare_visits(const unordered_map<pos_move, node *>::value_type &x, const unordered_map<pos_move, node *>::value_type &y)
+bool node::compare_visits(const std::vector<node*>::value_type &x, const std::vector<node*>::value_type &y)
 {
-    return x.second->visits < y.second->visits;
+    return x->visits < y->visits;
 }
 
-bool node::compare_uct(const unordered_map<pos_move, node *>::value_type &x, const unordered_map<pos_move, node *>::value_type &y)
+bool node::compare_uct(const std::vector<node*>::value_type &x, const std::vector<node*>::value_type &y)
 {
-    return x.second->get_uct_val() < y.second->get_uct_val();
+    return x->get_uct_val() < y->get_uct_val();
 }

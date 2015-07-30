@@ -17,7 +17,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
     int opt, games = 1;
-    bool enable_print = false, chinese_print = false;
+    bool enable_print = false, chinese_print = false, human = false;
 
     while((opt = getopt(argc, argv, "g:t:pch")) != -1) {
         switch(opt) {
@@ -28,13 +28,16 @@ int main(int argc, char** argv)
             game::step_time = atol(optarg);
             break;
         case 'n':
-            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<int8_t>(atoi(optarg));
+            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<uint8_t>(atoi(optarg));
             break;
         case 'p':
             enable_print = true;
             break;
         case 'c':
             chinese_print = true;
+            break;
+        case 'h':
+            human = true;
             break;
         default:
             cout << "Command-line options:\n"
@@ -43,6 +46,7 @@ int main(int argc, char** argv)
                  << "  -n <maximum rounds when no piece gets eaten>\tset to 0 to disable this feature\n"
                  << "  -p\tprint out the board after each round\n"
                  << "  -c\tuse Chinese characters in the board\n"
+                 << "  -h\tlet human player join in this game\n"
                  << endl;
             return 1;
         }
@@ -53,28 +57,36 @@ int main(int argc, char** argv)
     int we_lose = 0;
     int64_t our_sims = 0;
     int64_t opp_sims = 0;
+    abstract_player *red, *black;
     for (int i = 0; i < games; ++i) {
-        human_player red(true);
-        threaded_uct_player black(0, false);
-        red.init_pieces();
-        black.init_pieces();
-        game g(&red, &black);
+        if (human) {
+            red = new human_player(chinese_print, true);
+        } else {
+            red = new random_player(true);
+        }
+        //black = new threaded_uct_player(0, false);
+        black = new uct_player(false);
+        red->init_pieces();
+        black->init_pieces();
+        game g(red, black);
         abstract_player* winner = g.playout();
 
         if (enable_print) {
             g.print_board(chinese_print);
         }
 
-        if (winner == &red) {
+        if (winner == red) {
             we_win++;
-        } else if (winner == &black) {
+        } else if (winner == black) {
             we_lose++;
         } else {
             we_draw++;
         }
 
-        our_sims += red.get_total_simulations();
-        opp_sims += black.get_total_simulations();
+        our_sims += red->get_total_simulations();
+        opp_sims += black->get_total_simulations();
+        delete red;
+        delete black;
     }
 
     cout << "WIN:\t" << we_win << endl

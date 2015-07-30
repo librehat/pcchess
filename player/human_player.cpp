@@ -3,9 +3,9 @@
 
 using namespace std;
 
-bool human_player::think_next_move(pos_move &m, const board &bd, int8_t no_eat_half_rounds, const std::vector<pos_move> &)
+bool human_player::think_next_move(pos_move &m, const board &bd, uint8_t no_eat_half_rounds, const std::vector<pos_move> &)
 {
-    bd.print_out(true);
+    bd.print_out(chinese_character);
     auto all_avail_moves = get_all_available_moves(bd);
 
     string move_str;

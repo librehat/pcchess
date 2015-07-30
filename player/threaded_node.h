@@ -8,7 +8,7 @@
 class threaded_node : public node
 {
 public:
-    explicit threaded_node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::int8_t noeat_half_rounds = 0, node *_parent = nullptr);
+    explicit threaded_node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node *_parent = nullptr);
 
     bool select();
     void expand(std::deque<pos_move> &hist, const int &score);

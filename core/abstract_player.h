@@ -25,10 +25,11 @@ public:
      */
     void init_pieces();
 
-    bool is_redside() const;
+    inline bool is_redside() const { return red_side; }
     inline bool is_in_check() const { return in_check; }
-    bool is_checkmated() const;
+    inline bool is_checkmated() const { return checkmated; }
     const std::vector<p_piece> &get_pieces() const { return pieces; }
+    p_piece get_king();//return the pointer to king, nullptr is returned if no king present
     position get_king_position();
 
     inline void set_check(const bool &c) { in_check = c; }
@@ -39,7 +40,7 @@ public:
      * in arguments.
      * otherwise, return false if no move can be made
      */
-    virtual bool think_next_move(pos_move &m, const board &bd, std::int8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves) = 0;
+    virtual bool think_next_move(pos_move &m, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves) = 0;
 
     /*
      * the sub-class player might want to change some strategies

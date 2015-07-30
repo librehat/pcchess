@@ -19,7 +19,7 @@ slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
     node::set_max_depth(20);
 }
 
-bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
+bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     static milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -74,7 +74,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, int
         return false;
     }
 
-    _move = best_child->first;
+    _move = (*best_child)->get_move();
     master_send_order(CHILD_SELEC);
     for (int j = 1; j < world_size; ++j) {
         world_comm.send(j, CHILD_SELEC_DATA, _move);
@@ -201,6 +201,7 @@ void slow_tree_uct_player::slave_opponent_moved()
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
+        cout << "oppmov found in children" << endl;
     } else {
         new_root = root->gen_child_with_a_move(m);
         new_root->set_parent(nullptr);

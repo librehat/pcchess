@@ -25,6 +25,10 @@ public:
         return from != b.from || to != b.to;
     }
 
+    friend bool operator == (const pos_move &a, const pos_move &b) {
+        return !(a != b);
+    }
+
     friend std::ostream& operator<<(std::ostream &os, const pos_move &m)
     {
         return os << m.get_iccs();
@@ -39,10 +43,6 @@ private:
         ar & boost::serialization::make_nvp("to", to);
     }
 };
-
-inline bool operator == (const pos_move &a, const pos_move &b) {
-    return !(a != b);
-}
 
 namespace std
 {

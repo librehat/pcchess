@@ -23,7 +23,7 @@ root_uct_player::~root_uct_player()
 
 mpi::communicator root_uct_player::world_comm;
 
-bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
+bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     static milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -81,7 +81,7 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, int8_t n
         return false;
     }
 
-    _move = best_child->first;
+    _move = (*best_child)->get_move();
     node* new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
     delete root;
@@ -160,6 +160,9 @@ void root_uct_player::slave_compute()
 
 void root_uct_player::slave_broadcast_tree()
 {
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] broadcast_tree" << endl;
+#endif
     if (root) {
         delete root;
         root = nullptr;

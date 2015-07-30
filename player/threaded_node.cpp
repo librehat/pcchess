@@ -5,7 +5,7 @@
 
 using namespace std;
 
-threaded_node::threaded_node(const string &fen, bool _my_turn, bool is_red_side, int8_t noeat_half_rounds, node *_parent) :
+threaded_node::threaded_node(const string &fen, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
     node(fen, _my_turn, is_red_side, noeat_half_rounds, _parent)
 {}
 
@@ -15,14 +15,14 @@ bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
         children_mutex.lock();
-        iterator bc;
+        node* bc;
         if (my_turn) {
-            bc = get_best_child_uct();
+            bc = *get_best_child_uct();
         } else {
-            bc = get_worst_child_uct();
+            bc = *get_worst_child_uct();
         }
         children_mutex.unlock();
-        return bc->second->select();
+        return bc->select();
     } else {
         return simulate();
     }
@@ -48,9 +48,9 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
 
     node *child;
     children_mutex.lock();
-    auto child_iter = children.find(next_move);
+    auto child_iter = find_child(next_move);
     if (child_iter != children.end()) {
-        child = child_iter->second;
+        child = *child_iter;
         children_mutex.unlock();
     } else {
         children_mutex.unlock();
@@ -64,8 +64,9 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
             }
         }
         child = new threaded_node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
+        dynamic_cast<threaded_node*>(child)->mov = next_move;
         children_mutex.lock();
-        children.emplace(next_move, child);
+        children.push_back(child);
         children_mutex.unlock();
     }
     child->expand(hist, score);

@@ -24,7 +24,7 @@ uct_player::~uct_player()
     }
 }
 
-bool uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat_half_rounds, const vector<pos_move> &)
+bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
@@ -48,13 +48,13 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, int8_t no_eat
         return false;
     }
 
-    _move = best_child->first;
+    _move = (*best_child)->get_move();
     node* new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
     delete root;
     root = new_root;
 /*
-#if defined(_DEBUG) && defined(__linux__)
+#if defined(_DEBUG)
     static int i = 0;
     if (i == 0) {
         start = steady_clock::now();
