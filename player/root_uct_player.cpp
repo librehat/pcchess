@@ -30,14 +30,13 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
 
     master_send_order(BROADCAST_TREE);
     if (!root) {
-        root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        root = node::node_ptr(new node(game::generate_fen(bd), red_side, no_eat_half_rounds));
         node::set_root_depth(root);
         mpi::broadcast(world_comm, root, 0);
     } else {
-        node* shallow_root = root->make_shallow_copy();
+        node::node_ptr shallow_root = root->make_shallow_copy();
         shallow_root->set_parent(nullptr);
         mpi::broadcast(world_comm, shallow_root, 0);
-        delete shallow_root;
     }
 #ifdef _DEBUG
     cout << "broadcasting tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
@@ -58,7 +57,7 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
     start = steady_clock::now();
 #endif
     master_send_order(GATHER_TREE);
-    vector<node*> root_vec;
+    vector<node::node_ptr> root_vec;
     mpi::gather(world_comm, root, root_vec, 0);
 #ifdef _DEBUG
     cout << "gathering tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
@@ -66,11 +65,6 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
 #endif
     for (int i = 1; i < world_comm.size(); ++i) {//skip myself
         root->merge(*(root_vec[i]));
-    }
-    for (auto &&i : root_vec) {
-        if (i != root) {
-            delete i;
-        }
     }
 #ifdef _DEBUG
     cout << "merging tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
@@ -82,9 +76,8 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
     }
 
     _move = (*best_child)->get_move();
-    node* new_root = root->release_child(best_child);
+    node::node_ptr new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
-    delete root;
     root = new_root;
 
     return true;
@@ -164,8 +157,7 @@ void root_uct_player::slave_broadcast_tree()
     cout << "[" << world_comm.rank() << "] broadcast_tree" << endl;
 #endif
     if (root) {
-        delete root;
-        root = nullptr;
+        root.reset();
     }
     mpi::broadcast(world_comm, root, 0);
     node::set_root_depth(root);

@@ -13,16 +13,11 @@ using namespace std;
 using namespace chrono;
 
 uct_player::uct_player(bool red) :
-    abstract_player(red),
-    root(nullptr)
+    abstract_player(red)
 {}
 
 uct_player::~uct_player()
-{
-    if (root) {
-        delete root;
-    }
-}
+{}
 
 bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
@@ -30,7 +25,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_ea
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
 
     if (!root) {
-        root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        root = node::node_ptr(new node(game::generate_fen(bd), red_side, no_eat_half_rounds));
         node::set_root_depth(root);
     }
 
@@ -49,9 +44,8 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_ea
     }
 
     _move = (*best_child)->get_move();
-    node* new_root = root->release_child(best_child);
+    node::node_ptr new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
-    delete root;
     root = new_root;
 /*
 #if defined(_DEBUG)
@@ -74,24 +68,18 @@ void uct_player::opponent_moved(const pos_move &m)
         return;
     }
 
-    node *new_root = nullptr;
+    node::node_ptr new_root;
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
         node::set_root_depth(new_root);
     }
-    delete root;
     root = new_root;
 }
 
 int64_t uct_player::get_total_simulations() const
 {
     return node::get_total_simulations();
-}
-
-node* uct_player::get_tree() const
-{
-    return root;
 }
 
 void uct_player::text_archive_tree(ostream &os, node *b)

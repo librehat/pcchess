@@ -26,7 +26,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
     steady_clock::time_point start = steady_clock::now();//steady_clock is best suitable for measuring intervals
 
     if (!root) {
-        root = new threaded_node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        root = node::node_ptr(new threaded_node(game::generate_fen(bd), red_side, no_eat_half_rounds));
         node::set_root_depth(root);
     }
 
@@ -48,9 +48,8 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
     }
 
     _move = (*best_child)->get_move();
-    node* new_root = root->release_child(best_child);
+    node::node_ptr new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
-    delete root;
     root = new_root;
 
     return true;

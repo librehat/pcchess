@@ -19,13 +19,13 @@ public:
     virtual void opponent_moved(const pos_move &m);
     virtual std::int64_t get_total_simulations() const;
 
-    node *get_tree() const;
+    inline node::node_ptr get_tree() const { return root; }
 
     static void text_archive_tree(std::ostream &os, node *);
     static void xml_archive_tree(std::ostream &os, node *);
 
 protected:
-    node *root;
+    node::node_ptr root;
 
 private:
     friend class boost::serialization::access;

@@ -5,8 +5,12 @@
 
 using namespace std;
 
-threaded_node::threaded_node(const string &fen, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
-    node(fen, _my_turn, is_red_side, noeat_half_rounds, _parent)
+threaded_node::threaded_node(const string &fen, const pos_move &mov, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
+    node(fen, mov, _my_turn, is_red_side, noeat_half_rounds, _parent)
+{}
+
+threaded_node::threaded_node(const string &fen, bool is_red_side, uint8_t noeat_half_rounds) :
+    node(fen, is_red_side, noeat_half_rounds)
 {}
 
 atomic<int64_t> threaded_node::total_simulations(0);
@@ -14,8 +18,8 @@ atomic<int64_t> threaded_node::total_simulations(0);
 bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
+        node_ptr bc;
         children_mutex.lock();
-        node* bc;
         if (my_turn) {
             bc = *get_best_child_uct();
         } else {
@@ -46,12 +50,11 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
     pos_move next_move = hist.back();
     hist.pop_back();
 
-    node *child;
+    node_ptr child;
     children_mutex.lock();
     auto child_iter = find_child(next_move);
     if (child_iter != children.end()) {
         child = *child_iter;
-        children_mutex.unlock();
     } else {
         children_mutex.unlock();
         random_player tr(true), tb(false);
@@ -63,12 +66,11 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
                 return;//we're checked! don't make this move
             }
         }
-        child = new threaded_node(updater_sim.get_fen(), !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this);
-        dynamic_cast<threaded_node*>(child)->mov = next_move;
+        child = node_ptr(new threaded_node(updater_sim.get_fen(), next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this));
         children_mutex.lock();
         children.push_back(child);
-        children_mutex.unlock();
     }
+    children_mutex.unlock();
     child->expand(hist, score);
 }
 
@@ -103,15 +105,15 @@ bool threaded_node::simulate()
     }
 }
 
-void threaded_node::backpropagate(const int &score)
+void threaded_node::backpropagate(const int &score, const int &vis)
 {
     if (parent) {
         threaded_node* p = dynamic_cast<threaded_node*>(parent);
         p->value_mutex.lock();
-        p->visits += 1;
+        p->visits += vis;
         p->scores += score;
         p->value_mutex.unlock();
-        p->backpropagate(score);
+        p->backpropagate(score, vis);
     }
 }
 

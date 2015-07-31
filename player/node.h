@@ -7,6 +7,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <vector>
 #include <deque>
 #include <cstdint>
@@ -14,18 +15,20 @@
 class node : boost::noncopyable
 {
 public:
-    typedef std::vector<node*>::iterator iterator;
+    typedef std::shared_ptr<node> node_ptr;
+    typedef std::vector<node_ptr>::iterator iterator;
 
-    explicit node(const std::string &fen = std::string(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node *_parent = nullptr);
+    explicit node(const std::string &fen = std::string(), const pos_move &_mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node* _parent = nullptr);
+    explicit node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);//a lazy constructor used to create the root node
     virtual ~node();
 
-    node* make_shallow_copy() const;//used for root_uct_player
-    node* make_shallow_copy_with_children() const;//used for slow_tree_uct_player
-    node* gen_child_with_a_move(const pos_move &m);
+    node_ptr make_shallow_copy() const;//used for root_uct_player
+    node_ptr make_shallow_copy_with_children() const;//used for slow_tree_uct_player
+    node_ptr gen_child_with_a_move(const pos_move &m);
 
     double get_value() const;
     double get_uct_val() const;
-    pos_move get_move() const { return mov; }
+    pos_move get_move() const { return my_move; }
 
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
@@ -34,10 +37,11 @@ public:
 
     void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
-    virtual void backpropagate(const int &score);
+    virtual void backpropagate(const int &score, const int &vis = 1);
     int children_size() const;
-    node* release_child(iterator i);
-    inline void set_parent(node *n) { parent = n; }
+    node_ptr release_child(iterator i);
+    inline void set_parent(node_ptr n) { parent = n.get(); }
+    inline void set_parent(node* n) { parent = n; }
 
     /*
      * select child according to the visit times
@@ -56,7 +60,7 @@ public:
     bool operator != (const node &b) const;
 
     static std::int64_t get_total_simulations();
-    static void set_root_depth(const node * const r);//remember to call this function when you change the root node
+    static void set_root_depth(const node_ptr r);//remember to call this function when you change the root node
     static void set_max_depth(const int &d);
 
 protected:
@@ -68,11 +72,11 @@ protected:
     const bool red_side;
 
     node* parent;
-    std::vector<node*> children;
+    std::vector<node_ptr> children;
 
     //use FEN string could save a LOT of data!
     std::string current_fen;
-    pos_move mov;
+    pos_move my_move;
     int depth;//to get the _depth_, this needs to minus the root's depth
     int visits;
     int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
@@ -84,12 +88,12 @@ protected:
     static const int select_threshold;
     static const double uct_constant;
 
-    static bool compare_visits(const std::vector<node*>::value_type & x, const std::vector<node*>::value_type & y);
-    static bool compare_uct(const std::vector<node*>::value_type & x, const std::vector<node*>::value_type & y);
+    static bool compare_visits(const std::vector<node_ptr>::value_type & x, const std::vector<node_ptr>::value_type & y);
+    static bool compare_uct(const std::vector<node_ptr>::value_type & x, const std::vector<node_ptr>::value_type & y);
 
 private:
+    friend class treesplit_node;
     friend class boost::serialization::access;
-    friend class std::hash<node>;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int)
     {
@@ -98,7 +102,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
         ar & BOOST_SERIALIZATION_NVP(current_fen);
-        ar & BOOST_SERIALIZATION_NVP(mov);
+        ar & BOOST_SERIALIZATION_NVP(my_move);
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
@@ -107,21 +111,5 @@ private:
 
     static std::int64_t total_simulations;
 };
-
-namespace std
-{
-    template <>
-    struct hash<node>
-    {
-        std::size_t operator()(const node& n) const
-        {
-            std::size_t seed = 0;
-            boost::hash_combine(seed, n.current_fen);
-            //boost::hash_combine(seed, n.mov);
-            boost::hash_combine(seed, n.depth);
-            return seed;
-        }
-    };
-}
 
 #endif // NODE_H

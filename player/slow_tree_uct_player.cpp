@@ -27,7 +27,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
     static int world_size = world_comm.size();
 
     if (!root) {
-        root = new node(game::generate_fen(bd), true, red_side, no_eat_half_rounds);
+        root = node::node_ptr(new node(game::generate_fen(bd), red_side, no_eat_half_rounds));
         node::set_root_depth(root);
 #ifdef _DEBUG
         cout << "[0] broadcast_tree" << endl;
@@ -80,9 +80,8 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
         world_comm.send(j, CHILD_SELEC_DATA, _move);
     }
 
-    node* new_root = root->release_child(best_child);
+    node::node_ptr new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
-    delete root;
     root = new_root;
 
     return true;
@@ -99,7 +98,7 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
         world_comm.send(i, OPPMOV_DATA, m);
     }
 
-    node *new_root = nullptr;
+    node::node_ptr new_root;
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
@@ -107,7 +106,6 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
         new_root = root->gen_child_with_a_move(m);
         new_root->set_parent(nullptr);
     }
-    delete root;
     root = new_root;
     node::set_root_depth(root);
     master_send_order(SYNC);
@@ -197,16 +195,14 @@ void slow_tree_uct_player::slave_opponent_moved()
     pos_move m;
     world_comm.recv(0, OPPMOV_DATA, m);
 
-    node* new_root = nullptr;
+    node::node_ptr new_root;
     auto root_iter = root->find_child(m);
     if (root_iter != root->child_end()) {
         new_root = root->release_child(root_iter);
-        cout << "oppmov found in children" << endl;
     } else {
         new_root = root->gen_child_with_a_move(m);
         new_root->set_parent(nullptr);
     }
-    delete root;
     root = new_root;
     node::set_root_depth(root);
 }
@@ -216,7 +212,6 @@ void slow_tree_uct_player::slave_child_select()
     pos_move m;
     world_comm.recv(0, CHILD_SELEC_DATA, m);
     auto new_root = root->release_child(root->find_child(m));
-    delete root;
     root = new_root;
     node::set_root_depth(root);
 }
@@ -236,9 +231,9 @@ void slow_tree_uct_player::sync_tree()
     cout << "[" << rank << "] sync_tree" << endl;
 #endif
 
-    node* shallow_root = root->make_shallow_copy_with_children();
+    auto shallow_root = root->make_shallow_copy_with_children();
     shallow_root->set_parent(nullptr);
-    vector<node*> tree_vec;
+    vector<node::node_ptr> tree_vec;
     mpi::all_gather(world_comm, shallow_root, tree_vec);
     for(int i = 0; i < world_size; ++i) {
         if (rank == i) {
@@ -246,16 +241,4 @@ void slow_tree_uct_player::sync_tree()
         }
         root->merge(*(tree_vec[i]), true);
     }
-
-    /*
-     * Somehow for rank 0, the T is just shallow copied to vector tree_vec,
-     * therefore we can't just delete all pointers in tree_vec.
-     * instead, delete all pointers that have different addresses than T
-     */
-    for (auto &&t : tree_vec) {
-        if (t != shallow_root) {
-            delete t;
-        }
-    }
-    delete shallow_root;
 }

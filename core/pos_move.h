@@ -34,6 +34,15 @@ public:
         return os << m.get_iccs();
     }
 
+    friend std::size_t hash_value(const pos_move &m) {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, m.from.file);
+        boost::hash_combine(seed, m.from.rank);
+        boost::hash_combine(seed, m.to.file);
+        boost::hash_combine(seed, m.to.rank);
+        return seed;
+    }
+
 private:
     friend class boost::serialization::access;
     template<class Archive>
@@ -51,12 +60,7 @@ namespace std
     {
         std::size_t operator()(const pos_move& m) const
         {
-            std::size_t seed = 0;
-            boost::hash_combine(seed, m.from.file);
-            boost::hash_combine(seed, m.from.rank);
-            boost::hash_combine(seed, m.to.file);
-            boost::hash_combine(seed, m.to.rank);
-            return seed;
+            return hash_value(m);
         }
     };
 }
