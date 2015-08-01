@@ -50,11 +50,12 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), bchild_vec, 0);
-    auto best_child = max_element(bchild_vec.begin(), bchild_vec.end(),
-                                  [](const treesplit_node::child_type &x, const treesplit_node::child_type &y) { return get<1>(x) < get<1>(y); });
-    _move = get<0>(*best_child);
-    evolve_into_next_depth(_move);
+    auto best_child = max_element(bchild_vec.begin(), bchild_vec.end(), [](const treesplit_node::child_type &x, const treesplit_node::child_type &y) { return get<1>(x) < get<1>(y); });
 
+    _move = get<0>(*best_child);
+    if (_move.is_valid()) {
+        evolve_into_next_depth(_move);
+    }
     return _move.is_valid();
 }
 

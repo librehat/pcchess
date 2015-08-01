@@ -3,7 +3,6 @@
 
 #include "node.h"
 #include <mutex>
-#include <atomic>
 
 class threaded_node : public node
 {

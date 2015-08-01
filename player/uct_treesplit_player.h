@@ -3,7 +3,6 @@
 
 #include "root_uct_player.h"
 #include <thread>
-#include <atomic>
 
 class uct_treesplit_player : public root_uct_player
 {
