@@ -15,13 +15,8 @@ public:
     void expand(std::deque<pos_move> &hist, const int &score);
     bool simulate();
 
-    void backpropagate(const int &score, const int &vis = 1);
-
-    static std::int64_t get_total_simulations();
-
 protected:
     //they're instantiated per instance (each instance has its own visits, scores, children)
-    std::mutex value_mutex;//protects visits, scores
     std::mutex children_mutex;//protects children
 
 private:
@@ -31,8 +26,6 @@ private:
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(node);
     }
-
-    static std::atomic<std::int64_t> total_simulations;
 };
 
 #endif //THREADED_NODE_H

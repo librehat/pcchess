@@ -13,8 +13,6 @@ threaded_node::threaded_node(const string &fen, bool is_red_side, uint8_t noeat_
     node(fen, is_red_side, noeat_half_rounds)
 {}
 
-atomic<int64_t> threaded_node::total_simulations(0);
-
 bool threaded_node::select()
 {
     if (visits > select_threshold && !children.empty()) {
@@ -34,13 +32,10 @@ bool threaded_node::select()
 
 void threaded_node::expand(deque<pos_move> &hist, const int &score)
 {
-    value_mutex.lock();
     visits++;
     scores += score;
-    bool reach_limit = depth - root_depth > max_depth;
-    value_mutex.unlock();
 
-    if (reach_limit) {
+    if (depth - root_depth > max_depth) {
         return;
     }
     if (hist.empty()) {
@@ -92,10 +87,8 @@ bool threaded_node::simulate()
 
     auto hist = sim_game.get_history();
     if (hist.empty()) {//can't expand the tree if the current player can't move
-        value_mutex.lock();
         visits++;
         scores += result;
-        value_mutex.unlock();
         backpropagate(result);
         return false;
     } else {
@@ -103,21 +96,4 @@ bool threaded_node::simulate()
         backpropagate(result);
         return true;
     }
-}
-
-void threaded_node::backpropagate(const int &score, const int &vis)
-{
-    if (parent) {
-        threaded_node* p = dynamic_cast<threaded_node*>(parent);
-        p->value_mutex.lock();
-        p->visits += vis;
-        p->scores += score;
-        p->value_mutex.unlock();
-        p->backpropagate(score, vis);
-    }
-}
-
-int64_t threaded_node::get_total_simulations()
-{
-    return total_simulations;
 }

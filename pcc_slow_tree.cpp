@@ -3,7 +3,6 @@
 #include "player/uct_player.h"
 #include "player/threaded_uct_player.h"
 #include "player/slow_tree_uct_player.h"
-#include "player/serialization_export.h"
 #include <boost/mpi.hpp>
 
 using namespace std;

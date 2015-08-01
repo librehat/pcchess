@@ -33,13 +33,10 @@ node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
 
 void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 {
-    value_mutex.lock();
     visits++;
     scores += score;
-    bool reach_limit = depth - root_depth > max_depth;
-    value_mutex.unlock();
 
-    if (reach_limit) {
+    if (depth - root_depth > max_depth) {
         return;
     }
     if (hist.empty()) {
@@ -99,8 +96,13 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 
 treesplit_node::child_type treesplit_node::get_best_child_msg()
 {
-    node::node_ptr child = *get_best_child();
-    return child_type(child->my_move, child->visits, child->scores);
+    auto child_it = get_best_child();
+    if (child_it != children.end()) {
+        node::node_ptr child = *child_it;
+        return child_type(child->my_move, child->visits, child->scores);
+    } else {
+        return child_type();
+    }
 }
 
 size_t treesplit_node::hash(const string &fen, const int &dep, const pos_move &m)

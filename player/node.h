@@ -4,13 +4,15 @@
 #include "../core/position.h"
 #include "../core/abstract_player.h"
 #include <boost/noncopyable.hpp>
+#include <atomic>
+#include <vector>
+#include <deque>
+#include <cstdint>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-#include <vector>
-#include <deque>
-#include <cstdint>
+#include "serialization_atomic.h"
 
 class node : boost::noncopyable
 {
@@ -37,7 +39,7 @@ public:
 
     void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
-    virtual void backpropagate(const int &score, const int &vis = 1);
+    void backpropagate(const int &score, const int &vis = 1);
     int children_size() const;
     node_ptr release_child(iterator i);
     inline void set_parent(node_ptr n) { parent = n.get(); }
@@ -75,15 +77,16 @@ protected:
     std::vector<node_ptr> children;
 
     //use FEN string could save a LOT of data!
-    std::string current_fen;
-    pos_move my_move;
-    int depth;//to get the _depth_, this needs to minus the root's depth
-    int visits;
-    int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
-    std::uint8_t no_eat_half_rounds;
+    const std::string current_fen;
+    std::atomic<pos_move> my_move;
+    std::atomic_int depth;//to get the _depth_, this needs to minus the root's depth
+    std::atomic_int visits;
+    std::atomic_int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
+    std::atomic<uint8_t> no_eat_half_rounds;
 
-    static int root_depth;
-    static int max_depth;
+    static std::atomic_int root_depth;
+    static std::atomic_int max_depth;
+    static std::atomic<std::int64_t> total_simulations;
 
     static const int select_threshold;
     static const double uct_constant;
@@ -101,15 +104,13 @@ private:
         ar & boost::serialization::make_nvp("red_side", const_cast<bool &>(red_side));
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
-        ar & BOOST_SERIALIZATION_NVP(current_fen);
+        ar & boost::serialization::make_nvp("current_fen", const_cast<std::string &>(current_fen));
         ar & BOOST_SERIALIZATION_NVP(my_move);
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
         ar & BOOST_SERIALIZATION_NVP(no_eat_half_rounds);
     }
-
-    static std::int64_t total_simulations;
 };
 
 #endif // NODE_H

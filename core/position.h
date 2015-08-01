@@ -9,14 +9,15 @@
 class position
 {
 public:
-    explicit position(std::int8_t _file = 0, std::int8_t _rank = 0);
-    position(const position &b);
+    position() = default;
+    position(std::int8_t _file, std::int8_t _rank) : file(_file), rank(_rank) {}
+    ~position() = default;
+
     std::int8_t file;
     std::int8_t rank;
 
     bool not_in_range(std::int8_t min_file, std::int8_t max_file, std::int8_t min_rank, std::int8_t max_rank) const;
 
-    position& operator= (const position &b);
     position operator+ (const position &b);
     position operator- (const position &b);
     bool operator< (const position &b) const;

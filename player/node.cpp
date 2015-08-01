@@ -8,9 +8,9 @@
 
 using namespace std;
 
-int64_t node::total_simulations = 0;
-int node::root_depth = 0;
-int node::max_depth = 50;//rounds = depth / 2 //TODO tuned
+atomic<int64_t> node::total_simulations(0);
+atomic_int node::root_depth(0);
+atomic_int node::max_depth(50);//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
@@ -48,7 +48,7 @@ node::~node()
 node::node_ptr node::make_shallow_copy() const
 {
     node_ptr n(new node(current_fen, my_move, my_turn, red_side, no_eat_half_rounds, parent));
-    n->depth = depth;
+    n->depth = depth.load();
     return n;
 }
 
@@ -81,7 +81,7 @@ double node::get_value() const
 double node::get_uct_val() const
 {
 	if (parent) {
-        return get_value() + uct_constant * sqrt(log(parent->visits) / visits);
+        return get_value() + uct_constant * sqrt(log(parent->visits.load()) / visits);
 	} else {
 		return 0;
 	}
@@ -242,12 +242,12 @@ node::iterator node::find_child(const pos_move &m)
 bool node::is_same_place_in_tree(const node &b) const
 {
     /* true if they should be in the same place */
-    return !(my_turn != b.my_turn || depth != b.depth || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds != b.no_eat_half_rounds || my_move != b.my_move);
+    return !(my_turn != b.my_turn || depth.load() != b.depth.load() || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds.load() != b.no_eat_half_rounds.load() || my_move.load() != b.my_move.load());
 }
 
 bool node::is_basically_the_same(const node &b) const
 {
-    return !(!is_same_place_in_tree(b) || visits != b.visits || scores != b.scores || children.size() != b.children.size());
+    return !(!is_same_place_in_tree(b) || visits.load() != b.visits.load() || scores.load() != b.scores.load() || children.size() != b.children.size());
 }
 
 bool node::operator ==(const node &b) const
@@ -270,7 +270,7 @@ void node::set_root_depth(const node_ptr r)
     if(!r) {
         throw invalid_argument("pointer r is nullptr");
     }
-    root_depth = r->depth;
+    root_depth = r->depth.load();
 }
 
 void node::set_max_depth(const int &d)

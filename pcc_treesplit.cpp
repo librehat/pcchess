@@ -1,7 +1,6 @@
 #include "core/game.h"
 #include "player/random_player.h"
 #include "player/uct_treesplit_player.h"
-#include "player/serialization_export.h"
 #include <boost/mpi.hpp>
 
 using namespace std;

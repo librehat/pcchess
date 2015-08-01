@@ -2,11 +2,6 @@
 
 using namespace std;
 
-pos_move::pos_move(const position &f, const position &t) :
-    from (f),
-    to (t)
-{}
-
 pos_move::pos_move(const string &iccs)
 {
     from.file = static_cast<int8_t>(iccs[0] - 'a');

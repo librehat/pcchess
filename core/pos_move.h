@@ -7,7 +7,9 @@
 class pos_move
 {
 public:
-    explicit pos_move(const position &f = position(), const position &t = position());
+    pos_move() = default;
+    pos_move(const position &f, const position &t) : from(f), to(t) {}
+    ~pos_move() = default;
 
     /*
      * You can also use the ICCS coordinate string to construct a pos_move
