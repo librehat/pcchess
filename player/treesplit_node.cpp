@@ -18,6 +18,18 @@ unordered_map<size_t, weak_ptr<node> > treesplit_node::transmap;
 mutex treesplit_node::transmap_mutex;
 queue<treesplit_node::msg_type> treesplit_node::output_queue;
 mutex treesplit_node::oq_mutex;
+queue<treesplit_node::msg_type> treesplit_node::input_queue;
+mutex treesplit_node::iq_mutex;
+
+node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
+{
+    random_player tr(true), tb(false);
+    game updater_sim(&tr, &tb, no_eat_half_rounds);
+    updater_sim.parse_fen(current_fen);
+    updater_sim.move_piece(m);
+    node_ptr child(new treesplit_node(updater_sim.get_fen(), m, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this));
+    return child;
+}
 
 void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 {
@@ -85,6 +97,12 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
     child->expand(hist, score);
 }
 
+treesplit_node::child_type treesplit_node::get_best_child_msg()
+{
+    node::node_ptr child = *get_best_child();
+    return child_type(child->my_move, child->visits, child->scores);
+}
+
 size_t treesplit_node::hash(const string &fen, const int &dep, const pos_move &m)
 {
     std::size_t seed;
@@ -92,6 +110,17 @@ size_t treesplit_node::hash(const string &fen, const int &dep, const pos_move &m
     boost::hash_combine(seed, dep);
     boost::hash_combine(seed, m);
     return seed;
+}
+
+void treesplit_node::clean_queue_map()
+{
+    remove_transmap_invalid_entries();
+    iq_mutex.lock();
+    queue<treesplit_node::msg_type>().swap(input_queue);
+    iq_mutex.unlock();
+    oq_mutex.lock();
+    queue<treesplit_node::msg_type>().swap(output_queue);
+    oq_mutex.unlock();
 }
 
 void treesplit_node::remove_transmap_invalid_entries()

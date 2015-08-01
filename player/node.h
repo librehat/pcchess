@@ -24,7 +24,7 @@ public:
 
     node_ptr make_shallow_copy() const;//used for root_uct_player
     node_ptr make_shallow_copy_with_children() const;//used for slow_tree_uct_player
-    node_ptr gen_child_with_a_move(const pos_move &m);
+    virtual node_ptr gen_child_with_a_move(const pos_move &m);
 
     double get_value() const;
     double get_uct_val() const;

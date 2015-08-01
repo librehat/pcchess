@@ -19,6 +19,9 @@ root_uct_player::~root_uct_player()
     if (world_comm.rank() == 0) {
         master_send_order(EXIT);
     }
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] root_uct_player destructor called" << endl;
+#endif
 }
 
 mpi::communicator root_uct_player::world_comm;

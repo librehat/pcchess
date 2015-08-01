@@ -15,6 +15,11 @@ pos_move::pos_move(const string &iccs)
     to.rank = static_cast<int8_t>(iccs[3] - '0');
 }
 
+bool pos_move::is_valid() const
+{
+    return from.file != 0 || from.rank != 0 || to.file != 0 || to.rank != 0;
+}
+
 string pos_move::get_iccs() const
 {
     ostringstream stream;

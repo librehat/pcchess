@@ -16,6 +16,7 @@ public:
      */
     explicit pos_move(const std::string &iccs);
 
+    bool is_valid() const;//it's not valid if it's constructed from default value: (0, 0) -> (0, 0)
     std::string get_iccs() const;
 
     position from;
