@@ -5,9 +5,9 @@
 #include <boost/mpi/communicator.hpp>
 #include <unordered_map>
 #include <tuple>
-#include <queue>
-#include "serialize_tuple.h"
 #include <boost/serialization/deque.hpp>
+#include "utils/serialization_tuple.hpp"
+#include "utils/thread_safe_queue.hpp"
 
 class treesplit_node : public threaded_node
 {
@@ -48,10 +48,7 @@ private:
     static boost::mpi::communicator world_comm;
     static std::unordered_map<std::size_t, std::weak_ptr<node> > transmap;
     static std::mutex transmap_mutex;
-    static std::queue<msg_type> output_queue;
-    static std::mutex oq_mutex;
-    static std::queue<msg_type> input_queue;
-    static std::mutex iq_mutex;
+    static thread_safe_queue<msg_type> output_queue;
 
     static void insert_node_from_msg(const msg_type &msg);
 

@@ -12,7 +12,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/shared_ptr.hpp>
-#include "serialization_atomic.h"
+#include "utils/serialization_atomic.hpp"
 
 class node : boost::noncopyable
 {

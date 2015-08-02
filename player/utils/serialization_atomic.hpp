@@ -26,7 +26,14 @@ twitter @navitia
 IRC #navitia on freenode
 https://groups.google.com/d/forum/navitia
 www.navitia.io
+
+This file is modified by Symeon Huang in 2015 to make use of 
+BOOST_SERIALIZATION_NVP macro in order to support xml archive.
+And add include guard.
 */
+
+#ifndef SERIALIZATION_ATOMIC_HPP
+#define SERIALIZATION_ATOMIC_HPP
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/version.hpp>
@@ -57,3 +64,5 @@ inline void serialize(Archive& ar, std::atomic<T>& t,
 }
 } // namespace serialization
 } // namespace boost
+
+#endif //SERIALIZATION_ATOMIC_HPP

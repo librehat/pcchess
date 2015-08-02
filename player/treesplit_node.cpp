@@ -16,10 +16,7 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
 mpi::communicator treesplit_node::world_comm;
 unordered_map<size_t, weak_ptr<node> > treesplit_node::transmap;
 mutex treesplit_node::transmap_mutex;
-queue<treesplit_node::msg_type> treesplit_node::output_queue;
-mutex treesplit_node::oq_mutex;
-queue<treesplit_node::msg_type> treesplit_node::input_queue;
-mutex treesplit_node::iq_mutex;
+thread_safe_queue<treesplit_node::msg_type> treesplit_node::output_queue;
 
 node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
 {
@@ -82,9 +79,7 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         } else {//the statistics nees to be sent to other node
             hist.push_back(next_move);
             msg_type msg(cn_id, hist, score, current_fen, depth, no_eat_half_rounds, my_turn, red_side);
-            oq_mutex.lock();
             output_queue.push(msg);
-            oq_mutex.unlock();
             return;
         }
     } else {
@@ -117,12 +112,7 @@ size_t treesplit_node::hash(const string &fen, const int &dep, const pos_move &m
 void treesplit_node::clean_queue_map()
 {
     remove_transmap_invalid_entries();
-    iq_mutex.lock();
-    queue<treesplit_node::msg_type>().swap(input_queue);
-    iq_mutex.unlock();
-    oq_mutex.lock();
-    queue<treesplit_node::msg_type>().swap(output_queue);
-    oq_mutex.unlock();
+    thread_safe_queue<treesplit_node::msg_type>().swap(output_queue);
 }
 
 void treesplit_node::remove_transmap_invalid_entries()

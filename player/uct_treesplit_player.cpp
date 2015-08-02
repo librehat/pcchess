@@ -1,5 +1,4 @@
 #include "uct_treesplit_player.h"
-#include "treesplit_node.h"
 #include "../core/game.h"
 #include <forward_list>
 #include <chrono>
@@ -16,6 +15,7 @@ uct_treesplit_player::uct_treesplit_player(int cores, bool red) :
 {
     assert(cpu_cores > 1);
     thread_vec.resize(cpu_cores);
+    iq_vec.resize(cpu_cores - 1);
 }
 
 atomic_bool uct_treesplit_player::stop(false);
@@ -38,7 +38,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     master_send_order(TS_START);
     thread_vec[0] = thread(&uct_treesplit_player::io_thread, this);
     for (int i = 1; i < cpu_cores; ++i) {
-        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this);
+        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i - 1);
     }
     this_thread::sleep_for(think_time - duration_cast<milliseconds>(steady_clock::now() - start));
     master_send_order(TS_STOP);
@@ -83,6 +83,9 @@ void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
     root = new_root;
     node::set_root_depth(root);
     treesplit_node::clean_queue_map();
+    for (auto &&q : iq_vec) {
+        thread_safe_queue<treesplit_node::msg_type>().swap(q);
+    }
 }
 
 void uct_treesplit_player::do_slave_job()
@@ -99,7 +102,7 @@ void uct_treesplit_player::do_slave_job()
         if (start_req.test()) {
             thread_vec[0] = thread(&uct_treesplit_player::io_thread, this);
             for (int i = 1; i < cpu_cores; ++i) {
-                thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this);
+                thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i - 1);
             }
             start_req = world_comm.irecv(0, TS_START);
         } else if (stop_req.test()) {
@@ -144,6 +147,9 @@ void uct_treesplit_player::slave_select_child()
     root = new_root;
     node::set_root_depth(root);
     treesplit_node::clean_queue_map();
+    for (auto &&q : iq_vec) {
+        thread_safe_queue<treesplit_node::msg_type>().swap(q);
+    }
 }
 
 void uct_treesplit_player::io_thread()
@@ -156,19 +162,25 @@ void uct_treesplit_player::io_thread()
     forward_list<mpi::request> oreq_list;
 
     do {
-        treesplit_node::oq_mutex.lock();
         if (!treesplit_node::output_queue.empty()) {//TODO make output_queue local
             treesplit_node::msg_type omsg = treesplit_node::output_queue.front();
             treesplit_node::output_queue.pop();
             oreq_list.push_front(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
         }
-        treesplit_node::oq_mutex.unlock();
         oreq_list.remove_if([](mpi::request &r) { return r.test(); });//remove finished requests
 
         if (ireq.test()) {
-            treesplit_node::iq_mutex.lock();
-            treesplit_node::input_queue.push(imsg);
-            treesplit_node::iq_mutex.unlock();
+            size_t min_size = iq_vec.front().size();
+            auto iq_it = iq_vec.begin();
+            auto min_it = iq_it;
+            for (++iq_it; iq_it != iq_vec.end(); ++iq_it) {
+                size_t size = iq_it->size();
+                if (size < min_size) {
+                    min_size = size;
+                    min_it = iq_it;
+                }
+            }
+            min_it->push(imsg);
             ireq = world_comm.irecv(mpi::any_source, TS_MSG, imsg);
         }
     } while (!stop);
@@ -183,20 +195,17 @@ void uct_treesplit_player::io_thread()
     }
 }
 
-void uct_treesplit_player::worker_thread()
+void uct_treesplit_player::worker_thread(int iq_id)
 {
 #ifdef _DEBUG
     cout << "worker thread" << endl;
 #endif
     do {
-        treesplit_node::iq_mutex.lock();//TODO make input_queue local
-        if (!treesplit_node::input_queue.empty()) {
-            auto imsg = treesplit_node::input_queue.front();
-            treesplit_node::input_queue.pop();
-            treesplit_node::iq_mutex.unlock();
+        if (!iq_vec[iq_id].empty()) {
+            auto imsg = iq_vec[iq_id].front();
+            iq_vec[iq_id].pop();
             treesplit_node::insert_node_from_msg(imsg);
         } else {
-            treesplit_node::iq_mutex.unlock();
             root->select();
         }
     } while (!stop);

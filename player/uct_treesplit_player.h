@@ -2,6 +2,7 @@
 #define UCT_TREESPLIT_PLAYER_H
 
 #include "root_uct_player.h"
+#include "treesplit_node.h"
 #include <thread>
 
 class uct_treesplit_player : public root_uct_player
@@ -18,12 +19,13 @@ public:
 private:
     int cpu_cores;
     std::vector<std::thread> thread_vec;
+    std::vector<thread_safe_queue<treesplit_node::msg_type> > iq_vec;//one worker thread one queue
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
     void slave_select_child();
 
     void io_thread();
-    void worker_thread();
+    void worker_thread(int);
 
     static std::atomic_bool stop;
 

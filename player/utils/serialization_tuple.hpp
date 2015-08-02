@@ -24,9 +24,13 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are those of the
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Christopher Allen Ogden.
+
+Modified by Symeon Huang in 2015. Include guard is used instead of pragma once.
 */
 
-#pragma once
+#ifndef SERIALIZATION_TUPLE_HPP
+#define SERIALIZATION_TUPLE_HPP
+
 #include <tuple>
 
 namespace boost {
@@ -63,3 +67,5 @@ void serialize(Archive & ar, std::tuple<Args...> & t, const unsigned int version
 
 }
 }
+
+#endif //SERIALIZATION_TUPLE_HPP
