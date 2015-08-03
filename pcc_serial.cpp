@@ -8,7 +8,7 @@
 #include "player/uct_player.h"
 #include "player/threaded_uct_player.h"
 #include "player/human_player.h"
-#include "unistd.h"
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 
@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     int opt, games = 1;
     bool enable_print = false, chinese_print = false, human = false;
 
-    while((opt = getopt(argc, argv, "g:t:pch")) != -1) {
+    while((opt = getopt(argc, argv, "g:t:n:pch")) != -1) {
         switch(opt) {
         case 'g':
             games = atoi(optarg);
