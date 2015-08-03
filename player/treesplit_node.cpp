@@ -19,7 +19,9 @@ treesplit_node::treesplit_node(const treesplit_node &b) :
 
 mpi::communicator treesplit_node::world_comm;
 unordered_map<size_t, node::node_ptr> treesplit_node::transmap;
+unordered_map<size_t, node::node_ptr> treesplit_node::remote_cache;
 mutex treesplit_node::transmap_mutex;
+mutex treesplit_node::remote_cache_mutex;
 thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
 
 node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
@@ -80,11 +82,17 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
                 children_mutex.unlock();
             }
         } else {//the statistics needs to be sent to other node
-            treesplit_node msg_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
-            msg_type msg(cn_id, score, msg_node);
+            remote_cache_mutex.lock();
+            auto ctm = remote_cache.find(hash_val);
+            if (ctm != remote_cache.end()) {
+                child = ctm->second;
+            } else {
+                child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
+                remote_cache.emplace(hash_val, child);
+            }
+            remote_cache_mutex.unlock();
+            msg_type msg(cn_id, score, fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
             output_queue.push(msg);
-            msg_node.expand(hist, score);
-            return;
         }
     } else {
         child = *child_iter;
@@ -115,16 +123,20 @@ void treesplit_node::remove_transmap_useless_entries()
         }
     }
     transmap_mutex.unlock();
+    remote_cache_mutex.lock();
+    for (auto it = remote_cache.begin(); it != remote_cache.end();) {
+        if(it->second.unique()) {//FIXME: they may not be "useless"
+            it = remote_cache.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    remote_cache_mutex.unlock();
 }
 
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
-#ifdef _DEBUG
-    cout <<  "[" << world_comm.rank() << "] insert_node_from_msg" << endl;
-#endif
-
-    const treesplit_node &msg_node = get<2>(msg);
-    size_t hash_val = hash_value(dynamic_cast<const node &>(msg_node));
+    size_t hash_val = hash_val_internal(get<2>(msg), get<4>(msg), get<5>(msg));
     node_ptr child;
     transmap_mutex.lock();
     auto ctm = transmap.find(hash_val);
@@ -133,7 +145,7 @@ void treesplit_node::insert_node_from_msg(const msg_type &msg)
         transmap_mutex.unlock();
         child->backpropagate(get<1>(msg));
     } else {
-        child = node_ptr(new treesplit_node(msg_node.current_fen, msg_node.my_move, msg_node.my_turn, msg_node.red_side, msg_node.no_eat_half_rounds));
+        child = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg)));
         transmap.emplace(hash_val, child);
         transmap_mutex.unlock();
     }
