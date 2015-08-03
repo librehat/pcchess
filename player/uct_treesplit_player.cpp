@@ -52,6 +52,9 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
+#ifdef _DEBUG
+    cout << "opponent_moved" << endl;
+#endif
     evolve_into_next_depth(m);
 }
 
@@ -179,9 +182,6 @@ void uct_treesplit_player::io_work()
 
 void uct_treesplit_player::worker_thread(const int &iq_id)
 {
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] worker_thread" << endl;
-#endif
     treesplit_node::clear_oq();
     do {
         if (!iq_vec[iq_id].empty()) {

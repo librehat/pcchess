@@ -41,7 +41,7 @@ node::node(const string &fen, bool is_red_side, uint8_t noeat_half_rounds) :
     no_eat_half_rounds(noeat_half_rounds)
 {}
 
-node::node(const node &n) : enable_shared_from_this<node>(n),
+/*node::node(const node &n) : enable_shared_from_this<node>(n),
     my_turn(n.my_turn),
     red_side(n.red_side),
     parent(n.parent),
@@ -52,7 +52,7 @@ node::node(const node &n) : enable_shared_from_this<node>(n),
     visits(n.visits.load()),
     scores(n.scores.load()),
     no_eat_half_rounds(n.no_eat_half_rounds.load())
-{}
+{}*/
 
 node::node_ptr node::make_shallow_copy() const
 {
@@ -297,11 +297,12 @@ bool node::compare_uct(const node_ptr &x, const node_ptr &y)
     return x->get_uct_val() < y->get_uct_val();
 }
 
-size_t node::hash_val_internal(const string &fen, const bool &myturn, const bool &red)
+size_t node::hash_val_internal(const string &fen, const bool &myturn, const bool &red, const uint8_t &no_eat)
 {
     std::size_t seed = 0;
     boost::hash_combine(seed, fen);
     boost::hash_combine(seed, myturn);
     boost::hash_combine(seed, red);
+    boost::hash_combine(seed, no_eat);
     return seed;
 }

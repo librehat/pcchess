@@ -7,6 +7,7 @@
 #include <vector>
 #include <deque>
 #include <cstdint>
+#include <boost/noncopyable.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
@@ -14,7 +15,7 @@
 #include <boost/serialization/weak_ptr.hpp>
 #include "utils/serialization_atomic.hpp"
 
-class node : public std::enable_shared_from_this<node>
+class node : public std::enable_shared_from_this<node>, boost::noncopyable
 {
 public:
     typedef std::shared_ptr<node> node_ptr;
@@ -22,7 +23,7 @@ public:
 
     explicit node(const std::string &fen = std::string(), const pos_move &_mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);//a lazy constructor used to create the root node
-    explicit node(const node &n);
+    //explicit node(const node &n);
     virtual ~node() {}
 
     node_ptr make_shallow_copy() const;//used for root_uct_player
@@ -67,7 +68,7 @@ public:
     static void set_max_depth(const int &d);
 
     friend std::size_t hash_value(const node &n) {
-        return node::hash_val_internal(n.current_fen, n.my_turn, n.red_side);
+        return node::hash_val_internal(n.current_fen, n.my_turn, n.red_side, n.no_eat_half_rounds);
     }
 
 protected:
@@ -87,7 +88,7 @@ protected:
     std::atomic_int depth;//to get the _depth_, this needs to minus the root's depth
     std::atomic_int visits;
     std::atomic_int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
-    std::atomic<uint8_t> no_eat_half_rounds;
+    std::atomic<std::uint8_t> no_eat_half_rounds;
 
     static std::atomic_int root_depth;
     static std::atomic_int max_depth;
@@ -98,7 +99,7 @@ protected:
 
     static bool compare_visits(const node_ptr& x, const node_ptr& y);
     static bool compare_uct(const node_ptr &x, const node_ptr &y);
-    static std::size_t hash_val_internal(const std::string &fen, const bool &myturn, const bool &red);
+    static std::size_t hash_val_internal(const std::string &fen, const bool &myturn, const bool &red, const std::uint8_t &no_eat);
 
 private:
     friend class treesplit_node;

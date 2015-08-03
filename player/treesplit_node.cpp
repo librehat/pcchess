@@ -13,9 +13,9 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
     threaded_node(fen, is_red_side, noeat_half_rounds)
 {}
 
-treesplit_node::treesplit_node(const treesplit_node &b) :
+/*treesplit_node::treesplit_node(const treesplit_node &b) :
     threaded_node(b)
-{}
+{}*/
 
 mpi::communicator treesplit_node::world_comm;
 unordered_map<size_t, node::node_ptr> treesplit_node::transmap;
@@ -50,6 +50,8 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
     hist.pop_back();
 
     node_ptr child;
+    size_t hash_val;
+    int cn_id;
     children_mutex.lock();
     auto child_iter = find_child(next_move);
     if (child_iter == children.end()) {
@@ -63,8 +65,8 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         }
 
         string fen = updater_sim.get_fen();
-        size_t hash_val = hash_val_internal(fen, !my_turn, red_side);
-        int cn_id = hash_val % world_comm.size();//which compute node should contains this node
+        hash_val = hash_val_internal(fen, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
+        cn_id = hash_val % world_comm.size();//which compute node should contains this node
         if (cn_id == world_comm.rank()) {
             transmap_mutex.lock();
             auto ctm = transmap.find(hash_val);
@@ -77,27 +79,28 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
                 child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
                 transmap.emplace(hash_val, child);
                 transmap_mutex.unlock();
-                children_mutex.lock();
-                children.push_back(child);
-                children_mutex.unlock();
             }
-        } else {//the statistics needs to be sent to other node
+        } else {
+            child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
             remote_cache_mutex.lock();
-            auto ctm = remote_cache.find(hash_val);
-            if (ctm != remote_cache.end()) {
-                child = ctm->second;
-            } else {
-                child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
-                remote_cache.emplace(hash_val, child);
-            }
+            remote_cache.emplace(hash_val, child);
             remote_cache_mutex.unlock();
-            msg_type msg(cn_id, score, fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
-            output_queue.push(msg);
         }
+        children_mutex.lock();
+        children.push_back(child);
+        children_mutex.unlock();
     } else {
         child = *child_iter;
         children_mutex.unlock();
+        hash_val = hash_value(*dynamic_pointer_cast<node>(child));
+        cn_id = hash_val % world_comm.size();
     }
+
+    if (cn_id != world_comm.rank()) {
+        msg_type msg(cn_id, score, child->current_fen, next_move, child->my_turn, red_side, child->no_eat_half_rounds);
+        output_queue.push(msg);
+    }
+
     child->expand(hist, score);
 }
 
@@ -116,7 +119,7 @@ void treesplit_node::remove_transmap_useless_entries()
 {
     transmap_mutex.lock();
     for (auto it = transmap.begin(); it != transmap.end();) {
-        if(it->second.unique()) {//FIXME: they may not be "useless"
+        if(it->second.unique()) {
             it = transmap.erase(it);
         } else {
             ++it;
@@ -125,7 +128,7 @@ void treesplit_node::remove_transmap_useless_entries()
     transmap_mutex.unlock();
     remote_cache_mutex.lock();
     for (auto it = remote_cache.begin(); it != remote_cache.end();) {
-        if(it->second.unique()) {//FIXME: they may not be "useless"
+        if(it->second.unique()) {
             it = remote_cache.erase(it);
         } else {
             ++it;
@@ -136,7 +139,7 @@ void treesplit_node::remove_transmap_useless_entries()
 
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
-    size_t hash_val = hash_val_internal(get<2>(msg), get<4>(msg), get<5>(msg));
+    size_t hash_val = hash_val_internal(get<2>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
     node_ptr child;
     transmap_mutex.lock();
     auto ctm = transmap.find(hash_val);

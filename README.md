@@ -1,10 +1,9 @@
 #Parallel Chinese Chess
 
-##Goals
+##Dependencies
 
-- [x] Basic Chinese chess game engine
-- [x] Serial implementation of UCT
-- [x] MPI parallel implementations of UCT (slow tree)
-- [ ] MPI parallel implementations of UCT (treesplit)
-
-
+- Boost >= 1.57 (components: MPI and serialization)
+- CMake >= 2.8
+- pthread
+- GCC >= 4.8
+- gperftools (Google Performance Tools, only needed in debug mode)

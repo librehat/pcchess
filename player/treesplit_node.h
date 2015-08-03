@@ -17,7 +17,7 @@ public:
 
     explicit treesplit_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit treesplit_node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);
-    explicit treesplit_node(const treesplit_node &b);
+    //explicit treesplit_node(const treesplit_node &b);
 
     node_ptr gen_child_with_a_move(const pos_move &m);
 

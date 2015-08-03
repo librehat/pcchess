@@ -13,9 +13,9 @@ threaded_node::threaded_node(const string &fen, bool is_red_side, uint8_t noeat_
     node(fen, is_red_side, noeat_half_rounds)
 {}
 
-threaded_node::threaded_node(const threaded_node &b) :
+/*threaded_node::threaded_node(const threaded_node &b) :
     node(b)
-{}
+{}*/
 
 bool threaded_node::select()
 {
@@ -61,10 +61,8 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
         game updater_sim(&tr, &tb, no_eat_half_rounds);
         updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
-        if (my_turn) {
-            if (updater_sim.is_player_in_check(red_side)) {
-                return;//we're checked! don't make this move
-            }
+        if (my_turn && updater_sim.is_player_in_check(red_side)) {
+            return;//we're checked! don't make this move
         }
         child = node_ptr(new threaded_node(updater_sim.get_fen(), next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
         children_mutex.lock();
