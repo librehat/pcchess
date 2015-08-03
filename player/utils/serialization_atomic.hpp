@@ -27,9 +27,10 @@ IRC #navitia on freenode
 https://groups.google.com/d/forum/navitia
 www.navitia.io
 
-This file is modified by Symeon Huang in 2015 to make use of 
-BOOST_SERIALIZATION_NVP macro in order to support xml archive.
-And add include guard.
+This file is modified by Symeon Huang in 2015
+- make use of BOOST_SERIALIZATION_NVP macro in order to support xml archive.
+- add include guard.
+- add support for __atomic_base struct to solve some compiler errors
 */
 
 #ifndef SERIALIZATION_ATOMIC_HPP
@@ -44,24 +45,43 @@ namespace boost {
 namespace serialization {
 
 template<class Archive, class T>
-inline void save(Archive& ar, const std::atomic<T>& t, const unsigned int){
+inline void save(Archive& ar, const std::atomic<T>& t, const unsigned int) {
     // only the raw pointer has to be saved
     const T value = t.load();
     ar & BOOST_SERIALIZATION_NVP(value);
 }
 
 template<class Archive, class T>
-inline void load(Archive& ar, std::atomic<T>& t, const unsigned int){
+inline void load(Archive& ar, std::atomic<T>& t, const unsigned int) {
     T value;
     ar & BOOST_SERIALIZATION_NVP(value);
     t.store(value);
 }
 
 template<class Archive, class T>
-inline void serialize(Archive& ar, std::atomic<T>& t,
-        const unsigned int file_version){
+inline void serialize(Archive& ar, std::atomic<T>& t, const unsigned int file_version) {
     boost::serialization::split_free(ar, t, file_version);
 }
+
+template<class Archive, class T>
+inline void save(Archive& ar, const std::__atomic_base<T>& t, const unsigned int) {
+    // only the raw pointer has to be saved
+    const T value = t.load();
+    ar & BOOST_SERIALIZATION_NVP(value);
+}
+
+template<class Archive, class T>
+inline void load(Archive& ar, std::__atomic_base<T>& t, const unsigned int) {
+    T value;
+    ar & BOOST_SERIALIZATION_NVP(value);
+    t.store(value);
+}
+
+template<class Archive, class T>
+inline void serialize(Archive& ar, std::__atomic_base<T> &t, const unsigned int file_version) {
+    boost::serialization::split_free(ar, t, file_version);
+}
+
 } // namespace serialization
 } // namespace boost
 
