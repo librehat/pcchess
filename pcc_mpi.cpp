@@ -16,8 +16,9 @@ int main(int argc, char **argv)
     std::ignore = env;
 
     int opt, games = 1, player_id = 1;//1: root_uct_player, 2: slow_tree_uct_player, 3: uct_treesplit_player
+    bool enable_print = false, chinese_print = false;
 
-    while((opt = getopt(argc, argv, "g:t:n:s:")) != -1) {
+    while((opt = getopt(argc, argv, "g:t:n:s:pc")) != -1) {
         switch(opt) {
         case 'g':
             games = atoi(optarg);
@@ -30,6 +31,12 @@ int main(int argc, char **argv)
             break;
         case 's':
             player_id = atoi(optarg);
+            break;
+        case 'p':
+            enable_print = true;
+            break;
+        case 'c':
+            chinese_print = true;
             break;
         default:
             if (world_comm.rank() == 0) {
@@ -79,9 +86,11 @@ int main(int argc, char **argv)
             } else {
                 cout << "Draw" << endl;
             }
-    #ifdef _DEBUG
-            g.print_board(true);
-    #endif
+
+            if (enable_print) {
+                g.print_board(chinese_print);
+            }
+
             cout << "Total rounds in this game: " << g.get_rounds() << endl;
             cout << "Total simulations: " << red->get_total_simulations() << " vs " << black->get_total_simulations() << endl;
         } else {
