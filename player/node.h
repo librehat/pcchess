@@ -3,7 +3,6 @@
 
 #include "../core/position.h"
 #include "../core/abstract_player.h"
-#include <boost/noncopyable.hpp>
 #include <atomic>
 #include <vector>
 #include <deque>
@@ -12,17 +11,19 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/weak_ptr.hpp>
 #include "utils/serialization_atomic.hpp"
 
-class node : boost::noncopyable
+class node : public std::enable_shared_from_this<node>
 {
 public:
     typedef std::shared_ptr<node> node_ptr;
     typedef std::vector<node_ptr>::iterator iterator;
 
-    explicit node(const std::string &fen = std::string(), const pos_move &_mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node* _parent = nullptr);
+    explicit node(const std::string &fen = std::string(), const pos_move &_mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);//a lazy constructor used to create the root node
-    virtual ~node();
+    explicit node(const node &n);
+    virtual ~node() {}
 
     node_ptr make_shallow_copy() const;//used for root_uct_player
     node_ptr make_shallow_copy_with_children() const;//used for slow_tree_uct_player
@@ -35,15 +36,15 @@ public:
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
     virtual void expand(std::deque<pos_move> &hist, const int &score);
-    virtual bool simulate();
+    bool simulate();
 
     void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
     void backpropagate(const int &score, const int &vis = 1);
     int children_size() const;
-    node_ptr release_child(iterator i);
-    inline void set_parent(node_ptr n) { parent = n.get(); }
-    inline void set_parent(node* n) { parent = n; }
+    node_ptr release_child(const iterator &i);
+    inline void set_parent(const node_ptr &n) { parent = n; }
+    inline void set_parent(const std::weak_ptr<node> &n) { parent = n; }
 
     /*
      * select child according to the visit times
@@ -65,6 +66,10 @@ public:
     static void set_root_depth(const node_ptr r);//remember to call this function when you change the root node
     static void set_max_depth(const int &d);
 
+    friend std::size_t hash_value(const node &n) {
+        return node::hash_val_internal(n.current_fen, n.my_turn, n.red_side);
+    }
+
 protected:
     /*
      * if this is my turn to make a move, then the best move is the our_move of my best child.
@@ -73,7 +78,7 @@ protected:
     const bool my_turn;
     const bool red_side;
 
-    node* parent;
+    std::weak_ptr<node> parent;
     std::vector<node_ptr> children;
 
     //use FEN string could save a LOT of data!
@@ -91,8 +96,9 @@ protected:
     static const int select_threshold;
     static const double uct_constant;
 
-    static bool compare_visits(const std::vector<node_ptr>::value_type & x, const std::vector<node_ptr>::value_type & y);
-    static bool compare_uct(const std::vector<node_ptr>::value_type & x, const std::vector<node_ptr>::value_type & y);
+    static bool compare_visits(const node_ptr& x, const node_ptr& y);
+    static bool compare_uct(const node_ptr &x, const node_ptr &y);
+    static std::size_t hash_val_internal(const std::string &fen, const bool &myturn, const bool &red);
 
 private:
     friend class treesplit_node;
@@ -112,5 +118,17 @@ private:
         ar & BOOST_SERIALIZATION_NVP(no_eat_half_rounds);
     }
 };
+
+namespace std
+{
+    template <>
+    struct hash<node>
+    {
+        std::size_t operator()(const node& n) const
+        {
+            return hash_value(n);
+        }
+    };
+}
 
 #endif // NODE_H

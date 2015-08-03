@@ -42,9 +42,9 @@ public:
     void parse_fen(const std::string &fen);
     std::string get_fen() const;//an easy overloaded function to call generate_fen with this game's m_board
 
-    std::deque<pos_move> get_history() const;
+    const std::deque<pos_move>& get_history() const;
     std::uint8_t get_half_rounds_since_last_eat() const;
-    int get_rounds() const;
+    const int &get_rounds() const;
 
     bool is_player_in_check(const bool &red);
 

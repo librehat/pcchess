@@ -15,8 +15,9 @@ public:
     //next_move, visits, scores
     typedef std::tuple<pos_move, int, int> child_type;
 
-    explicit treesplit_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node *_parent = nullptr);
+    explicit treesplit_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit treesplit_node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);
+    explicit treesplit_node(const treesplit_node &b);
 
     node_ptr gen_child_with_a_move(const pos_move &m);
 
@@ -24,31 +25,21 @@ public:
 
     child_type get_best_child_msg();
 
-    static std::size_t hash(const std::string &fen, const int &dep, const pos_move &m);
-    static void clean_queue_map();//once the root is changed, call this function to "trim" the tree
-    static void remove_transmap_invalid_entries();
+    static void remove_transmap_useless_entries();
+    static thread_local void clear_oq() { std::queue<msg_type>().swap(output_queue); }
 
 private:
     friend class uct_treesplit_player;
     friend class boost::serialization::access;
     /*
      * msg_type includes
-     * - target MPI rank
-     * - history (last move included)
-     * - score
-     * - current FEN (of the node that send the msg)
-     * - depth (of the node that send the msg)
-     * - no_eat_half_rounds (of the node that send the msg)
-     * - my_turn
-     * - red_side
-     * once received msg, the receiver needs to re-hash those jobs (find_child, hash, etc)
      */
-    typedef std::tuple<int, std::deque<pos_move>, int, std::string, int, std::uint8_t, bool, bool> msg_type;
+    typedef std::tuple<int, int, treesplit_node> msg_type;
 
     static boost::mpi::communicator world_comm;
-    static std::unordered_map<std::size_t, std::weak_ptr<node> > transmap;
+    static std::unordered_map<std::size_t, node_ptr> transmap;
     static std::mutex transmap_mutex;
-    static thread_safe_queue<msg_type> output_queue;
+    static thread_local std::queue<msg_type> output_queue;//thread_local so we don't need to use thread_safe_queue
 
     static void insert_node_from_msg(const msg_type &msg);
 

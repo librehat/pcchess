@@ -5,7 +5,7 @@
 using namespace std;
 namespace mpi = boost::mpi;
 
-treesplit_node::treesplit_node(const string &fen, const pos_move &mov, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
+treesplit_node::treesplit_node(const string &fen, const pos_move &mov, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node_ptr _parent) :
     threaded_node(fen, mov, _my_turn, is_red_side, noeat_half_rounds, _parent)
 {}
 
@@ -13,10 +13,14 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
     threaded_node(fen, is_red_side, noeat_half_rounds)
 {}
 
+treesplit_node::treesplit_node(const treesplit_node &b) :
+    threaded_node(b)
+{}
+
 mpi::communicator treesplit_node::world_comm;
-unordered_map<size_t, weak_ptr<node> > treesplit_node::transmap;
+unordered_map<size_t, node::node_ptr> treesplit_node::transmap;
 mutex treesplit_node::transmap_mutex;
-thread_safe_queue<treesplit_node::msg_type> treesplit_node::output_queue;
+thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
 
 node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
 {
@@ -24,7 +28,7 @@ node::node_ptr treesplit_node::gen_child_with_a_move(const pos_move &m)
     game updater_sim(&tr, &tb, no_eat_half_rounds);
     updater_sim.parse_fen(current_fen);
     updater_sim.move_piece(m);
-    node_ptr child(new treesplit_node(updater_sim.get_fen(), m, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this));
+    node_ptr child(new treesplit_node(updater_sim.get_fen(), m, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
     return child;
 }
 
@@ -52,40 +56,40 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         game updater_sim(&tr, &tb, no_eat_half_rounds);
         updater_sim.parse_fen(current_fen);
         updater_sim.move_piece(next_move);
-        if (my_turn) {
-            if (updater_sim.is_player_in_check(red_side)) {
-                return;//we're checked! don't make this move
-            }
+        if (my_turn && updater_sim.is_player_in_check(red_side)) {
+            return;//we're checked! don't make this move
         }
 
         string fen = updater_sim.get_fen();
-        size_t hash_val = hash(fen, depth + 1, next_move);
+        size_t hash_val = hash_val_internal(fen, !my_turn, red_side);
         int cn_id = hash_val % world_comm.size();//which compute node should contains this node
         if (cn_id == world_comm.rank()) {
             transmap_mutex.lock();
             auto ctm = transmap.find(hash_val);
             if (ctm != transmap.end()) {
-                child = node_ptr(ctm->second);
+                child = ctm->second;
                 transmap_mutex.unlock();
-                child->parent = this;
+                child->parent = shared_from_this();
                 child->backpropagate(child->scores, child->visits);
             } else {
-                child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this));
-                transmap.emplace(hash_val, weak_ptr<node>(child));
+                child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
+                transmap.emplace(hash_val, child);
                 transmap_mutex.unlock();
+                children_mutex.lock();
+                children.push_back(child);
+                children_mutex.unlock();
             }
-            children_mutex.lock();
-            children.push_back(child);
-        } else {//the statistics nees to be sent to other node
-            hist.push_back(next_move);
-            msg_type msg(cn_id, hist, score, current_fen, depth, no_eat_half_rounds, my_turn, red_side);
+        } else {//the statistics needs to be sent to other node
+            treesplit_node msg_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
+            msg_type msg(cn_id, score, msg_node);
             output_queue.push(msg);
+            msg_node.expand(hist, score);
             return;
         }
     } else {
         child = *child_iter;
+        children_mutex.unlock();
     }
-    children_mutex.unlock();
     child->expand(hist, score);
 }
 
@@ -100,26 +104,11 @@ treesplit_node::child_type treesplit_node::get_best_child_msg()
     }
 }
 
-size_t treesplit_node::hash(const string &fen, const int &dep, const pos_move &m)
-{
-    std::size_t seed;
-    boost::hash_combine(seed, fen);
-    boost::hash_combine(seed, dep);
-    boost::hash_combine(seed, m);
-    return seed;
-}
-
-void treesplit_node::clean_queue_map()
-{
-    remove_transmap_invalid_entries();
-    thread_safe_queue<treesplit_node::msg_type>().swap(output_queue);
-}
-
-void treesplit_node::remove_transmap_invalid_entries()
+void treesplit_node::remove_transmap_useless_entries()
 {
     transmap_mutex.lock();
     for (auto it = transmap.begin(); it != transmap.end();) {
-        if(it->second.expired()) {
+        if(it->second.unique()) {//FIXME: they may not be "useless"
             it = transmap.erase(it);
         } else {
             ++it;
@@ -130,25 +119,22 @@ void treesplit_node::remove_transmap_invalid_entries()
 
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
-    deque<pos_move> hist = get<1>(msg);
-    random_player tr(true), tb(false);
-    game updater_sim(&tr, &tb, get<5>(msg));
-    updater_sim.parse_fen(get<3>(msg));
-    updater_sim.move_piece(hist.back());
-    string fen = updater_sim.get_fen();
-    size_t hash_val = hash(fen, get<4>(msg) + 1, hist.back());
+#ifdef _DEBUG
+    cout <<  "[" << world_comm.rank() << "] insert_node_from_msg" << endl;
+#endif
+
+    const treesplit_node &msg_node = get<2>(msg);
+    size_t hash_val = hash_value(dynamic_cast<const node &>(msg_node));
     node_ptr child;
     transmap_mutex.lock();
     auto ctm = transmap.find(hash_val);
     if (ctm != transmap.end()) {
-        child = node_ptr(ctm->second);
+        child = ctm->second;
         transmap_mutex.unlock();
-        child->backpropagate(get<2>(msg));
+        child->backpropagate(get<1>(msg));
     } else {
-        child = node_ptr(new treesplit_node(fen, hist.back(), !get<6>(msg), get<7>(msg), updater_sim.get_half_rounds_since_last_eat()));
-        transmap.emplace(hash_val, weak_ptr<node>(child));
+        child = node_ptr(new treesplit_node(msg_node.current_fen, msg_node.my_move, msg_node.my_turn, msg_node.red_side, msg_node.no_eat_half_rounds));
+        transmap.emplace(hash_val, child);
         transmap_mutex.unlock();
     }
-    hist.pop_back();
-    child->expand(hist, get<2>(msg));
 }

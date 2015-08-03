@@ -5,7 +5,7 @@
 
 using namespace std;
 
-threaded_node::threaded_node(const string &fen, const pos_move &mov, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node *_parent) :
+threaded_node::threaded_node(const string &fen, const pos_move &mov, bool _my_turn, bool is_red_side, uint8_t noeat_half_rounds, node_ptr _parent) :
     node(fen, mov, _my_turn, is_red_side, noeat_half_rounds, _parent)
 {}
 
@@ -13,11 +13,15 @@ threaded_node::threaded_node(const string &fen, bool is_red_side, uint8_t noeat_
     node(fen, is_red_side, noeat_half_rounds)
 {}
 
+threaded_node::threaded_node(const threaded_node &b) :
+    node(b)
+{}
+
 bool threaded_node::select()
 {
+    children_mutex.lock();
     if (visits > select_threshold && !children.empty()) {
         node_ptr bc;
-        children_mutex.lock();
         if (my_turn) {
             bc = *get_best_child_uct();
         } else {
@@ -26,6 +30,7 @@ bool threaded_node::select()
         children_mutex.unlock();
         return bc->select();
     } else {
+        children_mutex.unlock();
         return simulate();
     }
 }
@@ -61,39 +66,10 @@ void threaded_node::expand(deque<pos_move> &hist, const int &score)
                 return;//we're checked! don't make this move
             }
         }
-        child = node_ptr(new threaded_node(updater_sim.get_fen(), next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), this));
+        child = node_ptr(new threaded_node(updater_sim.get_fen(), next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this()));
         children_mutex.lock();
         children.push_back(child);
     }
     children_mutex.unlock();
     child->expand(hist, score);
-}
-
-bool threaded_node::simulate()
-{
-    total_simulations++;
-
-    random_player tr(true), tb(false);
-    game sim_game(&tr, &tb, no_eat_half_rounds);
-    sim_game.parse_fen(current_fen);
-    abstract_player* winner = sim_game.playout(!(my_turn ^ red_side));
-
-    int result = 0;
-    if (winner == &tr) {
-        result = red_side ? 1 : -1;
-    } else if (winner == &tb) {
-        result = red_side ? -1 : 1;
-    }
-
-    auto hist = sim_game.get_history();
-    if (hist.empty()) {//can't expand the tree if the current player can't move
-        visits++;
-        scores += result;
-        backpropagate(result);
-        return false;
-    } else {
-        expand(hist, result);//this very node is definitely the parental node
-        backpropagate(result);
-        return true;
-    }
 }

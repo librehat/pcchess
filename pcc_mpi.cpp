@@ -11,10 +11,7 @@ namespace mpi = boost::mpi;
 
 int main(int argc, char **argv)
 {
-    /*
-     * at least serialized level. multiple is recommended
-     */
-    mpi::environment env(argc, argv, mpi::threading::serialized);
+    mpi::environment env(argc, argv, mpi::threading::funneled);
     mpi::communicator world_comm;
     std::ignore = env;
 
@@ -62,7 +59,7 @@ int main(int argc, char **argv)
             red = new slow_tree_uct_player(300, true);
             break;
         case 3:
-            red = new uct_treesplit_player(4, true);
+            red = new uct_treesplit_player(4, true);//set thread here
             break;
         default:
             cerr << "bad player_id" << endl;
@@ -85,7 +82,8 @@ int main(int argc, char **argv)
     #ifdef _DEBUG
             g.print_board(true);
     #endif
-            cout << "Total Simulations: " << red->get_total_simulations() << " vs " << black->get_total_simulations() << endl;
+            cout << "Total rounds in this game: " << g.get_rounds() << endl;
+            cout << "Total simulations: " << red->get_total_simulations() << " vs " << black->get_total_simulations() << endl;
         } else {
             red->do_slave_job();
         }

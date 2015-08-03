@@ -138,6 +138,7 @@ void game::move_piece(const pos_move &_move)
 {
     auto piece = m_board[_move.from];
     if (!piece){
+        cerr << "the pos_move " << _move << " is not valid" << endl;
         throw invalid_argument("the piece to move is nullptr on the board");
     }
 
@@ -302,7 +303,7 @@ string game::generate_fen(const board &bd)
     return fen;
 }
 
-deque<pos_move> game::get_history() const
+const std::deque<pos_move> &game::get_history() const
 {
     return history;
 }
@@ -312,7 +313,7 @@ uint8_t game::get_half_rounds_since_last_eat() const
     return half_rounds_since_last_eat;
 }
 
-int game::get_rounds() const
+const int &game::get_rounds() const
 {
     return rounds;
 }
