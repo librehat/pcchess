@@ -33,10 +33,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     }
 
     master_send_order(TS_START);
-    for (int i = 0; i < workers; ++i) {
-        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
-    }
-    io_work();
+    main_thread_start();
 
     master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
@@ -100,10 +97,7 @@ void uct_treesplit_player::do_slave_job()
                 mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
                 break;
             case TS_START:
-                for (int i = 0; i < workers; ++i) {
-                    thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
-                }
-                io_work();
+                main_thread_start();
                 break;
             case TS_BEST_CHILD:
                 mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
@@ -143,8 +137,13 @@ void uct_treesplit_player::slave_select_child()
     treesplit_node::remove_transmap_useless_entries();
 }
 
-void uct_treesplit_player::io_work()
+void uct_treesplit_player::main_thread_start()
 {
+    stop = false;
+    for (int i = 0; i < workers; ++i) {
+        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
+    }
+
     static milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();
 

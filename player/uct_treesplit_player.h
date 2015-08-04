@@ -25,7 +25,7 @@ private:
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
     void slave_select_child();
 
-    void io_work();//this function should be called only by the main thread (other threads are workers)
+    void main_thread_start();//basically just reset the stop flag, create worker threads and start io work
     void worker_thread(const int &);
 
     static std::atomic_bool stop;
