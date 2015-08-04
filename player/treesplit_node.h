@@ -32,7 +32,7 @@ private:
     friend class uct_treesplit_player;
     friend class boost::serialization::access;
 
-    //rank, score, current_fen my_move, my_turn, red_side, no_eat_half_rounds
+    //rank, score, current_fen, my_move, my_turn, red_side, no_eat_half_rounds
     typedef std::tuple<int, int, std::string, pos_move, bool, bool, int> msg_type;
 
     static boost::mpi::communicator world_comm;

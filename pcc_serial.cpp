@@ -64,8 +64,8 @@ int main(int argc, char** argv)
         } else {
             red = new random_player(true);
         }
-        //black = new threaded_uct_player(0, false);
-        black = new uct_player(false);
+        black = new threaded_uct_player(4, false);
+        //black = new uct_player(false);
         red->init_pieces();
         black->init_pieces();
         game g(red, black);

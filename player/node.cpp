@@ -250,13 +250,16 @@ node::iterator node::find_child(const pos_move &m)
 
 bool node::is_same_place_in_tree(const node &b) const
 {
-    /* true if they should be in the same place */
-    return !(my_turn != b.my_turn || current_fen != b.current_fen || red_side != b.red_side || no_eat_half_rounds.load() != b.no_eat_half_rounds.load());
+    /*
+     * true if they should be in the same place
+     * depth is allowed to be different, because the same game state can show up again after a few moves
+     */
+    return !(my_turn != b.my_turn || current_fen != b.current_fen || my_move.load() != b.my_move.load() || red_side != b.red_side || no_eat_half_rounds.load() != b.no_eat_half_rounds.load());
 }
 
 bool node::is_basically_the_same(const node &b) const
 {
-    return !(!is_same_place_in_tree(b) || visits.load() != b.visits.load() || scores.load() != b.scores.load() || children.size() != b.children.size() || my_move.load() != b.my_move.load() || depth.load() != b.depth.load());
+    return !(!is_same_place_in_tree(b) || visits.load() != b.visits.load() || scores.load() != b.scores.load() || children.size() != b.children.size() || depth.load() != b.depth.load());
 }
 
 bool node::operator ==(const node &b) const
@@ -297,10 +300,11 @@ bool node::compare_uct(const node_ptr &x, const node_ptr &y)
     return x->get_uct_val() < y->get_uct_val();
 }
 
-size_t node::hash_val_internal(const string &fen, const bool &myturn, const bool &red, const uint8_t &no_eat)
+size_t node::hash_val_internal(const string &fen, const pos_move &mov, const bool &myturn, const bool &red, const uint8_t &no_eat)
 {
     std::size_t seed = 0;
     boost::hash_combine(seed, fen);
+    boost::hash_combine(seed, mov);
     boost::hash_combine(seed, myturn);
     boost::hash_combine(seed, red);
     boost::hash_combine(seed, no_eat);

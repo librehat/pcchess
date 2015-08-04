@@ -68,7 +68,7 @@ public:
     static void set_max_depth(const int &d);
 
     friend std::size_t hash_value(const node &n) {
-        return node::hash_val_internal(n.current_fen, n.my_turn, n.red_side, n.no_eat_half_rounds);
+        return node::hash_val_internal(n.current_fen, n.my_move, n.my_turn, n.red_side, n.no_eat_half_rounds);
     }
 
 protected:
@@ -99,7 +99,7 @@ protected:
 
     static bool compare_visits(const node_ptr& x, const node_ptr& y);
     static bool compare_uct(const node_ptr &x, const node_ptr &y);
-    static std::size_t hash_val_internal(const std::string &fen, const bool &myturn, const bool &red, const std::uint8_t &no_eat);
+    static std::size_t hash_val_internal(const std::string &fen, const pos_move &mov, const bool &myturn, const bool &red, const std::uint8_t &no_eat);
 
 private:
     friend class treesplit_node;

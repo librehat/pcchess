@@ -65,7 +65,7 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         }
 
         string fen = updater_sim.get_fen();
-        hash_val = hash_val_internal(fen, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
+        hash_val = hash_val_internal(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
         cn_id = hash_val % world_comm.size();//which compute node should contains this node
         if (cn_id == world_comm.rank()) {
             transmap_mutex.lock();
@@ -139,7 +139,7 @@ void treesplit_node::remove_transmap_useless_entries()
 
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
-    size_t hash_val = hash_val_internal(get<2>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
+    size_t hash_val = hash_val_internal(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
     node_ptr child;
     transmap_mutex.lock();
     auto ctm = transmap.find(hash_val);

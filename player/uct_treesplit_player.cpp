@@ -49,9 +49,6 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
-#ifdef _DEBUG
-    cout << "opponent_moved" << endl;
-#endif
     evolve_into_next_depth(m);
 }
 
