@@ -19,6 +19,8 @@ public:
 private:
     int threads;
     std::vector<std::thread> thread_vec;
+    static std::atomic_bool stop;
+    void worker_thread();
 
     friend class boost::serialization::access;
     template<class Archive>

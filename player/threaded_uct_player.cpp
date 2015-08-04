@@ -20,6 +20,8 @@ threaded_uct_player::threaded_uct_player(int _threads, bool red) :
     thread_vec.resize(threads);
 }
 
+atomic_bool threaded_uct_player::stop(false);
+
 bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     milliseconds think_time = milliseconds(game::step_time);
@@ -30,16 +32,19 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
         node::set_root_depth(root);
     }
 
+    stop = false;
+    for (auto &&t : thread_vec) {
+        t = thread(&threaded_uct_player::worker_thread, this);
+    }
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        for (auto &&t : thread_vec) {
-            t = thread(&node::select, root);
-        }
-        for (auto &&t : thread_vec) {
-            t.join();
-        }
+        root->select();
+    }
+    stop = true;
+    for (auto &&t : thread_vec) {
+        t.join();
     }
 
     auto best_child = root->get_best_child();
@@ -58,4 +63,11 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
 int64_t threaded_uct_player::get_total_simulations() const
 {
     return threaded_node::get_total_simulations();
+}
+
+void threaded_uct_player::worker_thread()
+{
+    do {
+        root->select();
+    } while (!stop);
 }
