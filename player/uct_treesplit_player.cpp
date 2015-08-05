@@ -10,10 +10,15 @@ using namespace chrono;
 namespace mpi = boost::mpi;
 
 uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
-    root_uct_player(red),
-    workers{cpu_cores - 1}
+    root_uct_player(red)
 {
-    assert(workers > 0);
+    if (cpu_cores <= 0) {
+        cpu_cores = thread::hardware_concurrency();
+    }
+    if (cpu_cores == 0) {//thread::hardware_concurrency() information is not available
+        cpu_cores = 4;//just a guess that it's a quad-core machine
+    }
+    workers = cpu_cores - 1;
     thread_vec.resize(workers);
     iq_vec.resize(workers);
 }

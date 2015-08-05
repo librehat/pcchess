@@ -66,7 +66,7 @@ int main(int argc, char **argv)
             red = new slow_tree_uct_player(300, true);
             break;
         case 3:
-            red = new uct_treesplit_player(4, true);//set thread here
+            red = new uct_treesplit_player(0, true);
             break;
         default:
             cerr << "bad player_id" << endl;

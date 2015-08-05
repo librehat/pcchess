@@ -7,15 +7,14 @@
 using namespace std;
 using namespace chrono;
 
-threaded_uct_player::threaded_uct_player(int _threads, bool red) :
-    uct_player(red),
-    threads(_threads)
+threaded_uct_player::threaded_uct_player(int threads, bool red) :
+    uct_player(red)
 {
     if (threads <= 0) {
         threads = thread::hardware_concurrency();
     }
     if (threads == 0) {
-        threads = 1;
+        threads = 3;//assume it's a quad-core machine then
     }
     thread_vec.resize(threads);
 }

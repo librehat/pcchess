@@ -11,13 +11,12 @@
 class threaded_uct_player : public uct_player
 {
 public:
-    explicit threaded_uct_player(int _threads = 0, bool red = true);
+    explicit threaded_uct_player(int threads = 0, bool red = true);
 
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     std::int64_t get_total_simulations() const;
 
 private:
-    int threads;
     std::vector<std::thread> thread_vec;
     static std::atomic_bool stop;
     void worker_thread();
@@ -27,7 +26,6 @@ private:
     void serialize(Archive &ar, const unsigned int)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(uct_player);
-        ar & BOOST_SERIALIZATION_NVP(threads);
     }
 };
 

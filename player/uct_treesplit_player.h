@@ -8,7 +8,12 @@
 class uct_treesplit_player : public root_uct_player
 {
 public:
-    explicit uct_treesplit_player(int cpu_cores = 2, bool red = true);//this algorithm allocate one thread on one CPU core
+    /*
+     * this algorithm allocate one thread on one CPU core (or a hyperthread unit)
+     * by default, this constructor will try to use thread::hardware_concurrency() as the CPU cores.
+     * if that information is unavailable, then it'll assume this machine has a quad-core CPU
+     */
+    explicit uct_treesplit_player(int cpu_cores = 0, bool red = true);
 
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     void opponent_moved(const pos_move &m);
