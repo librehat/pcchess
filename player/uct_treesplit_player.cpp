@@ -185,6 +185,7 @@ void uct_treesplit_player::main_thread_start()
     for (auto &&t : thread_vec) {
         t.join();
     }
+    world_comm.barrier();
 }
 
 void uct_treesplit_player::worker_thread(const int &id)
