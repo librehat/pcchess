@@ -159,4 +159,6 @@ void treesplit_node::insert_node_from_msg(const msg_type &msg)
         transmap.emplace(hash_val, child);
         transmap_mutex.unlock();
     }
+    child->scores += get<1>(msg);
+    child->visits += 1;
 }
