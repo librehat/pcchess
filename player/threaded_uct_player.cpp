@@ -14,9 +14,9 @@ threaded_uct_player::threaded_uct_player(int threads, bool red) :
         threads = thread::hardware_concurrency();
     }
     if (threads == 0) {
-        threads = 3;//assume it's a quad-core machine then
+        threads = 4;//assume it's a quad-core machine then
     }
-    thread_vec.resize(threads);
+    thread_vec.resize(threads - 1);
 }
 
 atomic_bool threaded_uct_player::stop(false);

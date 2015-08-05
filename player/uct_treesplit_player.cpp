@@ -20,7 +20,6 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     }
     workers = cpu_cores - 1;
     thread_vec.resize(workers);
-    iq_vec.resize(workers);
 }
 
 atomic_bool uct_treesplit_player::stop(false);
@@ -46,6 +45,10 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
     _move = get<0>(*best_child);
     if (_move.is_valid()) {
+        master_send_order(CHILD_SELEC);
+        for (int j = 1; j < world_comm.size(); ++j) {
+            world_comm.send(j, CHILD_SELEC_DATA, _move);
+        }
         evolve_into_next_depth(_move);
     }
     return _move.is_valid();
@@ -132,12 +135,9 @@ void uct_treesplit_player::main_thread_start()
 {
     stop = false;
     thread_safe_queue<treesplit_node::msg_type>().swap(oq);
-    for (auto &&q : iq_vec) {
-        thread_safe_queue<treesplit_node::msg_type>().swap(q);
-    }
     treesplit_node::remove_transmap_useless_entries();
     for (int i = 0; i < workers; ++i) {
-        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
+        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this);
     }
 
     static milliseconds think_time = milliseconds(game::step_time);
@@ -159,8 +159,7 @@ void uct_treesplit_player::main_thread_start()
         if (auto s = ireq.test()) {
             treesplit_node::msg_type imsg;
             world_comm.recv(s.get().source(), TS_MSG_DATA, imsg);
-            auto min_it = min_element(iq_vec.begin(), iq_vec.end(), [](thread_safe_queue<treesplit_node::msg_type> &x, thread_safe_queue<treesplit_node::msg_type> &y) { return x.size() < y.size(); });
-            min_it->push(imsg);
+            treesplit_node::insert_node_from_msg(imsg);
             ireq = world_comm.irecv(mpi::any_source, TS_MSG);
         }
     }
@@ -175,18 +174,12 @@ void uct_treesplit_player::main_thread_start()
     }
 }
 
-void uct_treesplit_player::worker_thread(const int &iq_id)
+void uct_treesplit_player::worker_thread()
 {
     treesplit_node::clear_output_queue();
     do {
-        if (!iq_vec[iq_id].empty()) {
-            auto imsg = iq_vec[iq_id].front();
-            iq_vec[iq_id].pop();
-            treesplit_node::insert_node_from_msg(imsg);
-        } else {
-            root->select();
-        }
-        if (!treesplit_node::output_queue.empty()) {
+        root->select();
+        while (!treesplit_node::output_queue.empty()) {
             oq.push(treesplit_node::output_queue.front());
             treesplit_node::output_queue.pop();
         }

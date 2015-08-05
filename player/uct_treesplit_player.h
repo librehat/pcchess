@@ -24,7 +24,6 @@ public:
 private:
     int workers;
     std::vector<std::thread> thread_vec;
-    std::vector<thread_safe_queue<treesplit_node::msg_type> > iq_vec;//one worker thread one queue
     thread_safe_queue<treesplit_node::msg_type> oq;
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
@@ -32,7 +31,7 @@ private:
     void slave_select_child();
 
     void main_thread_start();//basically just reset the stop flag, create worker threads and start io work
-    void worker_thread(const int &);
+    void worker_thread();
 
     static std::atomic_bool stop;
 
