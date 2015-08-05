@@ -76,6 +76,7 @@ int main(int argc, char **argv)
         red->init_pieces();
         black->init_pieces();
 
+        world_comm.barrier();
         if (world_comm.rank() == 0) {//master plays the game
             game g(red, black);
             abstract_player* winner = g.playout();

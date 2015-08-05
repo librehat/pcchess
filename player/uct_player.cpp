@@ -33,9 +33,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_ea
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        if (!root->select()) {
-            break;
-        }
+        root->select();
     }
 
     auto best_child = root->get_best_child();
