@@ -38,17 +38,11 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
 
     master_send_order(COMP_LOOP);
     long int synced_point = 0, next_sync_point = sync_period;
-    bool no_more_sims = false;
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        if (no_more_sims) {
-            static milliseconds nap(100);
-            this_thread::sleep_for(nap);
-        } else if (!root->select()) {
-            no_more_sims = true;
-        }
+        root->select();
 
         long int current_point = elapsed.count();
         if (synced_point < current_point && current_point >= next_sync_point) {
@@ -56,7 +50,6 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
             sync_tree();
             synced_point = current_point;
             next_sync_point = synced_point + sync_period;
-            no_more_sims = false;
         }
     }
     master_send_order(COMP_FINISH);
@@ -75,9 +68,8 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
     }
 
     _move = (*best_child)->get_move();
-    master_send_order(CHILD_SELEC);
     for (int j = 1; j < world_size; ++j) {
-        world_comm.send(j, CHILD_SELEC_DATA, _move);
+        world_comm.send(j, CHILD_SELEC, _move);
     }
 
     node::node_ptr new_root = root->release_child(best_child);
@@ -93,9 +85,8 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
         return;
     }
 
-    master_send_order(OPPMOV);
     for (int i = 1; i < world_comm.size(); ++i) {
-        world_comm.send(i, OPPMOV_DATA, m);
+        world_comm.send(i, OPP_MOVE, m);
     }
 
     node::node_ptr new_root;
@@ -114,106 +105,62 @@ void slow_tree_uct_player::opponent_moved(const pos_move &m)
 
 void slow_tree_uct_player::do_slave_job()
 {
-    mpi::request request = world_comm.irecv(0, mpi::any_tag);
+    bool compute = false;
     do {
-        boost::optional<mpi::status> req_ret = request.test();
-        if (req_ret) {
-            switch (req_ret.get().tag()) {
-            case SYNC:
-                sync_tree();
-                break;
-            case COMP_LOOP:
-                slave_compute();
-                break;
-            case OPPMOV:
-                slave_opponent_moved();
-                break;
-            case CHILD_SELEC:
-                slave_child_select();
-                break;
-            case BROADCAST_TREE:
-                slave_broadcast_tree();
-                break;
-            case REDUCE_SIMS:
-                mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
-                break;
-            case EXIT:
-                return;
-            default:
-                cerr << "unknown tag: " << req_ret.get().tag() << endl;
-                throw invalid_argument("received an invalid mpi tag in do_slave_job()");
+        auto probe = world_comm.iprobe(0, mpi::any_tag);
+        if (probe) {
+            mpi::status status = probe.get();
+            if (status.tag() == OPP_MOVE) {
+                pos_move m;
+                world_comm.recv(0, OPP_MOVE, m);
+                node::node_ptr new_root;
+                auto root_iter = root->find_child(m);
+                if (root_iter != root->child_end()) {
+                    new_root = root->release_child(root_iter);
+                } else {
+                    new_root = root->gen_child_with_a_move(m);
+                    new_root->set_parent(nullptr);
+                }
+                root = new_root;
+                node::set_root_depth(root);
+            } else if (status.tag() == CHILD_SELEC) {
+                pos_move m;
+                world_comm.recv(0, CHILD_SELEC, m);
+                auto new_root = root->release_child(root->find_child(m));
+                root = new_root;
+                node::set_root_depth(root);
+            } else {
+                mpi::status s = world_comm.recv(0, status.tag());
+                switch (s.tag()) {
+                case SYNC:
+                    sync_tree();
+                    break;
+                case COMP_LOOP:
+                    compute = true;
+                    break;
+                case COMP_FINISH:
+                    compute = false;
+                    break;
+                case BROADCAST_TREE:
+                    slave_broadcast_tree();
+                    break;
+                case REDUCE_SIMS:
+                    mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
+                    break;
+                case EXIT:
+                    return;
+                default:
+                    cerr << "unknown tag: " << s.tag() << endl;
+                    throw invalid_argument("received an invalid mpi tag in do_slave_job()");
+                }
             }
-            request = world_comm.irecv(0, mpi::any_tag);
+        } else if (compute) {
+            root->select();
         } else {
-            static milliseconds nap(100);
+            static const milliseconds nap(100);
             this_thread::sleep_for(nap);
         }
     } while (true);
-}
-
-void slow_tree_uct_player::slave_compute()
-{
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] slave_compute" << endl;
-#endif
-
-    if (!root) {
-        throw runtime_error("root is nullptr");
-    }
-
-    mpi::request request = world_comm.irecv(0, mpi::any_tag);
-    bool cont_comp = true, no_more_sims = false;
-    do {
-        boost::optional<mpi::status> req_ret = request.test();
-        if (req_ret) {
-            switch (req_ret.get().tag()) {
-            case SYNC:
-                sync_tree();
-                request = world_comm.irecv(0, mpi::any_tag);//we may get a new order again
-                no_more_sims = false;//we may be able to do MCTS again
-                break;
-            case COMP_FINISH:
-                cont_comp = false;
-                break;
-            default:
-                throw invalid_argument("received an invalid mpi tag in slave_compute()");
-            }
-        } else {
-            if (no_more_sims) {
-                static milliseconds nap(100);
-                this_thread::sleep_for(nap);
-            }
-            else if (!root->select()) {
-                no_more_sims = true;
-            }
-        }
-    } while (cont_comp);
-}
-
-void slow_tree_uct_player::slave_opponent_moved()
-{
-    pos_move m;
-    world_comm.recv(0, OPPMOV_DATA, m);
-
-    node::node_ptr new_root;
-    auto root_iter = root->find_child(m);
-    if (root_iter != root->child_end()) {
-        new_root = root->release_child(root_iter);
-    } else {
-        new_root = root->gen_child_with_a_move(m);
-        new_root->set_parent(nullptr);
-    }
-    root = new_root;
-    node::set_root_depth(root);
-}
-
-void slow_tree_uct_player::slave_child_select()
-{
-    pos_move m;
-    world_comm.recv(0, CHILD_SELEC_DATA, m);
-    auto new_root = root->release_child(root->find_child(m));
-    root = new_root;
-    node::set_root_depth(root);
 }
 
 /*

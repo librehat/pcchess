@@ -20,9 +20,6 @@ public:
 private:
     long int sync_period;
 
-    void slave_compute();
-    void slave_opponent_moved();
-    void slave_child_select();
     void sync_tree();
 
     friend class boost::serialization::access;

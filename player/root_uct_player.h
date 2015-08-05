@@ -16,8 +16,7 @@ public:
 
     virtual void do_slave_job();
 
-    enum TAG : int { GATHER_TREE, COMP_LOOP, COMP_FINISH, BROADCAST_TREE, REDUCE_SIMS, SYNC, OPPMOV, OPPMOV_DATA,
-               CHILD_SELEC, CHILD_SELEC_DATA, TS_INIT, TS_MSG, TS_MSG_DATA, TS_START, TS_BEST_CHILD, EXIT };
+    enum TAG : int { GATHER_TREE, COMP_LOOP, COMP_FINISH, BROADCAST_TREE, REDUCE_SIMS, SYNC, OPP_MOVE, CHILD_SELEC, TS_INIT, TS_MSG, TS_START, TS_STOP, TS_BEST_CHILD, EXIT };
 
 protected:
     void master_send_order(const TAG &tag) const;
@@ -28,7 +27,6 @@ protected:
 
 private:
     void upload_tree();
-    void slave_compute();
 
     friend class boost::serialization::access;
     template<class Archive>

@@ -50,9 +50,7 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        if (!root->select()) {
-            break;
-        }
+        root->select();
     }
     master_send_order(COMP_FINISH);
 
@@ -88,16 +86,21 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
 
 void root_uct_player::do_slave_job()
 {
-    mpi::request request = world_comm.irecv(0, mpi::any_tag);
+    bool compute = false;
     do {
-        boost::optional<mpi::status> req_ret = request.test();
-        if (req_ret) {
-            switch (req_ret.get().tag()) {
+        auto probe = world_comm.iprobe(0, mpi::any_tag);
+        if (probe) {
+            mpi::status status = probe.get();
+            mpi::status s = world_comm.recv(0, status.tag());
+            switch (s.tag()) {
             case GATHER_TREE:
                 mpi::gather(world_comm, root, 0);
                 break;
             case COMP_LOOP:
-                slave_compute();
+                compute = true;
+                break;
+            case COMP_FINISH:
+                compute = false;
                 break;
             case BROADCAST_TREE:
                 slave_broadcast_tree();
@@ -110,9 +113,10 @@ void root_uct_player::do_slave_job()
             default:
                 throw invalid_argument("received an invalid mpi tag in do_slave_job()");
             }
-            request = world_comm.irecv(0, mpi::any_tag);
+        } else if (compute) {
+            root->select();
         } else {
-            static milliseconds nap(100);
+            static const milliseconds nap(100);
             this_thread::sleep_for(nap);
         }
     } while (true);
@@ -125,33 +129,10 @@ void root_uct_player::master_send_order(const TAG &tag) const
         return;
     }
 
-    static int world_size = world_comm.size();
+    static const int world_size = world_comm.size();
     for (int i = 1; i < world_size; ++i) {
         world_comm.send(i, tag);
     }
-}
-
-void root_uct_player::slave_compute()
-{
-    mpi::request request = world_comm.irecv(0, mpi::any_tag);
-    do {
-        auto test = request.test();
-        if (test) {
-            if (test.get().tag() == COMP_FINISH) {
-                return;
-            } else {
-                throw runtime_error("slave_compute received an invalid tag");
-            }
-        } else {
-            if (!root->select()) {
-#ifdef _DEBUG
-                cout << "[" << world_comm.rank() << "] no more select, take a nap" << endl;
-#endif
-                static milliseconds nap(100);
-                this_thread::sleep_for(nap);
-            }
-        }
-    } while (true);
 }
 
 void root_uct_player::slave_broadcast_tree()
