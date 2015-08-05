@@ -23,6 +23,7 @@ private:
     thread_safe_queue<treesplit_node::msg_type> oq;
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
+    void slave_init();
     void slave_select_child();
 
     void main_thread_start();//basically just reset the stop flag, create worker threads and start io work

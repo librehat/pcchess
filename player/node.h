@@ -28,7 +28,7 @@ public:
 
     node_ptr make_shallow_copy() const;//used for root_uct_player
     node_ptr make_shallow_copy_with_children() const;//used for slow_tree_uct_player
-    virtual node_ptr gen_child_with_a_move(const pos_move &m);
+    node_ptr gen_child_with_a_move(const pos_move &m);
 
     double get_value() const;
     double get_uct_val() const;
@@ -41,7 +41,7 @@ public:
 
     void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
-    void backpropagate(const int &score, const int &vis = 1);
+    virtual void backpropagate(const int &score, const int &vis = 1);
     int children_size() const;
     node_ptr release_child(const iterator &i);
     inline void set_parent(const node_ptr &n) { parent = n; }

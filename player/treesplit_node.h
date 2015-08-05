@@ -15,20 +15,23 @@ public:
     //next_move, visits, scores
     typedef std::tuple<pos_move, int, int> child_type;
 
-    explicit treesplit_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
-    explicit treesplit_node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);
-    //explicit treesplit_node(const treesplit_node &b);
+    explicit treesplit_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr(), const int &_rank = 0);
+    explicit treesplit_node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds, const int &_rank);
 
-    node_ptr gen_child_with_a_move(const pos_move &m);
+    node_ptr generate_root_node_with_move(const pos_move &m);//generate a root node as if it was this node's child and update the move using m
 
     void expand(std::deque<pos_move> &hist, const int &score);
+
+    void backpropagate(const int &score, const int &vis = 1);//the overloaded backpropagate will consider if the node belongs to other CN
 
     child_type get_best_child_msg();
 
     static void remove_transmap_useless_entries();
-    static thread_local void clear_oq() { std::queue<msg_type>().swap(output_queue); }
+    static thread_local void clear_output_queue() { std::queue<msg_type>().swap(output_queue); }
 
 private:
+    const int cn_rank;//the CN's rank that this node belongs to
+
     friend class uct_treesplit_player;
     friend class boost::serialization::access;
 
@@ -48,6 +51,7 @@ private:
     void serialize(Archive & ar, const unsigned int)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(threaded_node);
+        ar & boost::serialization::make_nvp("cn_rank", const_cast<int &>(cn_rank));
     }
 };
 

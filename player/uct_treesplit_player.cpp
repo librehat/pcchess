@@ -23,13 +23,12 @@ atomic_bool uct_treesplit_player::stop(false);
 bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     if (!root) {
-        root = node::node_ptr(new treesplit_node(game::generate_fen(bd), red_side, no_eat_half_rounds));
-        master_send_order(BROADCAST_TREE);
+        string fen = game::generate_fen(bd);
+        master_send_order(TS_INIT);
+        mpi::broadcast(world_comm, fen, 0);
+        mpi::broadcast(world_comm, no_eat_half_rounds, 0);
+        root = node::node_ptr(new treesplit_node(fen, red_side, no_eat_half_rounds, world_comm.rank()));
         node::set_root_depth(root);
-#ifdef _DEBUG
-        cout << "[0] broadcast_tree" << endl;
-#endif
-        mpi::broadcast(world_comm, root, 0);
     }
 
     master_send_order(TS_START);
@@ -49,32 +48,26 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
-    evolve_into_next_depth(m);
-}
-
-void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
-{
     assert (world_comm.rank() == 0);
 
     master_send_order(CHILD_SELEC);
     for (int j = 1; j < world_comm.size(); ++j) {
         world_comm.send(j, CHILD_SELEC_DATA, m);
     }
+    evolve_into_next_depth(m);
+}
+
+void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
+{
     auto child_it = root->find_child(m);
     node::node_ptr new_root;
     if (child_it != root->child_end()) {
         new_root = root->release_child(child_it);
     } else {
-        new_root = root->gen_child_with_a_move(m);
-        new_root->set_parent(nullptr);
+        new_root = dynamic_pointer_cast<treesplit_node>(root)->generate_root_node_with_move(m);
     }
     root = new_root;
     node::set_root_depth(root);
-    thread_safe_queue<treesplit_node::msg_type>().swap(oq);
-    for (auto &&q : iq_vec) {
-        thread_safe_queue<treesplit_node::msg_type>().swap(q);
-    }
-    treesplit_node::remove_transmap_useless_entries();
 }
 
 void uct_treesplit_player::do_slave_job()
@@ -87,8 +80,8 @@ void uct_treesplit_player::do_slave_job()
             case CHILD_SELEC:
                 slave_select_child();
                 break;
-            case BROADCAST_TREE:
-                slave_broadcast_tree();
+            case TS_INIT:
+                slave_init();
                 break;
             case REDUCE_SIMS:
                 mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
@@ -113,30 +106,31 @@ void uct_treesplit_player::do_slave_job()
     } while (true);
 }
 
+void uct_treesplit_player::slave_init()
+{
+    string fen;
+    uint8_t no_eat_half_rounds;
+    mpi::broadcast(world_comm, fen, 0);
+    mpi::broadcast(world_comm, no_eat_half_rounds, 0);
+    root = node::node_ptr(new treesplit_node(fen, red_side, no_eat_half_rounds, world_comm.rank()));
+    node::set_root_depth(root);
+}
+
 void uct_treesplit_player::slave_select_child()
 {
     pos_move m;
     world_comm.recv(0, CHILD_SELEC_DATA, m);
-    auto child_it = root->find_child(m);
-    node::node_ptr new_root;
-    if (child_it != root->child_end()) {
-        new_root = root->release_child(child_it);
-    } else {
-        new_root = root->gen_child_with_a_move(m);
-        new_root->set_parent(nullptr);
-    }
-    root = new_root;
-    node::set_root_depth(root);
-    thread_safe_queue<treesplit_node::msg_type>().swap(oq);
-    for (auto &&q : iq_vec) {
-        thread_safe_queue<treesplit_node::msg_type>().swap(q);
-    }
-    treesplit_node::remove_transmap_useless_entries();
+    evolve_into_next_depth(m);
 }
 
 void uct_treesplit_player::main_thread_start()
 {
     stop = false;
+    thread_safe_queue<treesplit_node::msg_type>().swap(oq);
+    for (auto &&q : iq_vec) {
+        thread_safe_queue<treesplit_node::msg_type>().swap(q);
+    }
+    treesplit_node::remove_transmap_useless_entries();
     for (int i = 0; i < workers; ++i) {
         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
     }
@@ -178,7 +172,7 @@ void uct_treesplit_player::main_thread_start()
 
 void uct_treesplit_player::worker_thread(const int &iq_id)
 {
-    treesplit_node::clear_oq();
+    treesplit_node::clear_output_queue();
     do {
         if (!iq_vec[iq_id].empty()) {
             auto imsg = iq_vec[iq_id].front();
