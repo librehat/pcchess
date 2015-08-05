@@ -20,6 +20,7 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     }
     workers = cpu_cores - 1;
     thread_vec.resize(workers);
+    local_oq_vec.resize(workers);
 }
 
 atomic_bool uct_treesplit_player::stop(false);
@@ -134,26 +135,34 @@ void uct_treesplit_player::slave_select_child()
 void uct_treesplit_player::main_thread_start()
 {
     stop = false;
-    thread_safe_queue<treesplit_node::msg_type>().swap(oq);
+
+    for (auto &&oq : local_oq_vec) {
+        thread_safe_queue<treesplit_node::msg_type>().swap(oq);
+    }
     treesplit_node::remove_transmap_useless_entries();
+
     for (int i = 0; i < workers; ++i) {
-        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this);
+        thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
     }
 
     static milliseconds think_time = milliseconds(game::step_time);
     steady_clock::time_point start = steady_clock::now();
 
     mpi::request ireq = world_comm.irecv(mpi::any_source, TS_MSG);
+    mpi::request rreq;
 
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-        if (!oq.empty()) {
-            treesplit_node::msg_type omsg = oq.front();
-            oq.pop();
+        for (auto qit = local_oq_vec.begin(); qit != local_oq_vec.end(); ++qit) {
+            if (qit->empty()) {
+                continue;
+            }
+            treesplit_node::msg_type omsg = qit->front();
+            qit->pop();
             world_comm.send(get<0>(omsg), TS_MSG);
-            world_comm.send(get<0>(omsg), TS_MSG_DATA, omsg);
+            rreq = world_comm.isend(get<0>(omsg), TS_MSG_DATA, omsg);
         }
 
         if (auto s = ireq.test()) {
@@ -161,6 +170,10 @@ void uct_treesplit_player::main_thread_start()
             world_comm.recv(s.get().source(), TS_MSG_DATA, imsg);
             treesplit_node::insert_node_from_msg(imsg);
             ireq = world_comm.irecv(mpi::any_source, TS_MSG);
+        }
+
+        if (!rreq.test()) {
+            rreq.wait();
         }
     }
     stop = true;
@@ -174,13 +187,13 @@ void uct_treesplit_player::main_thread_start()
     }
 }
 
-void uct_treesplit_player::worker_thread()
+void uct_treesplit_player::worker_thread(const int &id)
 {
     treesplit_node::clear_output_queue();
     do {
         root->select();
         while (!treesplit_node::output_queue.empty()) {
-            oq.push(treesplit_node::output_queue.front());
+            local_oq_vec[id].push(treesplit_node::output_queue.front());
             treesplit_node::output_queue.pop();
         }
     } while (!stop);

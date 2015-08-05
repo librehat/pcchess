@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
     while (games-- > 0) {
         root_uct_player *red;
-        abstract_player *black = new random_player(false);
+        abstract_player *black = new uct_player(false);
 
         switch (player_id) {
         case 1:
