@@ -5,9 +5,9 @@
 #include <boost/mpi/communicator.hpp>
 #include <unordered_map>
 #include <tuple>
+#include <queue>
 #include <boost/serialization/deque.hpp>
 #include "utils/serialization_tuple.hpp"
-#include "utils/thread_safe_queue.hpp"
 
 class treesplit_node : public threaded_node
 {

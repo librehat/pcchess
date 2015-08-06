@@ -3,6 +3,7 @@
 
 #include "root_uct_player.h"
 #include "treesplit_node.h"
+#include "utils/lock_free_queue.hpp"
 #include <thread>
 
 class uct_treesplit_player : public root_uct_player
@@ -24,7 +25,7 @@ public:
 private:
     int workers;
     std::vector<std::thread> thread_vec;
-    std::vector<thread_safe_queue<treesplit_node::msg_type> > local_oq_vec;
+    std::vector<lock_free_queue<treesplit_node::msg_type> > local_oq_vec;
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
     void slave_init();
