@@ -41,19 +41,6 @@ node::node(const string &fen, bool is_red_side, uint8_t noeat_half_rounds) :
     no_eat_half_rounds(noeat_half_rounds)
 {}
 
-/*node::node(const node &n) : enable_shared_from_this<node>(n),
-    my_turn(n.my_turn),
-    red_side(n.red_side),
-    parent(n.parent),
-    children(n.children),
-    current_fen(n.current_fen),
-    my_move(n.my_move.load()),
-    depth(n.depth.load()),
-    visits(n.visits.load()),
-    scores(n.scores.load()),
-    no_eat_half_rounds(n.no_eat_half_rounds.load())
-{}*/
-
 node::node_ptr node::make_shallow_copy() const
 {
     node_ptr n(new node(current_fen, my_move, my_turn, red_side, no_eat_half_rounds, parent.lock()));

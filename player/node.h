@@ -23,7 +23,6 @@ public:
 
     explicit node(const std::string &fen = std::string(), const pos_move &_mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);//a lazy constructor used to create the root node
-    //explicit node(const node &n);
     virtual ~node() {}
 
     node_ptr make_shallow_copy() const;//used for root_uct_player
@@ -66,6 +65,7 @@ public:
     static std::int64_t get_total_simulations();
     static void set_root_depth(const node_ptr r);//remember to call this function when you change the root node
     static void set_max_depth(const int &d);
+    static void reset_simulation_count() { total_simulations = 0; }
 
     friend std::size_t hash_value(const node &n) {
         return node::hash_val_internal(n.current_fen, n.my_move, n.my_turn, n.red_side, n.no_eat_half_rounds);
