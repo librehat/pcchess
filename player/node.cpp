@@ -8,9 +8,8 @@
 
 using namespace std;
 
-atomic<int64_t> node::total_simulations(0);
 atomic_int node::root_depth(0);
-atomic_int node::max_depth(50);//rounds = depth / 2 //TODO tuned
+atomic_int node::max_depth(20);//rounds = depth / 2 //TODO tuned
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
@@ -44,7 +43,7 @@ node::node(const string &fen, bool is_red_side, uint8_t noeat_half_rounds) :
 node::node_ptr node::make_shallow_copy() const
 {
     node_ptr n(new node(current_fen, my_move, my_turn, red_side, no_eat_half_rounds, parent.lock()));
-    n->depth = depth.load();
+    n->depth = depth.load(memory_order_relaxed);
     return n;
 }
 
@@ -71,13 +70,13 @@ node::node_ptr node::gen_child_with_a_move(const pos_move &m)
 
 double node::get_value() const
 {
-    return static_cast<double>(scores) / static_cast<double>(visits);
+    return static_cast<double>(scores.load(memory_order_relaxed)) / static_cast<double>(visits.load(memory_order_relaxed));
 }
 
 double node::get_uct_val() const
 {
     if (auto p = parent.lock()) {
-        return get_value() + uct_constant * sqrt(log(p->visits.load()) / visits);
+        return get_value() + uct_constant * sqrt(log(p->visits.load(memory_order_relaxed)) / visits.load(memory_order_relaxed));
 	} else {
 		return 0;
 	}
@@ -138,8 +137,6 @@ void node::expand(deque<pos_move> &hist, const int &score)
 
 bool node::simulate()
 {
-    total_simulations++;
-
     random_player tr(true), tb(false);
     game sim_game(&tr, &tb, no_eat_half_rounds);
     sim_game.parse_fen(current_fen);
@@ -241,12 +238,12 @@ bool node::is_same_place_in_tree(const node &b) const
      * true if they should be in the same place
      * depth is allowed to be different, because the same game state can show up again after a few moves
      */
-    return !(my_turn != b.my_turn || current_fen != b.current_fen || my_move.load() != b.my_move.load() || red_side != b.red_side || no_eat_half_rounds.load() != b.no_eat_half_rounds.load());
+    return !(my_turn != b.my_turn || current_fen != b.current_fen || my_move.load(memory_order_relaxed) != b.my_move.load(memory_order_relaxed) || red_side != b.red_side || no_eat_half_rounds.load(memory_order_relaxed) != b.no_eat_half_rounds.load(memory_order_relaxed));
 }
 
 bool node::is_basically_the_same(const node &b) const
 {
-    return !(!is_same_place_in_tree(b) || visits.load() != b.visits.load() || scores.load() != b.scores.load() || children.size() != b.children.size() || depth.load() != b.depth.load());
+    return !(!is_same_place_in_tree(b) || visits.load(memory_order_relaxed) != b.visits.load(memory_order_relaxed) || scores.load(memory_order_relaxed) != b.scores.load(memory_order_relaxed) || children.size() != b.children.size() || depth.load(memory_order_relaxed) != b.depth.load(memory_order_relaxed));
 }
 
 bool node::operator ==(const node &b) const
@@ -257,11 +254,6 @@ bool node::operator ==(const node &b) const
 bool node::operator !=(const node &b) const
 {
     return children != b.children || !is_basically_the_same(b);
-}
-
-int64_t node::get_total_simulations()
-{
-    return total_simulations;
 }
 
 void node::set_root_depth(const node_ptr r)

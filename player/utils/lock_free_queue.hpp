@@ -25,8 +25,8 @@ public:
     {}
 
     lock_free_queue(const lock_free_queue &q) :
-        read_loc(q.read_loc.load()),
-        write_loc(q.write_loc.load())
+        read_loc(q.read_loc.load(std::memory_order_relaxed)),
+        write_loc(q.write_loc.load(std::memory_order_relaxed))
     {
         for (int i = read_loc; i < write_loc; ++i) {
             data[i] = q.data[i];

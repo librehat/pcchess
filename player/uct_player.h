@@ -17,7 +17,7 @@ public:
 
     virtual bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     virtual void opponent_moved(const pos_move &m);
-    virtual std::int64_t get_total_simulations() const;
+    virtual std::uint64_t get_total_simulations() const;
 
     inline node::node_ptr get_tree() const { return root; }
 
@@ -26,6 +26,7 @@ public:
 
 protected:
     node::node_ptr root;
+    std::atomic<uint64_t> selects;
 
 private:
     friend class boost::serialization::access;

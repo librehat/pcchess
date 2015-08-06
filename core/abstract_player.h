@@ -49,7 +49,7 @@ public:
      */
     virtual void opponent_moved(const pos_move &) {}
 
-    virtual std::int64_t get_total_simulations() const { return 0; }
+    virtual std::uint64_t get_total_simulations() const { return 0; }
     std::vector<position> get_all_available_target_positions(const board &bd) const;
     std::vector<pos_move> get_all_available_moves(const board &bd) const;
 

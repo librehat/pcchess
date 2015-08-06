@@ -40,6 +40,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
         root->select();
+        selects++;
     }
     stop = true;
     for (auto &&t : thread_vec) {
@@ -59,14 +60,10 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
     return true;
 }
 
-int64_t threaded_uct_player::get_total_simulations() const
-{
-    return threaded_node::get_total_simulations();
-}
-
 void threaded_uct_player::worker_thread()
 {
     do {
         root->select();
+        selects++;
     } while (!stop);
 }

@@ -13,7 +13,8 @@ using namespace std;
 using namespace chrono;
 
 uct_player::uct_player(bool red) :
-    abstract_player(red)
+    abstract_player(red),
+    selects(0)
 {}
 
 uct_player::~uct_player()
@@ -34,6 +35,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_ea
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
         root->select();
+        selects++;
     }
 
     auto best_child = root->get_best_child();
@@ -75,9 +77,9 @@ void uct_player::opponent_moved(const pos_move &m)
     root = new_root;
 }
 
-int64_t uct_player::get_total_simulations() const
+uint64_t uct_player::get_total_simulations() const
 {
-    return node::get_total_simulations();
+    return selects;
 }
 
 void uct_player::text_archive_tree(ostream &os, node *b)

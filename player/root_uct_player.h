@@ -12,7 +12,7 @@ public:
     ~root_uct_player();
 
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
-    std::int64_t get_total_simulations() const;
+    std::uint64_t get_total_simulations() const;
 
     virtual void do_slave_job();
 

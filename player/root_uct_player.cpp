@@ -51,6 +51,7 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
         root->select();
+        selects++;
     }
     master_send_order(COMP_FINISH);
 
@@ -106,7 +107,7 @@ void root_uct_player::do_slave_job()
                 slave_broadcast_tree();
                 break;
             case REDUCE_SIMS:
-                mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
+                mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
                 break;
             case EXIT:
                 return;
@@ -115,6 +116,7 @@ void root_uct_player::do_slave_job()
             }
         } else if (compute) {
             root->select();
+            selects++;
         } else {
             static const milliseconds nap(100);
             this_thread::sleep_for(nap);
@@ -147,14 +149,14 @@ void root_uct_player::slave_broadcast_tree()
     node::set_root_depth(root);
 }
 
-int64_t root_uct_player::get_total_simulations() const
+uint64_t root_uct_player::get_total_simulations() const
 {
     if (world_comm.rank() != 0) {
         throw runtime_error("non-root's get_total_simulations() gets called");
     }
 
     master_send_order(REDUCE_SIMS);
-    int64_t local_sims = node::get_total_simulations(), sum_sims = 0;
-    mpi::reduce(world_comm, local_sims, sum_sims, plus<int>(), 0);
+    uint64_t sum_sims = 0;
+    mpi::reduce(world_comm, selects.load(memory_order_relaxed), sum_sims, plus<uint64_t>(), 0);
     return sum_sims;
 }

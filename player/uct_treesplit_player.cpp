@@ -141,7 +141,7 @@ void uct_treesplit_player::do_slave_job()
                     slave_init();
                     break;
                 case REDUCE_SIMS:
-                    mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
+                    mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
                     break;
                 case TS_START:
                     do_io_job = true;
@@ -202,21 +202,10 @@ void uct_treesplit_player::worker_thread(const int &id)
     treesplit_node::clear_output_queue();
     do {
         root->select();
+        selects++;
         while (!treesplit_node::output_queue.empty()) {
             local_oq_vec[id].push(treesplit_node::output_queue.front());
             treesplit_node::output_queue.pop();
         }
     } while (!stop);
-}
-
-int64_t uct_treesplit_player::get_total_simulations() const
-{
-    if (world_comm.rank() != 0) {
-        throw runtime_error("non-root's get_total_simulations() gets called");
-    }
-
-    master_send_order(REDUCE_SIMS);
-    int64_t local_sims = treesplit_node::get_total_simulations(), sum_sims = 0;
-    mpi::reduce(world_comm, local_sims, sum_sims, plus<int>(), 0);
-    return sum_sims;
 }

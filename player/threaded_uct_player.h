@@ -14,7 +14,6 @@ public:
     explicit threaded_uct_player(int threads = 0, bool red = true);
 
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
-    std::int64_t get_total_simulations() const;
 
 private:
     std::vector<std::thread> thread_vec;

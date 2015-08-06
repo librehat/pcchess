@@ -62,10 +62,8 @@ public:
     bool operator == (const node &b) const;
     bool operator != (const node &b) const;
 
-    static std::int64_t get_total_simulations();
     static void set_root_depth(const node_ptr r);//remember to call this function when you change the root node
     static void set_max_depth(const int &d);
-    static void reset_simulation_count() { total_simulations = 0; }
 
     friend std::size_t hash_value(const node &n) {
         return node::hash_val_internal(n.current_fen, n.my_move, n.my_turn, n.red_side, n.no_eat_half_rounds);
@@ -92,7 +90,6 @@ protected:
 
     static std::atomic_int root_depth;
     static std::atomic_int max_depth;
-    static std::atomic<std::int64_t> total_simulations;
 
     static const int select_threshold;
     static const double uct_constant;

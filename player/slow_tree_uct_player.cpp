@@ -16,7 +16,6 @@ slow_tree_uct_player::slow_tree_uct_player(long int sync_period_ms, bool red) :
     sync_period(sync_period_ms)
 {
     assert(sync_period > 0);
-    node::set_max_depth(20);
 }
 
 bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
@@ -43,6 +42,7 @@ bool slow_tree_uct_player::think_next_move(pos_move &_move, const board &bd, uin
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
         root->select();
+        selects++;
 
         long int current_point = elapsed.count();
         if (synced_point < current_point && current_point >= next_sync_point) {
@@ -145,7 +145,7 @@ void slow_tree_uct_player::do_slave_job()
                     slave_broadcast_tree();
                     break;
                 case REDUCE_SIMS:
-                    mpi::reduce(world_comm, node::get_total_simulations(), plus<int>(), 0);//std::plus is equivalent to MPI_SUM in C
+                    mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
                     break;
                 case EXIT:
                     return;
@@ -156,6 +156,7 @@ void slow_tree_uct_player::do_slave_job()
             }
         } else if (compute) {
             root->select();
+            selects++;
         } else {
             static const milliseconds nap(100);
             this_thread::sleep_for(nap);

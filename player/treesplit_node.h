@@ -8,6 +8,7 @@
 #include <queue>
 #include <boost/serialization/deque.hpp>
 #include "utils/serialization_tuple.hpp"
+#include "utils/fast_ptr_hashtable.hpp"
 
 class treesplit_node : public threaded_node
 {
@@ -39,10 +40,8 @@ private:
     typedef std::tuple<int, int, std::string, pos_move, bool, bool, int> msg_type;
 
     static boost::mpi::communicator world_comm;
-    static std::unordered_map<std::size_t, node_ptr> transmap;
-    static std::unordered_map<std::size_t, node_ptr> remote_cache;
-    static std::mutex transmap_mutex;
-    static std::mutex remote_cache_mutex;
+    static fast_ptr_hashtable<node, 1048576> transtable;//2 ^ 20
+
     static thread_local std::queue<msg_type> output_queue;//thread_local so we don't need to use thread_safe_queue
 
     static void insert_node_from_msg(const msg_type &msg);

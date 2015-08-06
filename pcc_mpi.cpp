@@ -99,7 +99,6 @@ int main(int argc, char **argv)
         }
         delete red;
         delete black;
-        node::reset_simulation_count();
     }
 
     return 0;

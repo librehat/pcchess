@@ -20,8 +20,6 @@ public:
     void opponent_moved(const pos_move &m);
     void do_slave_job();
 
-    std::int64_t get_total_simulations() const;
-
 private:
     int workers;
     std::vector<std::thread> thread_vec;

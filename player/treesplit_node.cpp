@@ -16,10 +16,7 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
 {}
 
 mpi::communicator treesplit_node::world_comm;
-unordered_map<size_t, node::node_ptr> treesplit_node::transmap;
-unordered_map<size_t, node::node_ptr> treesplit_node::remote_cache;
-mutex treesplit_node::transmap_mutex;
-mutex treesplit_node::remote_cache_mutex;
+fast_ptr_hashtable<node, 1048576> treesplit_node::transtable;
 thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
 
 node::node_ptr treesplit_node::generate_root_node_with_move(const pos_move &m)
@@ -64,23 +61,19 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         size_t hash_val = hash_val_internal(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
         int cn_id = hash_val % world_comm.size();//which compute node should contains this node
         if (cn_id == world_comm.rank()) {
-            transmap_mutex.lock();
-            auto ctm = transmap.find(hash_val);
-            if (ctm != transmap.end()) {
-                child = ctm->second;
-                transmap_mutex.unlock();
+            if (child = transtable[hash_val]) {
+                if (child->current_fen != fen || child->my_move.load() != next_move) {
+                    cerr << "collision: this hash_val (" << hash_val << ") and the hash_val in transtable (" << hash_value(*child) << ")" << endl;
+                    throw std::runtime_error("collision");
+                }
                 child->parent = shared_from_this();
                 child->backpropagate(child->scores, child->visits);
             } else {
                 child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this(), cn_id));
-                transmap.emplace(hash_val, child);
-                transmap_mutex.unlock();
+                transtable.set(hash_val, child);
             }
         } else {
             child = node_ptr(new treesplit_node(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat(), shared_from_this(), cn_id));
-            remote_cache_mutex.lock();
-            remote_cache.emplace(hash_val, child);
-            remote_cache_mutex.unlock();
         }
         children_mutex.lock();
         children.push_back(child);
@@ -124,40 +117,18 @@ treesplit_node::child_type treesplit_node::get_best_child_msg()
 
 void treesplit_node::remove_transmap_useless_entries()
 {
-    transmap_mutex.lock();
-    for (auto it = transmap.begin(); it != transmap.end();) {
-        if(it->second.unique()) {
-            it = transmap.erase(it);
-        } else {
-            ++it;
-        }
-    }
-    transmap_mutex.unlock();
-    remote_cache_mutex.lock();
-    for (auto it = remote_cache.begin(); it != remote_cache.end();) {
-        if(it->second.unique()) {
-            it = remote_cache.erase(it);
-        } else {
-            ++it;
-        }
-    }
-    remote_cache_mutex.unlock();
+    transtable.erase_unique_ptr();
 }
 
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
     size_t hash_val = hash_val_internal(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
     node_ptr child;
-    transmap_mutex.lock();
-    auto ctm = transmap.find(hash_val);
-    if (ctm != transmap.end()) {
-        child = ctm->second;
-        transmap_mutex.unlock();
+    if (child = transtable[hash_val]) {
         child->backpropagate(get<1>(msg));
     } else {
         child = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg), nullptr, get<0>(msg)));
-        transmap.emplace(hash_val, child);
-        transmap_mutex.unlock();
+        transtable.set(hash_val, child);
     }
     child->scores += get<1>(msg);
     child->visits += 1;
