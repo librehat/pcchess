@@ -98,8 +98,8 @@ public:
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key) {
-                key_data[idx].store(0);
-                std::atomic_store(&ptr_data[idx], ptr_type());
+                key_data[idx].store(0, std::memory_order_relaxed);
+                std::atomic_store_explicit(&ptr_data[idx], ptr_type(), std::memory_order_relaxed);
                 return;
             }
             if (probed_key == 0)//it doesn't exist
@@ -113,8 +113,8 @@ public:
             if (key_data[i].load(std::memory_order_relaxed) != 0) {
                 if (auto p = std::atomic_load_explicit(&ptr_data[i], std::memory_order_relaxed)) {
                     if (p.unique()) {
-                        key_data[i].store(0);
-                        std::atomic_store(&ptr_data[i], ptr_type());
+                        key_data[i].store(0, std::memory_order_relaxed);
+                        std::atomic_store_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
                     }
                 }
             }
