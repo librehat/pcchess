@@ -95,7 +95,7 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 void treesplit_node::backpropagate(const int &score, const int &vis)
 {
     if (auto p = parent.lock()) {
-        if (dynamic_pointer_cast<treesplit_node>(p)->cn_rank != world_comm.rank()) {
+        if (dynamic_pointer_cast<treesplit_node>(p)->cn_rank != world_comm.rank() && p->parent.lock()) {//only if the parent is not root node
             msg_type msg(dynamic_pointer_cast<treesplit_node>(p)->cn_rank, score, p->current_fen, p->my_move, p->my_turn, p->red_side, p->no_eat_half_rounds);
             output_queue.push(msg);
         }
