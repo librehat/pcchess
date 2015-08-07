@@ -61,7 +61,8 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         size_t hash_val = hash_val_internal(fen, next_move, !my_turn, red_side, updater_sim.get_half_rounds_since_last_eat());
         int cn_id = hash_val % world_comm.size();//which compute node should contains this node
         if (cn_id == world_comm.rank()) {
-            if (child = transtable[hash_val]) {
+            child = transtable[hash_val];
+            if (child) {
                 if (child->current_fen != fen || child->my_move.load() != next_move) {
                     cerr << "collision: this hash_val (" << hash_val << ") and the hash_val in transtable (" << hash_value(*child) << ")" << endl;
                     throw std::runtime_error("collision");
@@ -123,8 +124,8 @@ void treesplit_node::remove_transmap_useless_entries()
 void treesplit_node::insert_node_from_msg(const msg_type &msg)
 {
     size_t hash_val = hash_val_internal(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
-    node_ptr child;
-    if (child = transtable[hash_val]) {
+    node_ptr child = transtable[hash_val];
+    if (child) {
         child->backpropagate(get<1>(msg));
     } else {
         child = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg), nullptr, get<0>(msg)));

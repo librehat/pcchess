@@ -28,7 +28,6 @@ public:
     child_type get_best_child_msg();
 
     static void remove_transmap_useless_entries();
-    static thread_local void clear_output_queue() { std::queue<msg_type>().swap(output_queue); }
 
 private:
     const int cn_rank;//the CN's rank that this node belongs to

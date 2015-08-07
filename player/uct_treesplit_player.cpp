@@ -199,7 +199,7 @@ void uct_treesplit_player::slave_init()
 
 void uct_treesplit_player::worker_thread(const int &id)
 {
-    treesplit_node::clear_output_queue();
+    queue<treesplit_node::msg_type>().swap(treesplit_node::output_queue);
     do {
         root->select();
         selects++;

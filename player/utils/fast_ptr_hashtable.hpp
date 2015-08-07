@@ -42,18 +42,16 @@ public:
         }
     }
 
-    ptr_type at(const std::uint64_t &key) const {
+    const ptr_type &at(const std::uint64_t &key) const {
         for (std::uint64_t idx = hash_finalizer(key);; idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
-            if (probed_key == key)
-                return ptr_data[idx];
-            if (probed_key == 0)
-                return ptr_type();
+            if (probed_key == key || probed_key == 0)
+                return ptr_data[idx];//if probed_key == 0, the ptr_data[idx] should be an empty shared_ptr
         }
     }
 
-    ptr_type operator[] (const std::uint64_t &key) const {
+    const ptr_type &operator[] (const std::uint64_t &key) const {
         return at(key);
     }
 
