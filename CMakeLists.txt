@@ -26,9 +26,14 @@ add_executable(pcc_serial pcc_serial.cpp)
 add_executable(pcc_mpi pcc_mpi.cpp)
 
 target_link_libraries(pcc_serial pcc_core pcc_player ${MPI_CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
-target_link_libraries(pcc_serial debug profiler)
 target_link_libraries(pcc_mpi pcc_core pcc_player ${MPI_CXX_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
-target_link_libraries(pcc_mpi debug profiler)
+
+find_library(gperf profiler)
+if (gperf)
+    message("-- Found Google performance tools")
+    target_link_libraries(pcc_serial debug profiler)
+    target_link_libraries(pcc_mpi debug profiler)
+endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -Wall -Wextra -Wshadow")
