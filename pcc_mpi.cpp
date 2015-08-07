@@ -63,7 +63,7 @@ int main(int argc, char **argv)
             red = new root_uct_player(true);
             break;
         case 2:
-            red = new slow_tree_uct_player(300, true);
+            red = new slow_tree_uct_player(500, true);
             break;
         case 3:
             red = new uct_treesplit_player(0, true);

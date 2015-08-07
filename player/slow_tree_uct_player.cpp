@@ -130,8 +130,8 @@ void slow_tree_uct_player::do_slave_job()
                 root = new_root;
                 node::set_root_depth(root);
             } else {
-                mpi::status s = world_comm.recv(0, status.tag());
-                switch (s.tag()) {
+                world_comm.recv(0, status.tag());
+                switch (status.tag()) {
                 case SYNC:
                     sync_tree();
                     break;
@@ -150,7 +150,7 @@ void slow_tree_uct_player::do_slave_job()
                 case EXIT:
                     return;
                 default:
-                    cerr << "unknown tag: " << s.tag() << endl;
+                    cerr << "unknown tag: " << status.tag() << endl;
                     throw invalid_argument("received an invalid mpi tag in do_slave_job()");
                 }
             }

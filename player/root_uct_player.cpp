@@ -11,7 +11,7 @@ namespace mpi = boost::mpi;
 root_uct_player::root_uct_player(bool red) :
     uct_player(red)
 {
-    node::set_max_depth(6);
+    node::set_max_depth(6);//this is a moderate depth for root_uct_player. bigger number results in too long whole-tree synchronisation
 }
 
 root_uct_player::~root_uct_player()
@@ -92,8 +92,8 @@ void root_uct_player::do_slave_job()
         auto probe = world_comm.iprobe(0, mpi::any_tag);
         if (probe) {
             mpi::status status = probe.get();
-            mpi::status s = world_comm.recv(0, status.tag());
-            switch (s.tag()) {
+            world_comm.recv(0, status.tag());
+            switch (status.tag()) {
             case GATHER_TREE:
                 mpi::gather(world_comm, root, 0);
                 break;

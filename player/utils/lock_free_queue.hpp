@@ -29,7 +29,7 @@ public:
         write_loc(q.write_loc.load(std::memory_order_relaxed))
     {
         for (int i = read_loc; i < write_loc; ++i) {
-            data[i] = q.data[i];
+            data[i % num] = q.data[i % num];
         }
     }
 

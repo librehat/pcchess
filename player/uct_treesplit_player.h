@@ -26,7 +26,6 @@ private:
     std::vector<lock_free_queue<treesplit_node::msg_type> > local_oq_vec;
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
-    void slave_init();
     void slave_select_child();
 
     void main_thread_start();//basically just reset the stop flag, create worker threads and start io work

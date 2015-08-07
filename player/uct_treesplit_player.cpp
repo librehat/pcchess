@@ -31,12 +31,10 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     static milliseconds think_time = milliseconds(game::step_time);
 
     if (!root) {
-        string fen = game::generate_fen(bd);
-        master_send_order(TS_INIT);
-        mpi::broadcast(world_comm, fen, 0);
-        mpi::broadcast(world_comm, no_eat_half_rounds, 0);
-        root = node::node_ptr(new treesplit_node(fen, red_side, no_eat_half_rounds, world_comm.rank()));
+        root = node::node_ptr(new treesplit_node(game::generate_fen(bd), red_side, no_eat_half_rounds, world_comm.rank()));
         node::set_root_depth(root);
+        master_send_order(BROADCAST_TREE);
+        mpi::broadcast(world_comm, root, 0);
     }
 
     stop = false;
@@ -135,10 +133,10 @@ void uct_treesplit_player::do_slave_job()
                 world_comm.recv(status.source(), CHILD_SELEC, m);
                 evolve_into_next_depth(m);
             } else {
-                mpi::status s = world_comm.recv(status.source(), status.tag());
-                switch (s.tag()) {
-                case TS_INIT:
-                    slave_init();
+                world_comm.recv(status.source(), status.tag());
+                switch (status.tag()) {
+                case BROADCAST_TREE:
+                    slave_broadcast_tree();
                     break;
                 case REDUCE_SIMS:
                     mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
@@ -167,7 +165,7 @@ void uct_treesplit_player::do_slave_job()
                 case EXIT:
                     return;
                 default:
-                    cerr << "unknown tag: " << s.tag() << endl;
+                    cerr << "unknown tag: " << status.tag() << endl;
                     throw invalid_argument("received an invalid mpi tag in do_slave_job()");
                 }
             }
@@ -185,16 +183,6 @@ void uct_treesplit_player::do_slave_job()
             this_thread::sleep_for(nap);
         }
     } while (true);
-}
-
-void uct_treesplit_player::slave_init()
-{
-    string fen;
-    uint8_t no_eat_half_rounds;
-    mpi::broadcast(world_comm, fen, 0);
-    mpi::broadcast(world_comm, no_eat_half_rounds, 0);
-    root = node::node_ptr(new treesplit_node(fen, red_side, no_eat_half_rounds, world_comm.rank()));
-    node::set_root_depth(root);
 }
 
 void uct_treesplit_player::worker_thread(const int &id)

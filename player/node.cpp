@@ -9,7 +9,7 @@
 using namespace std;
 
 atomic_int node::root_depth(0);
-atomic_int node::max_depth(20);//rounds = depth / 2 //TODO tuned
+atomic_int node::max_depth(20);//rounds = depth / 2 //20 is a reasonable number for general purposes
 const int node::select_threshold = 100;
 const double node::uct_constant = 0.7;//TODO tuned
 
