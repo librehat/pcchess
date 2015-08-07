@@ -255,6 +255,7 @@ void game::parse_fen(const string &fen)
                     break;
                 default:
                     cerr << "Unknown character in FEN string: " << c;
+                    throw invalid_argument("invalid FEN string");
                 }
                 if (p->is_redside()) {
                     red->add(p);
