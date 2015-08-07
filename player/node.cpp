@@ -34,6 +34,7 @@ node::node(const string &fen, bool is_red_side, uint8_t noeat_half_rounds) :
     my_turn(true),
     red_side(is_red_side),
     current_fen(fen),
+    my_move(pos_move()),
     depth(0),
     visits(0),
     scores(0),
@@ -149,7 +150,7 @@ bool node::simulate()
         result = red_side ? -1 : 1;
     }
 
-    auto hist = sim_game.get_history();
+    std::deque<pos_move> hist = sim_game.get_history();
     if (hist.empty()) {//can't expand the tree if the current player can't move
         visits++;
         scores += result;
@@ -238,7 +239,7 @@ bool node::is_same_place_in_tree(const node &b) const
      * true if they should be in the same place
      * depth is allowed to be different, because the same game state can show up again after a few moves
      */
-    return !(my_turn != b.my_turn || current_fen != b.current_fen || my_move.load(memory_order_relaxed) != b.my_move.load(memory_order_relaxed) || red_side != b.red_side || no_eat_half_rounds.load(memory_order_relaxed) != b.no_eat_half_rounds.load(memory_order_relaxed));
+    return !(my_turn != b.my_turn || current_fen != b.current_fen || my_move != b.my_move || red_side != b.red_side || no_eat_half_rounds.load(memory_order_relaxed) != b.no_eat_half_rounds.load(memory_order_relaxed));
 }
 
 bool node::is_basically_the_same(const node &b) const

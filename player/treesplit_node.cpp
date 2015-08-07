@@ -63,7 +63,7 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
         if (cn_id == world_comm.rank()) {
             child = transtable[hash_val];
             if (child) {
-                if (child->current_fen != fen || child->my_move.load() != next_move) {
+                if (child->current_fen != fen || child->my_move != next_move) {
                     cerr << "collision: this hash_val (" << hash_val << ") and the hash_val in transtable (" << hash_value(*child) << ")" << endl;
                     throw std::runtime_error("collision");
                 }

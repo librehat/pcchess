@@ -31,7 +31,7 @@ public:
 
     double get_value() const;
     double get_uct_val() const;
-    pos_move get_move() const { return my_move; }
+    const pos_move &get_move() const { return my_move; }
 
     //three steps for MCTS
     virtual bool select();//return true if it did a successful simulation
@@ -82,7 +82,7 @@ protected:
 
     //use FEN string could save a LOT of data!
     const std::string current_fen;
-    std::atomic<pos_move> my_move;
+    const pos_move my_move;
     std::atomic_int depth;//to get the _depth_, this needs to minus the root's depth
     std::atomic_int visits;
     std::atomic_int scores;//the sum of simulation result where win: +1 draw: 0 lose: -1
@@ -109,7 +109,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(parent);
         ar & BOOST_SERIALIZATION_NVP(children);
         ar & boost::serialization::make_nvp("current_fen", const_cast<std::string &>(current_fen));
-        ar & BOOST_SERIALIZATION_NVP(my_move);
+        ar & boost::serialization::make_nvp("my_move", const_cast<pos_move &>(my_move));
         ar & BOOST_SERIALIZATION_NVP(depth);
         ar & BOOST_SERIALIZATION_NVP(visits);
         ar & BOOST_SERIALIZATION_NVP(scores);
