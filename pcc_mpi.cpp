@@ -3,6 +3,7 @@
 #include "player/root_uct_player.h"
 #include "player/slow_tree_uct_player.h"
 #include "player/uct_treesplit_player.h"
+#include "player/treesplit_node.h"
 #include <cstdint>
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
             break;
         case 3:
             red = new uct_treesplit_player(0, true);
+            treesplit_node::clear_transtable();
             break;
         default:
             cerr << "bad player_id" << endl;

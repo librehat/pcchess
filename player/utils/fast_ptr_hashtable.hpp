@@ -28,13 +28,7 @@ class fast_ptr_hashtable
 public:
     typedef std::shared_ptr<T> ptr_type;
 
-    fast_ptr_hashtable()
-    {
-#pragma omp parallel for
-        for (int i = 0; i < size; ++i) {
-            std::atomic_init<std::uint64_t>(&key_data[i], 0);
-        }
-    }
+    fast_ptr_hashtable() = default;
 
     fast_ptr_hashtable(const fast_ptr_hashtable &) = delete;
 
@@ -137,6 +131,18 @@ public:
                     }
                 }
             }
+        }
+    }
+
+    void clear() {
+#pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            key_data[i].store(0, std::memory_order_relaxed);
+        }
+
+#pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            std::atomic_store_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
         }
     }
 
