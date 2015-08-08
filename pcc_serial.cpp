@@ -10,7 +10,8 @@
 #include "player/human_player.h"
 #include <unistd.h>
 #include <iostream>
-#include <fstream>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/format.hpp>
 
 using namespace std;
 
@@ -52,20 +53,23 @@ int main(int argc, char** argv)
         }
     }
 
-    int we_win = 0;
-    int we_draw = 0;
-    int we_lose = 0;
-    int64_t our_sims = 0;
-    int64_t opp_sims = 0;
     abstract_player *red, *black;
+
+    cout << "#================================================================================" << endl;
+    cout << "#  Generated Time: " << boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::local_time()) << endl;
+    cout << "#  Red   player  : " << (human ? "human_player" : "uct_player") << endl;
+    cout << "#  Black player  : " << "threaded_uct_player" << endl;
+    cout << "#  Total games   : " << games << endl;
+    cout << "#================================================================================" << endl;
+    cout << "# Sequence  Rounds  Red Score  Black Score   Red Simulations    Black Simulations" << endl;
+
     for (int i = 0; i < games; ++i) {
         if (human) {
             red = new human_player(chinese_print, true);
         } else {
-            red = new random_player(true);
+            red = new uct_player(true);
         }
         black = new threaded_uct_player(0, false);
-        //black = new uct_player(false);
         red->init_pieces();
         black->init_pieces();
         game g(red, black);
@@ -75,24 +79,20 @@ int main(int argc, char** argv)
             g.print_board(chinese_print);
         }
 
+        int red_score = 0, black_score = 0;
         if (winner == red) {
-            we_win++;
+            red_score = 1;
+            black_score = -1;
         } else if (winner == black) {
-            we_lose++;
-        } else {
-            we_draw++;
+            red_score = -1;
+            black_score = 1;
         }
 
-        our_sims += red->get_total_simulations();
-        opp_sims += black->get_total_simulations();
+        cout << boost::format("  %-9d %-7d %=9d  %=11d   %-17u  %-17u\n") % i % g.get_rounds() % red_score % black_score % red->get_total_simulations() % black->get_total_simulations();
+
         delete red;
         delete black;
     }
-
-    cout << "WIN:\t" << we_win << endl
-         << "DRAW:\t" << we_draw << endl
-         << "LOSE:\t" << we_lose << endl
-         << "TOTAL SIMULATIONS:\t" << our_sims << " v.s. " << opp_sims << endl;
 
     return 0;
 }

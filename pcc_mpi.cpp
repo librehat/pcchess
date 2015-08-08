@@ -3,7 +3,10 @@
 #include "player/root_uct_player.h"
 #include "player/slow_tree_uct_player.h"
 #include "player/uct_treesplit_player.h"
-#include <boost/mpi.hpp>
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#include <boost/format.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <unistd.h>
 
 using namespace std;
@@ -54,7 +57,17 @@ int main(int argc, char **argv)
         }
     }
 
-    while (games-- > 0) {
+    if (world_comm.rank() == 0) {
+        cout << "#================================================================================" << endl;
+        cout << "#  Generated Time: " << boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::local_time()) << endl;
+        cout << "#  Red   player  : " << (player_id == 1 ? "root_uct_player" : player_id == 2 ? "slow_tree_uct_player" : "uct_treesplit_player") << endl;
+        cout << "#  Black player  : " << "uct_player" << endl;
+        cout << "#  Total games   : " << games << endl;
+        cout << "#================================================================================" << endl;
+        cout << "# Sequence  Rounds  Red Score  Black Score   Red Simulations    Black Simulations" << endl;
+    }
+
+    for (int i = 0; i < games; ++i) {
         root_uct_player *red;
         switch (player_id) {
         case 1:
@@ -79,20 +92,21 @@ int main(int argc, char **argv)
         if (world_comm.rank() == 0) {//master plays the game
             game g(red, black);
             abstract_player* winner = g.playout();
+
+            int red_score = 0, black_score = 0;
             if (winner == red) {
-                cout << "Won" << endl;
+                red_score = 1;
+                black_score = -1;
             } else if (winner == black) {
-                cout << "Lost" << endl;
-            } else {
-                cout << "Draw" << endl;
+                red_score = -1;
+                black_score = 1;
             }
 
             if (enable_print) {
                 g.print_board(chinese_print);
             }
 
-            cout << "Total rounds in this game: " << g.get_rounds() << endl;
-            cout << "Total simulations: " << red->get_total_simulations() << " vs " << black->get_total_simulations() << endl;
+            cout << boost::format("  %-9d %-7d %=9d  %=11d   %-17u  %-17u\n") % i % g.get_rounds() % red_score % black_score % red->get_total_simulations() % black->get_total_simulations();
         } else {
             red->do_slave_job();
         }
