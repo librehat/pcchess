@@ -139,7 +139,7 @@ void uct_treesplit_player::do_slave_job()
                     slave_broadcast_tree();
                     break;
                 case REDUCE_SIMS:
-                    mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
+                    slave_reduce_sims();
                     break;
                 case TS_START:
                     do_io_job = true;

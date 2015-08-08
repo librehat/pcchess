@@ -22,6 +22,7 @@ protected:
     void master_send_order(const TAG &tag) const;
 
     void slave_broadcast_tree();
+    void slave_reduce_sims();
 
     static boost::mpi::communicator world_comm;
 

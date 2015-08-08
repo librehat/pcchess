@@ -107,7 +107,7 @@ void root_uct_player::do_slave_job()
                 slave_broadcast_tree();
                 break;
             case REDUCE_SIMS:
-                mpi::reduce(world_comm, selects.load(memory_order_relaxed), plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
+                slave_reduce_sims();
                 break;
             case EXIT:
                 return;
@@ -149,6 +149,12 @@ void root_uct_player::slave_broadcast_tree()
     node::set_root_depth(root);
 }
 
+void root_uct_player::slave_reduce_sims()
+{
+    uint64_t local_sims = selects.load(memory_order_relaxed);
+    mpi::reduce(world_comm, local_sims, plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
+}
+
 uint64_t root_uct_player::get_total_simulations() const
 {
     if (world_comm.rank() != 0) {
@@ -156,7 +162,7 @@ uint64_t root_uct_player::get_total_simulations() const
     }
 
     master_send_order(REDUCE_SIMS);
-    uint64_t sum_sims = 0;
-    mpi::reduce(world_comm, selects.load(memory_order_relaxed), sum_sims, plus<uint64_t>(), 0);
+    uint64_t sum_sims = 0, local_sims = selects.load(memory_order_relaxed);
+    mpi::reduce(world_comm, local_sims, sum_sims, plus<uint64_t>(), 0);
     return sum_sims;
 }
