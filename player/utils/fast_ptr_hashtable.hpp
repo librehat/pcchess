@@ -141,7 +141,7 @@ public:
     }
 
     std::size_t count() const {
-        std::atomic_size_t count;
+        std::atomic_size_t count(0);
 #pragma omp parallel for
         for (std::uint64_t idx = 0; idx < size; idx++) {
             if ((key_data[idx].load(std::memory_order_relaxed) != 0)
