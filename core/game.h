@@ -12,7 +12,6 @@ class game
 public:
     explicit game(abstract_player* _red, abstract_player* _black, std::uint8_t no_eat_half_rounds = 0);
     explicit game(abstract_player* _red, abstract_player* _black, const std::string &fen, std::uint8_t no_eat_half_rounds);
-    ~game();
 
     void print_board(bool chinese_char = false) const;//print current chess board into stdout
 
@@ -56,7 +55,7 @@ public:
      * rounds can be played after last time a piece got eaten
      * after this limit, the game result is considered as draw
      * default: 120 (AKA 60 rounds. this could be changed depending on the specific game)
-     * set to 0 to disable this rule (WARN: could result in an endless loop)
+     * set to 0 to disable this rule
      */
     static std::uint8_t NO_EAT_DRAW_HALF_ROUNDS;
 

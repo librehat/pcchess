@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+#include <limits>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
@@ -43,9 +44,6 @@ game::game(abstract_player *_red, abstract_player *_black, const string &fen, ui
 long int game::step_time = 2000;
 uint8_t game::NO_EAT_DRAW_HALF_ROUNDS = 120;
 
-game::~game()
-{}
-
 abstract_player* game::playout(bool red_first)
 {
     /*
@@ -66,7 +64,7 @@ abstract_player* game::playout(bool red_first)
     vector<pos_move> &first_banmoves = red_first ? red_banmoves : black_banmoves;
     vector<pos_move> &second_banmoves = red_first ? black_banmoves : red_banmoves;
 
-    do {
+    for (int i = 0; i < numeric_limits<int>::max(); ++i) {
         rounds++;
 
         first->set_check(is_player_in_check(red_first));
@@ -102,9 +100,13 @@ abstract_player* game::playout(bool red_first)
         //TODO banmoves should be updated after one round
         first_banmoves.clear();
         second_banmoves.clear();
-    } while (half_rounds_since_last_eat < NO_EAT_DRAW_HALF_ROUNDS && NO_EAT_DRAW_HALF_ROUNDS != 0);
 
-    return nullptr;
+        if (half_rounds_since_last_eat >= NO_EAT_DRAW_HALF_ROUNDS && NO_EAT_DRAW_HALF_ROUNDS != 0) {
+            return nullptr;
+        }
+    }
+
+    throw runtime_error("reached the limit of game rounds. this game is endless.");
 }
 
 void game::setup_players()
