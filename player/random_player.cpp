@@ -14,7 +14,7 @@ random_player::random_player(const abstract_player &b) :
 
 bool random_player::think_next_move(pos_move &_move, const board &bd, uint8_t, const vector<pos_move> &)
 {
-    random_device device;
+    static thread_local random_device device;
     static thread_local mt19937 generator(device());
 
     auto all_avail_moves = get_all_available_moves(bd);
