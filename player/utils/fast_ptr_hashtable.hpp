@@ -20,6 +20,7 @@
 #include <memory>
 #include <algorithm>
 #include <cstdint>
+#include <iostream>
 
 template <class T, int size>//size has to be a power of 2
 class fast_ptr_hashtable
@@ -47,6 +48,7 @@ public:
             if (probed_key == 0)
                 return false;
         }
+        std::cerr << "already used " << count() << std::endl;
         throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
@@ -58,6 +60,7 @@ public:
             if (probed_key == key || probed_key == 0)
                 return ptr_data[idx];//if probed_key == 0, the ptr_data[idx] should be an empty shared_ptr
         }
+        std::cerr << "already used " << count() << std::endl;
         throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
@@ -102,6 +105,7 @@ public:
             }
 #endif
         }
+        std::cerr << "already used " << count() << std::endl;
         throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
@@ -118,6 +122,7 @@ public:
             if (probed_key == 0)//it doesn't exist
                 return;
         }
+        std::cerr << "already used " << count() << std::endl;
         throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
