@@ -13,11 +13,10 @@ class uct_player : public abstract_player
 {
 public:
     explicit uct_player(bool red = true);
-    virtual ~uct_player();
 
-    virtual bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
-    virtual void opponent_moved(const pos_move &m);
-    virtual std::uint64_t get_total_simulations() const;
+    bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
+    void opponent_moved(const pos_move &m);
+    std::uint64_t get_total_simulations() const;
 
     inline node::node_ptr get_tree() const { return root; }
 

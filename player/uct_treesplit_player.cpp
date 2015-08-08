@@ -66,7 +66,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             }
         }
 
-        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lock_free_queue<treesplit_node::msg_type> &x, lock_free_queue<treesplit_node::msg_type> &y){
+        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
             return x.size() < y.size();
         });
         if (!q->empty()) {
@@ -170,7 +170,7 @@ void uct_treesplit_player::do_slave_job()
                 }
             }
         } else if (do_io_job) {//IO job
-            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lock_free_queue<treesplit_node::msg_type> &x, lock_free_queue<treesplit_node::msg_type> &y){
+            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
                 return x.size() < y.size();
             });
             if (!q->empty()) {

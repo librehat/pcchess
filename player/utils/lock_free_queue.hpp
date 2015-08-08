@@ -15,7 +15,7 @@
  * it can't be too small, otherwise new data won't be written because of lacking of available locations
  * if it's too big, it may use too much RAM
  */
-template<class T, int num = 1024>
+template<class T, int num>
 class lock_free_queue
 {
 public:

@@ -17,9 +17,6 @@ uct_player::uct_player(bool red) :
     selects(0)
 {}
 
-uct_player::~uct_player()
-{}
-
 bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
     milliseconds think_time = milliseconds(game::step_time);
