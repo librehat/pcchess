@@ -21,7 +21,7 @@ public:
     void do_slave_job();
 
 private:
-    typedef lock_free_queue<treesplit_node::msg_type, 8192> lf_queue;
+    typedef lock_free_queue<treesplit_node::msg_type, 65536> lf_queue;
 
     int workers;
     std::vector<std::thread> thread_vec;
