@@ -44,18 +44,7 @@ bool uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_ea
     node::node_ptr new_root = root->release_child(best_child);
     node::set_root_depth(new_root);
     root = new_root;
-/*
-#if defined(_DEBUG)
-    static int i = 0;
-    if (i == 0) {
-        start = steady_clock::now();
-        ofstream fs("/tmp/t.xml");
-        xml_archive_tree(fs, root);
-        fs.close();
-        cout << "xml_archive_tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
-    }
-    i++;
-#endif*/
+
     return true;
 }
 

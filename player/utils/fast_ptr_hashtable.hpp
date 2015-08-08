@@ -138,10 +138,6 @@ public:
 #pragma omp parallel for
         for (int i = 0; i < size; ++i) {
             key_data[i].store(0, std::memory_order_relaxed);
-        }
-
-#pragma omp parallel for
-        for (int i = 0; i < size; ++i) {
             std::atomic_store_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
         }
     }
