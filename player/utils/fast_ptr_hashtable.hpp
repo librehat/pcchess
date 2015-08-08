@@ -39,7 +39,7 @@ public:
 
     bool contains(const std::uint64_t &key) {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key; counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key)
@@ -52,7 +52,7 @@ public:
 
     const ptr_type &at(const std::uint64_t &key) const {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key; counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key || probed_key == 0)
@@ -70,7 +70,7 @@ public:
         assert(data);
 
         int counter= 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key; counter < size; counter++, idx++) {
             idx &= size - 1;
 
 #ifndef NO_fast_ptr_hashtable_FAST_SET
@@ -107,7 +107,7 @@ public:
 
     void erase(const std::uint64_t &key) {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key; counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key) {
