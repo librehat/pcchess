@@ -3,14 +3,16 @@
 #include "player/root_uct_player.h"
 #include "player/slow_tree_uct_player.h"
 #include "player/uct_treesplit_player.h"
+#include <cstdint>
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <boost/format.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <unistd.h>
+#include <boost/program_options.hpp>
 
 using namespace std;
 namespace mpi = boost::mpi;
+namespace po  = boost::program_options;
 
 int main(int argc, char **argv)
 {
@@ -18,44 +20,35 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     std::ignore = env;
 
-    int opt, games = 1, player_id = 1;//1: root_uct_player, 2: slow_tree_uct_player, 3: uct_treesplit_player
-    bool enable_print = false, chinese_print = false;
+    int games, player_id;//1: root_uct_player, 2: slow_tree_uct_player, 3: uct_treesplit_player
 
-    while((opt = getopt(argc, argv, "g:t:n:s:pc")) != -1) {
-        switch(opt) {
-        case 'g':
-            games = atoi(optarg);
-            break;
-        case 't':
-            game::step_time = atol(optarg);
-            break;
-        case 'n':
-            game::NO_EAT_DRAW_HALF_ROUNDS = 2 * static_cast<uint8_t>(atoi(optarg));
-            break;
-        case 's':
-            player_id = atoi(optarg);
-            break;
-        case 'p':
-            enable_print = true;
-            break;
-        case 'c':
-            chinese_print = true;
-            break;
-        default:
-            if (world_comm.rank() == 0) {
-                cout << "Command-line options:\n"
-                     << "  -g <number of games>\n"
-                     << "  -t <maximum think time (milliseconds)>\n"
-                     << "  -n <maximum rounds when no piece gets eaten>\tset to 0 to disable this feature\n"
-                     << "  -s <player id>\n"
-                     << "     1: root_uct_player\n"
-                     << "     2: slow_tree_uct_player\n"
-                     << "     3: uct_treesplit_player\n"
-                     << endl;
-            }
-            return 1;
-        }
+    po::options_description desc("Options");
+    desc.add_options()
+            ("help,h", "display this help and exit")
+            ("games,g", po::value<int>(&games)->default_value(1), "number of games to play")
+            ("step_time", po::value<long>(), "maximum think time (milliseconds)")
+            ("max_no_eat", po::value<uint8_t>(), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
+            ("print,p", "print out the board after each game")
+            ("chinese,c", "use Chinese characters in the board")
+            ("player_id,s", po::value<int>(&player_id)->default_value(1), "set red player. 1: root, 2: slow-tree, 3: treesplit");
+
+    po::variables_map vm;
+    po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
+    po::notify(vm);
+
+    if (vm.count("help") && world_comm.rank() == 0) {
+        cout << desc << endl;
+        return 1;
     }
+
+    if (vm.count("step_time")) {
+        game::step_time = vm["step_time"].as<long>();
+    }
+    if (vm.count("max_no_eat")) {
+        game::NO_EAT_DRAW_HALF_ROUNDS = 2 * vm["max_no_eat"].as<uint8_t>();
+    }
+
+    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese");
 
     if (world_comm.rank() == 0) {
         cout << "#================================================================================" << endl;

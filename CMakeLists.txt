@@ -6,7 +6,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 
 find_package(MPI REQUIRED)
-find_package(Boost 1.57 REQUIRED COMPONENTS mpi serialization date_time)
+find_package(Boost 1.57 REQUIRED COMPONENTS mpi serialization date_time program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${MPI_CXX_INCLUDE_PATH})
 
