@@ -7,7 +7,7 @@
  * - the key has to be std::uint64_t (hence you can use the return value of std::hash or boost::hash_value)
  * - the value has to be a std::shared_ptr template class type
  * - the hashtable's size is fixed and it has to be a power of 2
- * - there is no way to check if hashtable is full, so make a big enough table
+ * - there is no way to check if hashtable is full, so make a big enough table (currently a counter is used to avoid endless loop)
  * - the complexities of count() and erase_unique_ptr() are linear to table's size
  *
  */
@@ -27,12 +27,19 @@ class fast_ptr_hashtable
 public:
     typedef std::shared_ptr<T> ptr_type;
 
-    fast_ptr_hashtable() {}
+    fast_ptr_hashtable()
+    {
+#pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            std::atomic_init<std::uint64_t>(&key_data[i], 0);
+        }
+    }
 
     fast_ptr_hashtable(const fast_ptr_hashtable &) = delete;
 
     bool contains(const std::uint64_t &key) {
-        for (std::uint64_t idx = hash_finalizer(key);; idx++) {
+        int counter = 0;
+        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key)
@@ -40,15 +47,18 @@ public:
             if (probed_key == 0)
                 return false;
         }
+        throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
     const ptr_type &at(const std::uint64_t &key) const {
-        for (std::uint64_t idx = hash_finalizer(key);; idx++) {
+        int counter = 0;
+        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key || probed_key == 0)
                 return ptr_data[idx];//if probed_key == 0, the ptr_data[idx] should be an empty shared_ptr
         }
+        throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
     const ptr_type &operator[] (const std::uint64_t &key) const {
@@ -59,7 +69,8 @@ public:
         assert(key != 0);
         assert(data);
 
-        for (std::uint64_t idx = hash_finalizer(key);; idx++) {
+        int counter= 0;
+        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
 
 #ifndef NO_fast_ptr_hashtable_FAST_SET
@@ -91,10 +102,12 @@ public:
             }
 #endif
         }
+        throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
     void erase(const std::uint64_t &key) {
-        for (std::uint64_t idx = hash_finalizer(key);; idx++) {
+        int counter = 0;
+        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key) {
@@ -105,6 +118,7 @@ public:
             if (probed_key == 0)//it doesn't exist
                 return;
         }
+        throw std::runtime_error("possible endless loop. maybe this fast_ptr_hashtable is too small");
     }
 
     void erase_unique_ptr() {
@@ -136,8 +150,8 @@ public:
     std::uint64_t max_size() const { return size; }
 
 private:
-    std::array<ptr_type, size> ptr_data;
     std::array<std::atomic<std::uint64_t>, size> key_data;
+    std::array<ptr_type, size> ptr_data;
 
     //64-bit finalizer from http://code.google.com/p/smhasher/wiki/MurmurHash3
     inline static std::uint64_t hash_finalizer(std::uint64_t h) {

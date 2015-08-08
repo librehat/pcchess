@@ -39,7 +39,7 @@ private:
     typedef std::tuple<int, int, std::string, pos_move, bool, bool, int> msg_type;
 
     static boost::mpi::communicator world_comm;
-    static fast_ptr_hashtable<node, 1048576> transtable;//2 ^ 20
+    static fast_ptr_hashtable<node, 524288> transtable;//2 ^ 19
 
     static thread_local std::queue<msg_type> output_queue;//thread_local so we don't need to use thread_safe_queue
 
