@@ -4,7 +4,7 @@
  * inspired by http://preshing.com/20130605/the-worlds-simplest-lock-free-hash-table/
  *
  * some limitations:
- * - the key has to be already hashed (return value of std::hash or boost::hash_value), otherwise please revert commit 4d766f9fac8b2d7bab4499df74e331d82ed82a2e
+ * - the key has to be std::uint64_t (hence you can use the return value of std::hash or boost::hash_value)
  * - the value has to be a std::shared_ptr template class type
  * - the hashtable's size is fixed and it has to be a power of 2
  * - there is no way to check if hashtable is full, so make a big enough table (currently a counter is used to avoid endless loop)
@@ -154,7 +154,6 @@ private:
     std::array<ptr_type, size> ptr_data;
 
     //64-bit finalizer from http://code.google.com/p/smhasher/wiki/MurmurHash3
-    //revert commit 4d766f9fac8b2d7bab4499df74e331d82ed82a2e to use this function to hash the key at first
     inline static std::uint64_t hash_finalizer(std::uint64_t h) {
         h ^= h >> 33;
         h *= 0xff51afd7ed558ccd;
