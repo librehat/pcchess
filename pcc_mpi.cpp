@@ -56,8 +56,6 @@ int main(int argc, char **argv)
 
     while (games-- > 0) {
         root_uct_player *red;
-        abstract_player *black = new uct_player(false);
-
         switch (player_id) {
         case 1:
             red = new root_uct_player(true);
@@ -72,8 +70,9 @@ int main(int argc, char **argv)
             cerr << "bad player_id" << endl;
             return 2;
         }
-
         red->init_pieces();
+
+        abstract_player *black = new uct_player(false);
         black->init_pieces();
 
         world_comm.barrier();
