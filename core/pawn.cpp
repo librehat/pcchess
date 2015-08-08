@@ -16,9 +16,10 @@ char pawn::abbr_name() const
     return red_side ? 'P' : 'p';
 }
 
-string pawn::chinese_name() const
+string pawn::print_name(const bool &chinese) const
 {
-    return red_side ? string("兵") : string("卒");
+    return red_side ? chinese ? string("兵") : string("Ｐ")
+                    : chinese ? string("卒") : string("ｐ");
 }
 
 int pawn::value() const

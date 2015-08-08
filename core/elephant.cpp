@@ -22,9 +22,10 @@ char elephant::abbr_name() const
     return red_side ? 'B' : 'b';//E in WXF document
 }
 
-string elephant::chinese_name() const
+string elephant::print_name(const bool &chinese) const
 {
-    return red_side ? string("相") : string("象");
+    return red_side ? chinese ? string("相") : string("Ｂ")
+                    : chinese ? string("象") : string("ｂ");
 }
 
 int elephant::value() const

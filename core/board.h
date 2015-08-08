@@ -27,8 +27,7 @@ public:
     static const std::int8_t FILE_NUM = 9;
     static const std::int8_t NUM = FILE_NUM * RANK_NUM;
 
-    static std::string get_full_width_letter(const char &);
-
+    static std::string get_full_width_letter(const char &);//support only 'a' to 'k'
 
     typedef std::array<p_piece, NUM>::iterator iterator;
     typedef std::array<p_piece, NUM>::const_iterator const_iterator;
@@ -38,8 +37,14 @@ public:
     iterator end() { return data.end(); }
     const_iterator end() const { return data.cend(); }
 
+    friend std::ostream& operator<< (std::ostream &out, const board &bd) {
+        bd.print_internal(out);
+        return out;
+    }
+
 private:
     std::array<p_piece, NUM> data;
+    void print_internal(std::ostream &os, const bool &chinese = false) const;
 };
 
 #endif // BOARD_H

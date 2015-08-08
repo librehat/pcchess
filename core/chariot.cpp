@@ -12,10 +12,12 @@ char chariot::abbr_name() const
     return red_side ? 'R' : 'r';
 }
 
-string chariot::chinese_name() const
+string chariot::print_name(const bool &chinese) const
 {
-    return red_side ? string("俥") : string("車");
+    return red_side ? chinese ? string("俥") : string("Ｒ")
+                    : chinese ? string("車") : string("ｒ");
 }
+
 
 int chariot::value() const
 {

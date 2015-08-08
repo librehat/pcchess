@@ -18,7 +18,7 @@ public:
     abstract_piece* make_a_copy() const;
 
     char abbr_name() const;
-    std::string chinese_name() const;
+    std::string print_name(const bool &chinese = false) const;
     int value() const;
     bool is_king() const { return true; }
     

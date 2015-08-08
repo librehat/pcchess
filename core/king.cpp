@@ -17,9 +17,10 @@ char king::abbr_name() const
     return red_side ? 'K' : 'k';//use more widespread translation
 }
 
-string king::chinese_name() const
+string king::print_name(const bool &chinese) const
 {
-    return red_side ? string("帥") : string("將");
+    return red_side ? chinese ? string("帥") : string("Ｋ")
+                    : chinese ? string("將") : string("ｋ");
 }
 
 int king::value() const

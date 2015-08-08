@@ -12,9 +12,10 @@ char cannon::abbr_name() const
     return red_side ? 'C' : 'c';
 }
 
-string cannon::chinese_name() const
+string cannon::print_name(const bool &chinese) const
 {
-    return red_side ? string("炮") : string("砲");
+    return red_side ? chinese ? string("炮") : string("Ｃ")
+                    : chinese ? string("砲") : string("ｃ");
 }
 
 int cannon::value() const

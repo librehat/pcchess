@@ -19,7 +19,7 @@ public:
 
 
     char abbr_name() const;
-    std::string chinese_name() const;
+    std::string print_name(const bool &chinese = false) const;
     int value() const;
     
 protected:

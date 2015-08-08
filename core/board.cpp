@@ -49,39 +49,7 @@ bool board::operator !=(const board &b)
 
 void board::print_out(bool chinese_char) const
 {
-    for(int8_t j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
-        cout << to_string(j) << " ";
-        for (int8_t i = 0; i < board::FILE_NUM; ++i) {//file
-            if (at(i, j)) {
-                if (chinese_char) {
-                    cout << at(i, j)->chinese_name();
-                } else {
-                    cout << at(i, j)->abbr_name();
-                }
-            } else {
-                cout << (chinese_char ? "＋" : "+");
-            }
-            if (i != board::FILE_NUM - 1) {
-                cout << (chinese_char ? "－" : "-");
-            }
-        }
-        if (j != 0) {
-            if (chinese_char) {
-                cout << "\n　｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
-            } else {
-                cout << "\n  | | | | | | | | |\n";
-            }
-        }
-    }
-    cout << "\n  ";
-    for (int8_t i = 0; i < board::FILE_NUM; ++i) {
-        if (chinese_char) {
-            cout << get_full_width_letter(static_cast<char>(i + 'a')) << "　";
-        } else {
-            cout << static_cast<char>(i + 'a') << ' ';
-        }
-    }
-    cout << endl;
+    print_internal(cout, chinese_char);
 }
 
 string board::get_full_width_letter(const char &a)
@@ -113,4 +81,29 @@ string board::get_full_width_letter(const char &a)
     default:
         return string("??");
     }
+}
+
+void board::print_internal(ostream &os, const bool &chinese) const
+{
+    for(int8_t j = board::RANK_NUM - 1; j >= 0 ; --j) {//rank
+        os << to_string(j) << " ";
+        for (int8_t i = 0; i < board::FILE_NUM; ++i) {//file
+            if (at(i, j)) {
+                os << at(i, j)->print_name(chinese);
+            } else {
+                os << "＋";
+            }
+            if (i != board::FILE_NUM - 1) {
+                os << "－";
+            }
+        }
+        if (j != 0) {
+            os << "\n　｜　｜　｜　｜　｜　｜　｜　｜　｜\n";
+        }
+    }
+    os << "\n　";
+    for (int8_t i = 0; i < board::FILE_NUM; ++i) {
+        os << get_full_width_letter(static_cast<char>(i + 'a')) << "　";
+    }
+    os << endl;
 }

@@ -41,7 +41,7 @@ public:
     bool is_movable() const;//check if avail_moves is empty
 
     virtual char abbr_name() const = 0;
-    virtual std::string chinese_name() const = 0;
+    virtual std::string print_name(const bool &chinese = false) const = 0;
     virtual int value() const = 0;//the "value" of this piece indicates how important it is
     virtual bool is_king() const { return false; }
 

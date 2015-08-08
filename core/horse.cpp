@@ -21,9 +21,10 @@ char horse::abbr_name() const
     return red_side ? 'N' : 'n';//H in WXF document
 }
 
-string horse::chinese_name() const
+string horse::print_name(const bool &chinese) const
 {
-    return red_side ? string("傌") : string("馬");
+    return red_side ? chinese ? string("傌") : string("Ｎ")
+                    : chinese ? string("馬") : string("ｎ");
 }
 
 int horse::value() const
