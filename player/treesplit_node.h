@@ -29,6 +29,7 @@ public:
 
     static void remove_transmap_useless_entries();
     static void clear_transtable() { transtable.clear(); }
+    static std::size_t transtable_size() { return transtable.count(); }
 
 private:
     const int cn_rank;//the CN's rank that this node belongs to

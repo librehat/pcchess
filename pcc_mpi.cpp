@@ -54,6 +54,7 @@ int main(int argc, char **argv)
     if (world_comm.rank() == 0) {
         cout << "#================================================================================" << endl;
         cout << "#  Generated Time: " << boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::local_time()) << endl;
+        cout << "#  MPI World Size: " << world_comm.size() << endl;
         cout << "#  Red   player  : " << (player_id == 1 ? "root_uct_player" : player_id == 2 ? "slow_tree_uct_player" : "uct_treesplit_player") << endl;
         cout << "#  Black player  : " << "uct_player" << endl;
         cout << "#  Total games   : " << games << endl;
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
         case 3:
             red = new uct_treesplit_player(0, true);
             treesplit_node::clear_transtable();
+            cout << "[" << world_comm.rank() << "] transtable size: " << treesplit_node::transtable_size() << endl;
             break;
         default:
             cerr << "bad player_id" << endl;
