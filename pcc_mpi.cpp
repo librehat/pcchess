@@ -74,7 +74,9 @@ int main(int argc, char **argv)
         case 3:
             red = new uct_treesplit_player(0, true);
             treesplit_node::clear_transtable();
+#ifdef _DEBUG
             cout << "[" << world_comm.rank() << "] transtable size: " << treesplit_node::transtable_size() << endl;
+#endif
             break;
         default:
             cerr << "bad player_id" << endl;

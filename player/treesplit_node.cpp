@@ -16,7 +16,7 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
 {}
 
 mpi::communicator treesplit_node::world_comm;
-fast_ptr_hashtable<node, 524288> treesplit_node::transtable;
+fast_ptr_hashtable<node, 1048576> treesplit_node::transtable;
 thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
 
 node::node_ptr treesplit_node::generate_root_node_with_move(const pos_move &m)
