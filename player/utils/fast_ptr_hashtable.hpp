@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <cstdint>
 
-template <class T, int size>//size has to be a power of 2
+template <class T, int size, bool key_is_hashed = false>//size has to be a power of 2
 class fast_ptr_hashtable
 {
 public:
@@ -33,7 +33,7 @@ public:
 
     bool contains(const std::uint64_t &key) {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key_is_hashed ? key : hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key)
@@ -46,7 +46,7 @@ public:
 
     const ptr_type &at(const std::uint64_t &key) const {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key_is_hashed ? key : hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key || probed_key == 0)
@@ -64,7 +64,7 @@ public:
         assert(data);
 
         int counter= 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key_is_hashed ? key : hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
 
 #ifndef NO_FAST_PTR_HASHTABLE_FAST_SET
@@ -77,7 +77,7 @@ public:
 
                 // The entry was free. Now let's try to take it using a CAS.
                 std::uint64_t prev_key = 0;
-                key_data[idx].compare_exchange_strong(prev_key, key, std::memory_order_acq_rel);
+                key_data[idx].compare_exchange_strong(prev_key, key, std::memory_order_relaxed);
                 if ((prev_key != 0) && (prev_key != key))
                     continue;       // Another thread just stole it from underneath us.
 
@@ -101,12 +101,12 @@ public:
 
     void erase(const std::uint64_t &key) {
         int counter = 0;
-        for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
+        for (std::uint64_t idx = key_is_hashed ? key : hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key == key) {
                 key_data[idx].store(0, std::memory_order_relaxed);
-                std::atomic_store_explicit(&ptr_data[idx], ptr_type(), std::memory_order_relaxed);
+                std::atomic_exchange_explicit(&ptr_data[idx], ptr_type(), std::memory_order_relaxed);
                 return;
             }
             if (probed_key == 0)//it doesn't exist
@@ -122,7 +122,7 @@ public:
                 if (auto p = std::atomic_load_explicit(&ptr_data[i], std::memory_order_relaxed)) {
                     if (p.unique()) {
                         key_data[i].store(0, std::memory_order_relaxed);
-                        std::atomic_store_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
+                        std::atomic_exchange_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
                     }
                 }
             }
@@ -133,7 +133,7 @@ public:
 #pragma omp parallel for
         for (int i = 0; i < size; ++i) {
             key_data[i].store(0, std::memory_order_relaxed);
-            std::atomic_store_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
+            std::atomic_exchange_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
         }
     }
 
