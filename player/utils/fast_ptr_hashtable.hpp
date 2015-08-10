@@ -67,7 +67,7 @@ public:
         for (std::uint64_t idx = hash_finalizer(key); counter < size; counter++, idx++) {
             idx &= size - 1;
 
-#ifndef NO_fast_ptr_hashtable_FAST_SET
+#ifndef NO_FAST_PTR_HASHTABLE_FAST_SET
             // Load the key that was there.
             std::uint64_t probed_key = key_data[idx].load(std::memory_order_relaxed);
             if (probed_key != key) {
@@ -77,7 +77,7 @@ public:
 
                 // The entry was free. Now let's try to take it using a CAS.
                 std::uint64_t prev_key = 0;
-                std::atomic_compare_exchange_strong_explicit(&(key_data[idx]), &prev_key, key, std::memory_order_relaxed, std::memory_order_relaxed);
+                key_data[idx].compare_exchange_strong(prev_key, key, std::memory_order_relaxed, std::memory_order_relaxed);
                 if ((prev_key != 0) && (prev_key != key))
                     continue;       // Another thread just stole it from underneath us.
 

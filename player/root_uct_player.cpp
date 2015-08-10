@@ -118,7 +118,7 @@ void root_uct_player::do_slave_job()
             root->select();
             selects++;
         } else {
-            static const milliseconds nap(100);
+            static const milliseconds nap(50);
             this_thread::sleep_for(nap);
         }
     } while (true);

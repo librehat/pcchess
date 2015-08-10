@@ -179,7 +179,7 @@ void uct_treesplit_player::do_slave_job()
                 world_comm.send(get<0>(omsg), TS_MSG, omsg);
             }
         } else {
-            static const milliseconds nap(100);
+            static const milliseconds nap(50);
             this_thread::sleep_for(nap);
         }
     } while (true);
