@@ -77,7 +77,7 @@ public:
 
                 // The entry was free. Now let's try to take it using a CAS.
                 std::uint64_t prev_key = 0;
-                key_data[idx].compare_exchange_strong(prev_key, key, std::memory_order_relaxed, std::memory_order_relaxed);
+                key_data[idx].compare_exchange_strong(prev_key, key, std::memory_order_acq_rel);
                 if ((prev_key != 0) && (prev_key != key))
                     continue;       // Another thread just stole it from underneath us.
 
