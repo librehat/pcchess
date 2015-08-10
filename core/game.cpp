@@ -41,7 +41,7 @@ game::game(abstract_player *_red, abstract_player *_black, const string &fen, ui
     }
 }
 
-long int game::step_time = 2000;
+long int game::step_time = 1000;
 uint8_t game::NO_EAT_DRAW_HALF_ROUNDS = 120;
 
 abstract_player* game::playout(bool red_first)
