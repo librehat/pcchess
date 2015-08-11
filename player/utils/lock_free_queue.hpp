@@ -28,12 +28,13 @@ public:
         read_loc(q.read_loc.load(std::memory_order_relaxed)),
         write_loc(q.write_loc.load(std::memory_order_relaxed))
     {
-        for (int i = read_loc; i < write_loc; ++i) {
+        int uplim = write_loc.load(std::memory_order_relaxed);
+        for (int i = read_loc.load(std::memory_order_relaxed); i < uplim; ++i) {
             data[i % num] = q.data[i % num];
         }
     }
 
-    bool empty() const { return read_loc >= write_loc; }
+    bool empty() const { return read_loc.load(std::memory_order_relaxed) >= write_loc.load(std::memory_order_relaxed); }
 
     /*
      * front() won't check location validity but assume this is not empty()
@@ -42,26 +43,26 @@ public:
     T& front() { return data[read_loc % num]; }
 
     void push(const T &t) {
-        if (write_loc - read_loc >= num) {
-            throw std::range_error("underlying data is used up. can't write new data");
+        if (write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed) >= num) {
+            throw std::range_error(std::string("underlying data is used up. can't write new data. read_loc: ") + std::to_string(read_loc.load()) + std::string("write_loc: ") + std::to_string(write_loc.load()));
         }
-        data[write_loc % num] = t;
+        data[write_loc.load(std::memory_order_relaxed) % num] = t;
         write_loc++;
     }
 
     void push(T &&t) {
-        if (write_loc - read_loc >= num) {
-            throw std::range_error("underlying data is used up. can't write new data");
+        if (write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed) >= num) {
+            throw std::range_error(std::string("underlying data is used up. can't write new data. read_loc: ") + std::to_string(read_loc.load()) + std::string("write_loc: ") + std::to_string(write_loc.load()));
         }
-        data[write_loc % num] = t;
+        data[write_loc.load(std::memory_order_relaxed) % num] = t;
         write_loc++;
     }
 
-    std::size_t size() const { return write_loc - read_loc; }
+    std::size_t size() const { return write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed); }
 
     void pop() { read_loc++; }
 
-    void reset() { read_loc = 0; write_loc = 0; }
+    void reset() { read_loc.store(0, std::memory_order_relaxed); write_loc.store(0, std::memory_order_relaxed); }
 
 private:
     /*
