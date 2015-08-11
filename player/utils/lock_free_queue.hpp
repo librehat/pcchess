@@ -39,8 +39,8 @@ public:
     /*
      * front() won't check location validity but assume this is not empty()
      */
-    const T& front() const { return data[read_loc % num]; }
-    T& front() { return data[read_loc % num]; }
+    const T& front() const { return data[read_loc.load(std::memory_order_relaxed) % num]; }
+    T& front() { return data[read_loc.load(std::memory_order_relaxed) % num]; }
 
     void push(const T &t) {
         if (write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed) >= num) {
@@ -62,7 +62,11 @@ public:
 
     void pop() { read_loc++; }
 
-    void reset() { read_loc.store(0, std::memory_order_relaxed); write_loc.store(0, std::memory_order_relaxed); }
+    void reset() {
+        read_loc.store(0, std::memory_order_relaxed);
+        write_loc.store(0, std::memory_order_relaxed);
+        data.fill(T());
+    }
 
 private:
     /*

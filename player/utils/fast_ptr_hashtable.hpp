@@ -27,7 +27,11 @@ class fast_ptr_hashtable
 public:
     typedef std::shared_ptr<T> ptr_type;
 
-    fast_ptr_hashtable() = default;
+    /*
+     * GCC has a bug initialising an array of atomic values like this: key_data {{}}, which takes almost forever compiling.
+     * Currently we use std::fill as a workaround to make initialised value to 0
+     */
+    fast_ptr_hashtable() { clear(); }
 
     fast_ptr_hashtable(const fast_ptr_hashtable &) = delete;
 
@@ -129,13 +133,7 @@ public:
         }
     }
 
-    void clear() {
-#pragma omp parallel for
-        for (int i = 0; i < size; ++i) {
-            key_data[i].store(0, std::memory_order_relaxed);
-            std::atomic_exchange_explicit(&ptr_data[i], ptr_type(), std::memory_order_relaxed);
-        }
-    }
+    void clear() { std::fill(key_data.begin(), key_data.end(), 0); ptr_data.fill(ptr_type()); }
 
     std::size_t count() const {
         std::atomic_size_t count(0);
