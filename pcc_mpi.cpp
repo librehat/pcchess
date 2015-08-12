@@ -27,11 +27,12 @@ int main(int argc, char **argv)
     desc.add_options()
             ("help,h", "display this help and exit")
             ("games,g", po::value<int>(&games)->default_value(1), "number of games to play")
-            ("step_time", po::value<long>(), "maximum think time (milliseconds)")
-            ("max_no_eat", po::value<uint8_t>(), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
+            ("step-time", po::value<long>(), "maximum think time (milliseconds)")
+            ("max-no-eat", po::value<uint8_t>(), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
             ("print,p", "print out the board after each game")
+            ("disable-header", "don't print out the header")
             ("chinese,c", "use Chinese characters in the board")
-            ("player_id,s", po::value<int>(&player_id)->default_value(1), "set red player. 1: root, 2: slow-tree, 3: treesplit");
+            ("player-id,s", po::value<int>(&player_id)->default_value(1), "set red player. 1: root, 2: slow-tree, 3: treesplit");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
@@ -42,16 +43,16 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (vm.count("step_time")) {
-        game::step_time = vm["step_time"].as<long>();
+    if (vm.count("step-time")) {
+        game::step_time = vm["step-time"].as<long>();
     }
-    if (vm.count("max_no_eat")) {
-        game::NO_EAT_DRAW_HALF_ROUNDS = 2 * vm["max_no_eat"].as<uint8_t>();
+    if (vm.count("max-no-eat")) {
+        game::NO_EAT_DRAW_HALF_ROUNDS = 2 * vm["max-no-eat"].as<uint8_t>();
     }
 
-    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese");
+    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese"), disable_header = vm.count("disable-header");
 
-    if (world_comm.rank() == 0) {
+    if (world_comm.rank() == 0 && !disable_header) {
         cout << "#================================================================================" << endl;
         cout << "#  Generated Time: " << boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::local_time()) << endl;
         cout << "#  MPI World Size: " << world_comm.size() << endl;
