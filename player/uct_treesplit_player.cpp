@@ -21,6 +21,7 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     workers = cpu_cores - 1;
     thread_vec.resize(workers);
     local_oq_vec.resize(workers);
+    local_iq_vec.resize(workers);
 }
 
 atomic_bool uct_treesplit_player::stop(false);
@@ -40,13 +41,14 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     stop = false;
     master_send_order(TS_START);
 
-    for (auto &&oq : local_oq_vec) {
-        oq.reset();
+    for (int i = 0; i < workers; ++i) {
+        local_oq_vec[i].reset();
+        local_iq_vec[i].reset();
     }
 #ifdef UCT_TREESPLIT_CLEAN_BEFORE_CALC
     /*
      * this function uses too much time. as a workaround, we use a relatively huge transposition table,
-     * and clear it (which should be a O(1) operation) after the each game by default
+     * and clear it (which should be an optimised O(n) operation) after the each game by default
      */
     treesplit_node::remove_transmap_useless_entries();
 #endif
@@ -65,14 +67,17 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             if (status.tag() == TS_MSG) {
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
-                treesplit_node::insert_node_from_msg(imsg);
+                auto q = min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                    return x.size() < y.size();
+                });
+                q->push(imsg);
             } else {
                 cerr << "unknown tag: " << status.tag() << endl;
                 throw invalid_argument("master node received unknown tag");
             }
         }
 
-        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
+        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](const lf_queue &x, const lf_queue &y){
             return x.size() < y.size();
         });
         if (!q->empty()) {
@@ -133,7 +138,9 @@ void uct_treesplit_player::do_slave_job()
             if (status.tag() == TS_MSG) {
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
-                treesplit_node::insert_node_from_msg(imsg);
+                min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                    return x.size() < y.size();
+                })->push(imsg);
             } else if (status.tag() == CHILD_SELEC) {
                 pos_move m;
                 world_comm.recv(status.source(), CHILD_SELEC, m);
@@ -150,8 +157,9 @@ void uct_treesplit_player::do_slave_job()
                 case TS_START:
                     do_io_job = true;
                     stop = false;
-                    for (auto &&oq : local_oq_vec) {
-                        oq.reset();
+                    for (int i = 0; i < workers; ++i) {
+                        local_oq_vec[i].reset();
+                        local_iq_vec[i].reset();
                     }
 #ifdef UCT_TREESPLIT_CLEAN_BEFORE_CALC
                     treesplit_node::remove_transmap_useless_entries();
@@ -178,7 +186,7 @@ void uct_treesplit_player::do_slave_job()
                 }
             }
         } else if (do_io_job) {//IO job
-            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
+            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](const lf_queue &x, const lf_queue &y){
                 return x.size() < y.size();
             });
             if (!q->empty()) {
@@ -199,9 +207,13 @@ void uct_treesplit_player::worker_thread(const int &id)
     do {
         root->select();
         selects++;
-        while (!treesplit_node::output_queue.empty()) {
+        if (!treesplit_node::output_queue.empty()) {
             local_oq_vec[id].push(treesplit_node::output_queue.front());
             treesplit_node::output_queue.pop();
+        }
+        if (!local_iq_vec[id].empty()) {
+            treesplit_node::insert_node_from_msg(local_iq_vec[id].front());
+            local_iq_vec[id].pop();
         }
     } while (!stop);
 }

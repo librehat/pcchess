@@ -65,7 +65,7 @@ public:
     void reset() {
         read_loc.store(0, std::memory_order_relaxed);
         write_loc.store(0, std::memory_order_relaxed);
-        data.fill(T());
+        //data.fill(T());//don't really need to do this
     }
 
 private:
