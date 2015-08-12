@@ -43,7 +43,13 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     for (auto &&oq : local_oq_vec) {
         oq.reset();
     }
+#ifdef UCT_TREESPLIT_CLEAN_BEFORE_CALC
+    /*
+     * this function uses too much time. as a workaround, we use a relatively huge transposition table,
+     * and clear it (which should be a O(1) operation) after the each game by default
+     */
     treesplit_node::remove_transmap_useless_entries();
+#endif
     for (int i = 0; i < workers; ++i) {
         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
     }
@@ -147,7 +153,9 @@ void uct_treesplit_player::do_slave_job()
                     for (auto &&oq : local_oq_vec) {
                         oq.reset();
                     }
+#ifdef UCT_TREESPLIT_CLEAN_BEFORE_CALC
                     treesplit_node::remove_transmap_useless_entries();
+#endif
                     for (int i = 0; i < workers; ++i) {
                         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
                     }
