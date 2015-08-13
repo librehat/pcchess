@@ -205,13 +205,14 @@ void uct_treesplit_player::worker_thread(const int &id)
 {
     queue<treesplit_node::msg_type>().swap(treesplit_node::output_queue);
     do {
-        root->select();
-        selects++;
-        if (!treesplit_node::output_queue.empty()) {
-            local_oq_vec[id].push(treesplit_node::output_queue.front());
-            treesplit_node::output_queue.pop();
-        }
-        if (!local_iq_vec[id].empty()) {
+        if (local_iq_vec[id].empty()) {
+            root->select();
+            selects++;
+            while (!treesplit_node::output_queue.empty()) {
+                local_oq_vec[id].push(treesplit_node::output_queue.front());
+                treesplit_node::output_queue.pop();
+            }
+        } else {
             treesplit_node::insert_node_from_msg(local_iq_vec[id].front());
             local_iq_vec[id].pop();
         }
