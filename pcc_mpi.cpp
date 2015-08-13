@@ -77,6 +77,7 @@ int main(int argc, char **argv)
             treesplit_node::clear_transtable();
 #ifdef _DEBUG
             cout << "[" << world_comm.rank() << "] transtable size: " << treesplit_node::transtable_size() << endl;
+            cout << "[" << world_comm.rank() << "] worker threads : " << dynamic_cast<uct_treesplit_player*>(red)->worker_size() << endl;
 #endif
             break;
         default:

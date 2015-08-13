@@ -19,6 +19,7 @@ public:
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
     void opponent_moved(const pos_move &m);
     void do_slave_job();
+    inline const int &worker_size() const { return workers; }
 
 private:
     typedef lock_free_queue<treesplit_node::msg_type, 65536> lf_queue;
