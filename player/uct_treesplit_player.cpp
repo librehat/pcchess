@@ -56,6 +56,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
     }
 
+    static const int world_size = world_comm.size();
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
@@ -83,14 +84,27 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         if (!q->empty()) {
             treesplit_node::msg_type omsg = q->front();
             q->pop();
-            world_comm.send(get<0>(omsg), TS_MSG, omsg);
+            if (get<0>(omsg) == -1) {
+                for (int i = 1; i < world_size; ++i) {//i'm the rank 0
+                    pending_requests.push_back(world_comm.isend(i, TS_MSG, omsg));
+                }
+            } else {
+                pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
+            }
         }
+        std::remove_if(pending_requests.begin(), pending_requests.end(), [](mpi::request &req) { return req.test(); });
     }
     master_send_order(TS_STOP);
     stop = true;
     for (auto &&t : thread_vec) {
         t.join();
     }
+    for (auto &&req : pending_requests) {
+        if (!req.test()) {
+            req.cancel();
+        }
+    }
+    pending_requests.clear();
 
     master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
@@ -99,7 +113,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
     _move = get<0>(*best_child);
     if (_move.is_valid()) {
-        for (int j = 1; j < world_comm.size(); ++j) {
+        for (int j = 1; j < world_size; ++j) {
             world_comm.send(j, CHILD_SELEC, _move);
         }
         evolve_into_next_depth(_move);
@@ -109,7 +123,8 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
-    for (int j = 1; j < world_comm.size(); ++j) {
+    static const int world_size = world_comm.size();
+    for (int j = 1; j < world_size; ++j) {
         world_comm.send(j, CHILD_SELEC, m);
     }
     evolve_into_next_depth(m);
@@ -131,6 +146,7 @@ void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
 void uct_treesplit_player::do_slave_job()
 {
     bool do_io_job = false;
+    static const int world_size = world_comm.size();
     do {
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
         if (probe) {
@@ -174,6 +190,12 @@ void uct_treesplit_player::do_slave_job()
                     for (auto &&t : thread_vec) {
                         t.join();
                     }
+                    for (auto &&req : pending_requests) {
+                        if (!req.test()) {
+                            req.cancel();
+                        }
+                    }
+                    pending_requests.clear();
                     break;
                 case TS_BEST_CHILD:
                     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
@@ -192,8 +214,15 @@ void uct_treesplit_player::do_slave_job()
             if (!q->empty()) {
                 treesplit_node::msg_type omsg = q->front();
                 q->pop();
-                world_comm.send(get<0>(omsg), TS_MSG, omsg);
+                if (get<0>(omsg) == -1) {
+                    for (int i = 1; i < world_size; ++i) {//i'm the rank 0
+                        pending_requests.push_back(world_comm.isend(i, TS_MSG, omsg));
+                    }
+                } else {
+                    pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
+                }
             }
+            std::remove_if(pending_requests.begin(), pending_requests.end(), [](mpi::request &req) { return req.test(); });
         } else {
             static const milliseconds nap(50);
             this_thread::sleep_for(nap);
@@ -213,7 +242,7 @@ void uct_treesplit_player::worker_thread(const int &id)
                 treesplit_node::output_queue.pop();
             }
         } else {
-            treesplit_node::insert_node_from_msg(local_iq_vec[id].front());
+            treesplit_node::handle_message(local_iq_vec[id].front());
             local_iq_vec[id].pop();
         }
     } while (!stop);
