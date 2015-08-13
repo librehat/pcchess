@@ -18,18 +18,21 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
+    long step_time;
     int games;
+    uint8_t no_eat_rounds;
 
     po::options_description desc("Options");
     desc.add_options()
             ("help,h", "display this help and exit")
             ("games,g", po::value<int>(&games)->default_value(1), "number of games to play")
-            ("step-time", po::value<long>(), "maximum think time (milliseconds)")
-            ("max-no-eat", po::value<uint8_t>(), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
+            ("step-time", po::value<long>(&step_time)->default_value(1000), "maximum think time (milliseconds)")
+            ("max-no-eat", po::value<uint8_t>(&no_eat_rounds)->default_value(60), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
             ("print,p", "print out the board after each game")
             ("disable-header", "don't print out the header")
             ("chinese,c", "use Chinese characters in the board")
-            ("human,H", "let human player join this game");
+            ("human,H", "let human player join this game")
+            ("black-first", "let black player make the first move");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
@@ -40,14 +43,10 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    if (vm.count("step-time")) {
-        game::step_time = vm["step-time"].as<long>();
-    }
-    if (vm.count("max-no-eat")) {
-        game::NO_EAT_DRAW_HALF_ROUNDS = 2 * vm["max-no-eat"].as<uint8_t>();
-    }
+    game::step_time = step_time;
+    game::NO_EAT_DRAW_HALF_ROUNDS = 2 * no_eat_rounds;
 
-    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese"), human = vm.count("human"), disable_header = vm.count("disable-header");
+    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese"), human = vm.count("human"), disable_header = vm.count("disable-header"), red_first = !vm.count("black-first");
 
     abstract_player *red, *black;
 
@@ -71,7 +70,7 @@ int main(int argc, char** argv)
         red->init_pieces();
         black->init_pieces();
         game g(red, black);
-        abstract_player* winner = g.playout();
+        abstract_player* winner = g.playout(red_first);
 
         if (enable_print) {
             g.print_board(chinese_print);

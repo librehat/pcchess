@@ -21,18 +21,22 @@ int main(int argc, char **argv)
     mpi::communicator world_comm;
     std::ignore = env;
 
+    long slow_tree_sync_period, step_time;
     int games, player_id;//1: root_uct_player, 2: slow_tree_uct_player, 3: uct_treesplit_player
+    uint8_t no_eat_draw_rounds;
 
     po::options_description desc("Options");
     desc.add_options()
             ("help,h", "display this help and exit")
             ("games,g", po::value<int>(&games)->default_value(1), "number of games to play")
-            ("step-time", po::value<long>(), "maximum think time (milliseconds)")
-            ("max-no-eat", po::value<uint8_t>(), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
+            ("step-time", po::value<long>(&step_time)->default_value(1000), "maximum think time (milliseconds)")
+            ("max-no-eat", po::value<uint8_t>(&no_eat_draw_rounds)->default_value(60), "maximum rounds when no piece gets eaten, set to 0 to disable this feature")
             ("print,p", "print out the board after each game")
             ("disable-header", "don't print out the header")
             ("chinese,c", "use Chinese characters in the board")
-            ("player-id,s", po::value<int>(&player_id)->default_value(1), "set red player. 1: root, 2: slow-tree, 3: treesplit");
+            ("player-id,s", po::value<int>(&player_id)->default_value(1), "set red player. 1: root, 2: slow-tree, 3: treesplit")
+            ("slow-tree-sync-period", po::value<long>(&slow_tree_sync_period)->default_value(500), "slow tree parallelisation's synchronisation period (milliseconds)")
+            ("black-first", "let black player make the first move");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
@@ -43,14 +47,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (vm.count("step-time")) {
-        game::step_time = vm["step-time"].as<long>();
-    }
-    if (vm.count("max-no-eat")) {
-        game::NO_EAT_DRAW_HALF_ROUNDS = 2 * vm["max-no-eat"].as<uint8_t>();
-    }
+    game::step_time = step_time;
+    game::NO_EAT_DRAW_HALF_ROUNDS = 2 * no_eat_draw_rounds;
 
-    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese"), disable_header = vm.count("disable-header");
+    bool enable_print = vm.count("print"), chinese_print = vm.count("chinese"), disable_header = vm.count("disable-header"), red_first = !vm.count("black-first");
 
     if (world_comm.rank() == 0 && !disable_header) {
         cout << "#================================================================================" << endl;
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
             red = new root_uct_player(true);
             break;
         case 2:
-            red = new slow_tree_uct_player(500, true);
+            red = new slow_tree_uct_player(slow_tree_sync_period, true);
             break;
         case 3:
             red = new uct_treesplit_player(0, true);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
         world_comm.barrier();
         if (world_comm.rank() == 0) {//master plays the game
             game g(red, black);
-            abstract_player* winner = g.playout();
+            abstract_player* winner = g.playout(red_first);
 
             int red_score = 0, black_score = 0;
             if (winner == red) {
