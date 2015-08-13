@@ -19,7 +19,7 @@ namespace po = boost::program_options;
 int main(int argc, char** argv)
 {
     long step_time;
-    int games;
+    int games, threads;
     uint8_t no_eat_rounds;
 
     po::options_description desc("Options");
@@ -32,7 +32,8 @@ int main(int argc, char** argv)
             ("disable-header", "don't print out the header")
             ("chinese,c", "use Chinese characters in the board")
             ("human,H", "let human player join this game")
-            ("black-first", "let black player make the first move");
+            ("black-first", "let black player make the first move")
+            ("num-threads", po::value<int>(&threads)->default_value(0), "set the number of threads to use for threaded_uct_player (0: auto)");
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
@@ -51,10 +52,12 @@ int main(int argc, char** argv)
     abstract_player *red, *black;
 
     if (!disable_header) {
+        threaded_uct_player temp(threads);
         cout << "#================================================================================" << endl;
         cout << "#  Generated Time: " << boost::posix_time::to_iso_extended_string(boost::posix_time::second_clock::local_time()) << endl;
         cout << "#  Red   player  : " << (human ? "human_player" : "uct_player") << endl;
         cout << "#  Black player  : " << "threaded_uct_player" << endl;
+        cout << "#  Threads to use: " << temp.thread_size() << endl;
         cout << "#  Total games   : " << games << endl;
         cout << "#================================================================================" << endl;
         cout << "# Sequence  Rounds  Red Score  Black Score   Red Simulations    Black Simulations" << endl;
@@ -66,7 +69,7 @@ int main(int argc, char** argv)
         } else {
             red = new uct_player(true);
         }
-        black = new threaded_uct_player(0, false);
+        black = new threaded_uct_player(threads, false);
         red->init_pieces();
         black->init_pieces();
         game g(red, black);
