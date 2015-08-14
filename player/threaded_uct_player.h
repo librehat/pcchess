@@ -15,6 +15,8 @@ public:
 
     bool think_next_move(pos_move &_move, const board &bd, std::uint8_t no_eat_half_rounds, const std::vector<pos_move> &banmoves);
 
+    int thread_size() { return thread_vec.size() + 1; }
+
 private:
     std::vector<std::thread> thread_vec;
     static std::atomic_bool stop;
