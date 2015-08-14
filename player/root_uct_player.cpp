@@ -41,12 +41,10 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
         shallow_root->set_parent(nullptr);
         mpi::broadcast(world_comm, shallow_root, 0);
     }
-#ifdef _DEBUG
-    cout << "broadcasting tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
-#endif
 
     master_send_order(COMP_LOOP);
-    for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
+    static milliseconds penalty(0);
+    for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start) + penalty;
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
@@ -55,22 +53,15 @@ bool root_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t 
     }
     master_send_order(COMP_FINISH);
 
-#ifdef _DEBUG
     start = steady_clock::now();
-#endif
     master_send_order(GATHER_TREE);
     vector<node::node_ptr> root_vec;
-    mpi::gather(world_comm, root, root_vec, 0);
-#ifdef _DEBUG
-    cout << "gathering tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
-    start = steady_clock::now();
-#endif
+    mpi::gather(world_comm, root, root_vec, 0);//this operation is time-costy
+    penalty = duration_cast<milliseconds>(steady_clock::now() - start);//we add a time penalty based on last operation's time consumption
+
     for (int i = 1; i < world_comm.size(); ++i) {//skip myself
         root->merge(*(root_vec[i]));
     }
-#ifdef _DEBUG
-    cout << "merging tree took " << duration_cast<milliseconds>(steady_clock::now() - start).count() << " milliseconds" << endl;
-#endif
 
     auto best_child = root->get_best_child();
     if (best_child == root->child_end()) {
