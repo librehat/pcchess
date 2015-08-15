@@ -173,7 +173,8 @@ void treesplit_node::remove_transmap_useless_entries()
 void treesplit_node::handle_message(const msg_type &msg)
 {
     size_t hash_val = hash_val_internal(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg));
-    node_ptr msg_node = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg), nullptr, get<0>(msg)));
+    int cn_id = hash_val % world_comm.size();//which compute node should contains this node
+    node_ptr msg_node = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg), nullptr, cn_id));
     msg_node->visits.store(get<7>(msg), memory_order_relaxed);
     msg_node->scores.store(get<1>(msg), memory_order_relaxed);
     if (auto child = transtable[hash_val]) {

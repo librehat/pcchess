@@ -4,7 +4,7 @@
 #include "chariot.h"
 #include "horse.h"
 #include "elephant.h"
-#include "advisor.h"
+#include "adviser.h"
 #include "king.h"
 #include <stdexcept>
 #include <iostream>
@@ -97,9 +97,9 @@ void abstract_player::init_pieces()
     pieces.push_back(new elephant(2, red_side ? 0 : 9, red_side));
     pieces.push_back(new elephant(6, red_side ? 0 : 9, red_side));
 
-    //advisors
-    pieces.push_back(new advisor(3, red_side ? 0 : 9, red_side));
-    pieces.push_back(new advisor(5, red_side ? 0 : 9, red_side));
+    //advisers
+    pieces.push_back(new adviser(3, red_side ? 0 : 9, red_side));
+    pieces.push_back(new adviser(5, red_side ? 0 : 9, red_side));
 
     //king (general)
     pieces.push_back(new king(4, red_side ? 0 : 9, red_side));

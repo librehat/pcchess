@@ -2,7 +2,7 @@
 #include "king.h"
 #include "pawn.h"
 #include "elephant.h"
-#include "advisor.h"
+#include "adviser.h"
 #include "chariot.h"
 #include "horse.h"
 #include "cannon.h"
@@ -232,10 +232,10 @@ void game::parse_fen(const string &fen)
                     p = new elephant(file, rank, false);
                     break;
                 case 'A':
-                    p = new advisor(file, rank, true);
+                    p = new adviser(file, rank, true);
                     break;
                 case 'a':
-                    p = new advisor(file, rank, false);
+                    p = new adviser(file, rank, false);
                     break;
                 case 'R':
                     p = new chariot(file, rank, true);

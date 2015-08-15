@@ -1,7 +1,7 @@
 #ifndef SERIALIZATION_EXPORT_HPP
 #define SERIALIZATION_EXPORT_HPP
 
-#include "../../core/advisor.h"
+#include "../../core/adviser.h"
 #include "../../core/cannon.h"
 #include "../../core/elephant.h"
 #include "../../core/king.h"
@@ -20,7 +20,7 @@
 
 #include <boost/serialization/export.hpp>
 
-BOOST_CLASS_EXPORT_GUID(advisor, "advisor")
+BOOST_CLASS_EXPORT_GUID(adviser, "adviser")
 BOOST_CLASS_EXPORT_GUID(cannon, "cannon")
 BOOST_CLASS_EXPORT_GUID(elephant, "elephant")
 BOOST_CLASS_EXPORT_GUID(king, "king")

@@ -2,16 +2,16 @@
  * Copyright 2015 Symeon Huang <hzwhuang@gmail.com>
  */
 
-#ifndef ADVISOR_H
-#define ADVISOR_H
+#ifndef ADVISER_H
+#define ADVISER_H
 
 #include "abstract_piece.h"
 
-class advisor : public abstract_piece
+class adviser : public abstract_piece
 {
 public:
-    explicit advisor(std::int8_t _file = 0, std::int8_t _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
-    explicit advisor(const advisor &b) : abstract_piece(b) {}
+    explicit adviser(std::int8_t _file = 0, std::int8_t _rank = 0, bool oppo = false) : abstract_piece(_file, _rank, oppo) {}
+    explicit adviser(const adviser &b) : abstract_piece(b) {}
 
     abstract_piece* make_a_copy() const;
 
@@ -36,4 +36,4 @@ private:
     }
 };
 
-#endif //ADVISOR_H
+#endif //ADVISER_H
