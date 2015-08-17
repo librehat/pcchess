@@ -39,8 +39,8 @@ private:
     typedef std::tuple<int, int, std::string, pos_move, bool, bool, int, int> msg_type;
 
     const int cn_rank;//the CN's rank that this node belongs to
-    std::atomic_int old_scores;//the scores when last update message was generated
-    std::atomic_int new_visits;//after last time's update, how many visits it gets
+    std::atomic_int old_scores;//the scores when last message was generated
+    std::atomic_int new_visits;//the visits when last message was generated
     std::atomic_bool duplicated;//whether it's already duplicated on all other compute nodes
 
     bool should_update() const;

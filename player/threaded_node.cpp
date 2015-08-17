@@ -13,7 +13,7 @@ threaded_node::threaded_node(const string &fen, bool is_red_side, uint8_t noeat_
     node(fen, is_red_side, noeat_half_rounds)
 {}
 
-bool threaded_node::select()
+void threaded_node::select()
 {
     children_mutex.lock();
     if (visits > select_threshold && !children.empty()) {

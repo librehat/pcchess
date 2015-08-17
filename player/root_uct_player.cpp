@@ -142,6 +142,9 @@ void root_uct_player::slave_broadcast_tree()
 
 void root_uct_player::slave_reduce_sims()
 {
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] slave_reduce_sims" << endl;
+#endif
     uint64_t local_sims = selects.load(memory_order_relaxed);
     mpi::reduce(world_comm, local_sims, plus<uint64_t>(), 0);//std::plus is equivalent to MPI_SUM in C
 }

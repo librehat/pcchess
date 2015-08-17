@@ -66,6 +66,9 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         if (probe) {
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] received a treesplit message" << endl;
+#endif
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
                 auto q = min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
@@ -85,10 +88,16 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             treesplit_node::msg_type omsg = q->front();
             q->pop();
             if (get<0>(omsg) == -1) {
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] send out a duplicate message" << endl;
+#endif
                 for (int i = 1; i < world_size; ++i) {//i'm the rank 0
                     pending_requests.push_back(world_comm.isend(i, TS_MSG, omsg));
                 }
             } else {
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] send out an update message" << endl;
+#endif
                 pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
             }
         }
@@ -152,6 +161,9 @@ void uct_treesplit_player::do_slave_job()
         if (probe) {
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] received a treesplit message" << endl;
+#endif
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
                 min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
@@ -215,10 +227,16 @@ void uct_treesplit_player::do_slave_job()
                 treesplit_node::msg_type omsg = q->front();
                 q->pop();
                 if (get<0>(omsg) == -1) {
+#ifdef _DEBUG
+                    cout << "[" << world_comm.rank() << "] send out a duplicate message" << endl;
+#endif
                     for (int i = 1; i < world_size; ++i) {//i'm the rank 0
                         pending_requests.push_back(world_comm.isend(i, TS_MSG, omsg));
                     }
                 } else {
+#ifdef _DEBUG
+                    cout << "[" << world_comm.rank() << "] send out an update message" << endl;
+#endif
                     pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
                 }
             }

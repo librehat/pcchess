@@ -10,7 +10,7 @@ public:
     explicit threaded_node(const std::string &fen = std::string(), const pos_move &mov = pos_move(), bool _my_turn = true, bool is_red_side = true, std::uint8_t noeat_half_rounds = 0, node_ptr _parent = node_ptr());
     explicit threaded_node(const std::string &fen, bool is_red_side, std::uint8_t noeat_half_rounds);
 
-    bool select();
+    void select();
     void expand(std::deque<pos_move> &hist, const int &score);
 
 protected:

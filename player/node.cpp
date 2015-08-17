@@ -83,7 +83,7 @@ double node::get_uct_val() const
 	}
 }
 
-bool node::select()
+void node::select()
 {
     if (visits > select_threshold && !children.empty()) {
         /*
@@ -136,7 +136,7 @@ void node::expand(deque<pos_move> &hist, const int &score)
     child->expand(hist, score);
 }
 
-bool node::simulate()
+void node::simulate()
 {
     random_player tr(true), tb(false);
     game sim_game(&tr, &tb, no_eat_half_rounds);
@@ -151,16 +151,8 @@ bool node::simulate()
     }
 
     std::deque<pos_move> hist = sim_game.get_history();
-    if (hist.empty()) {//can't expand the tree if the current player can't move
-        visits++;
-        scores += result;
-        backpropagate(result);
-        return false;
-    } else {
-        expand(hist, result);//this very node is definitely the parental node
-        backpropagate(result);
-        return true;
-    }
+    expand(hist, result);//this very node is definitely the parental node
+    backpropagate(result);
 }
 
 void node::merge(node &b, bool average_mode)

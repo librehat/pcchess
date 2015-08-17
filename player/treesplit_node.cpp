@@ -40,6 +40,7 @@ node::node_ptr treesplit_node::generate_root_node_with_move(const pos_move &m)
 void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 {
     visits++;
+    new_visits++;
     scores += score;
 
     if (should_duplicate()) {
@@ -103,16 +104,17 @@ void treesplit_node::expand(deque<pos_move> &hist, const int &score)
 
 void treesplit_node::backpropagate(const int &score, const int &vis)
 {
-    if (auto p = parent.lock()) {
+    if (auto _p = parent.lock()) {
+        auto p = dynamic_pointer_cast<treesplit_node>(_p);
         if (p->parent.lock()) {//only if the parent is not root node
-            auto pp = dynamic_pointer_cast<treesplit_node>(p);
-            if (pp->should_duplicate()) {
-                output_queue.push(pp->gen_duplicate_msg());
-            } else if (pp->should_update()) {
-                output_queue.push(pp->gen_update_msg());
+            if (p->should_duplicate()) {
+                output_queue.push(p->gen_duplicate_msg());
+            } else if (p->should_update()) {
+                output_queue.push(p->gen_update_msg());
             }
         }
         p->visits += vis;
+        p->new_visits += vis;
         p->scores += score;
         p->backpropagate(score, vis);
     }
@@ -155,7 +157,7 @@ treesplit_node::msg_type treesplit_node::gen_update_msg()
     int old_sc = old_scores.load(memory_order_relaxed);
     int delta_visits = new_visits.load(memory_order_relaxed);
     old_scores.store(sc, memory_order_relaxed);
-    new_visits.store(0, memory_order_release);
+    new_visits.store(0, memory_order_relaxed);
     return msg_type(cn_rank, sc - old_sc, current_fen, my_move, my_turn, red_side, no_eat_half_rounds, delta_visits);
 }
 
@@ -177,6 +179,7 @@ void treesplit_node::handle_message(const msg_type &msg)
     node_ptr msg_node = node_ptr(new treesplit_node(get<2>(msg), get<3>(msg), get<4>(msg), get<5>(msg), get<6>(msg), nullptr, cn_id));
     msg_node->visits.store(get<7>(msg), memory_order_relaxed);
     msg_node->scores.store(get<1>(msg), memory_order_relaxed);
+    dynamic_pointer_cast<treesplit_node>(msg_node)->old_scores.store(get<7>(msg), memory_order_relaxed);
     if (auto child = transtable[hash_val]) {
         if (get<0>(msg) == -1) {//a duplicate message, merge it in "average" mode if it already exists
             child->merge(*msg_node, true);

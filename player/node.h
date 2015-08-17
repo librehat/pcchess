@@ -34,9 +34,9 @@ public:
     const pos_move &get_move() const { return my_move; }
 
     //three steps for MCTS
-    virtual bool select();//return true if it did a successful simulation
+    virtual void select();//return true if it did a successful simulation
     virtual void expand(std::deque<pos_move> &hist, const int &score);
-    bool simulate();
+    void simulate();
 
     void merge(node &b, bool average_mode = false);//merge another node into this node. The target node needs to be in the same place in tree
 
