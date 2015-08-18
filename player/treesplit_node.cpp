@@ -181,8 +181,8 @@ void treesplit_node::handle_message(const msg_type &msg)
     msg_node->scores.store(get<1>(msg), memory_order_relaxed);
     dynamic_pointer_cast<treesplit_node>(msg_node)->old_scores.store(get<7>(msg), memory_order_relaxed);
     if (auto child = transtable[hash_val]) {
-        if (get<0>(msg) == -1) {//a duplicate message, merge it in "average" mode if it already exists
-            child->merge(*msg_node, true);
+        if (get<0>(msg) == -1) {//a duplicate message, non-average mode since it's generated only once
+            child->merge(*msg_node, false);
         } else {//an update message, merge it in non-average mode if it already exists
             child->merge(*msg_node, false);
         }
