@@ -25,7 +25,7 @@ mpi::communicator treesplit_node::world_comm;
 fast_ptr_hashtable<node, 1048576, true> treesplit_node::transtable;
 thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
 const int treesplit_node::n_update = 5;
-const int treesplit_node::n_duplicate = 25;
+const int treesplit_node::n_duplicate = 5;
 
 node::node_ptr treesplit_node::generate_root_node_with_move(const pos_move &m)
 {
