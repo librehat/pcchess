@@ -20,8 +20,8 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     }
     workers = cpu_cores - 1;
     thread_vec.resize(workers);
-    local_oq_vec.resize(workers);
     local_iq_vec.resize(workers);
+    local_oq_vec.resize(workers);
 }
 
 atomic_bool uct_treesplit_player::stop(false);
@@ -61,7 +61,6 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
          elapsed < think_time;
          elapsed = duration_cast<milliseconds>(steady_clock::now() - start))
     {
-
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
         if (probe) {
             mpi::status status = probe.get();
@@ -75,6 +74,9 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
                     return x.size() < y.size();
                 });
                 q->push(imsg);
+#ifdef _DEBUG
+                cout << "[" << world_comm.rank() << "] received treesplit message rank: " << get<0>(imsg) << endl;
+#endif
             } else {
                 cerr << "unknown tag: " << status.tag() << endl;
                 throw invalid_argument("master node received unknown tag");
@@ -85,8 +87,8 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             return x.size() < y.size();
         });
         if (!q->empty()) {
-            treesplit_node::msg_type omsg = q->front();
-            q->pop();
+            auto &omsg = q->front();
+            q->pop();//the queue won't delete the content, so it's still safe to access the omsg
             if (get<0>(omsg) == -1) {
 #ifdef _DEBUG
                 cout << "[" << world_comm.rank() << "] send out a duplicate message" << endl;
@@ -101,7 +103,6 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
                 pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
             }
         }
-        std::remove_if(pending_requests.begin(), pending_requests.end(), [](mpi::request &req) { return req.test(); });
     }
     master_send_order(TS_STOP);
     stop = true;
@@ -117,6 +118,9 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
     master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] gathering best children" << endl;
+#endif
     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), bchild_vec, 0);
     auto best_child = max_element(bchild_vec.begin(), bchild_vec.end(), [](const treesplit_node::child_type &x, const treesplit_node::child_type &y) { return get<1>(x) < get<1>(y); });
 
@@ -155,6 +159,7 @@ void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
 void uct_treesplit_player::do_slave_job()
 {
     bool do_io_job = false;
+    static const int rank = world_comm.rank();
     static const int world_size = world_comm.size();
     do {
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
@@ -162,13 +167,16 @@ void uct_treesplit_player::do_slave_job()
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
 #ifdef _DEBUG
-                cout << "[" << world_comm.rank() << "] received a treesplit message" << endl;
+                cout << "[" << rank << "] received a treesplit message" << endl;
 #endif
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
                 min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
                     return x.size() < y.size();
                 })->push(imsg);
+#ifdef _DEBUG
+                cout << "[" << rank << "] received treesplit message rank: " << get<0>(imsg) << endl;
+#endif
             } else if (status.tag() == CHILD_SELEC) {
                 pos_move m;
                 world_comm.recv(status.source(), CHILD_SELEC, m);
@@ -210,6 +218,9 @@ void uct_treesplit_player::do_slave_job()
                     pending_requests.clear();
                     break;
                 case TS_BEST_CHILD:
+#ifdef _DEBUG
+                    cout << "[" << rank << "] gathering best children" << endl;
+#endif
                     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
                     break;
                 case EXIT:
@@ -224,23 +235,25 @@ void uct_treesplit_player::do_slave_job()
                 return x.size() < y.size();
             });
             if (!q->empty()) {
-                treesplit_node::msg_type omsg = q->front();
+                auto &omsg = q->front();
                 q->pop();
                 if (get<0>(omsg) == -1) {
 #ifdef _DEBUG
-                    cout << "[" << world_comm.rank() << "] send out a duplicate message" << endl;
+                    cout << "[" << rank << "] send out a duplicate message" << endl;
 #endif
-                    for (int i = 1; i < world_size; ++i) {//i'm the rank 0
+                    for (int i = 0; i < world_size; ++i) {
+                        if (i == rank) {
+                            continue;
+                        }
                         pending_requests.push_back(world_comm.isend(i, TS_MSG, omsg));
                     }
                 } else {
 #ifdef _DEBUG
-                    cout << "[" << world_comm.rank() << "] send out an update message" << endl;
+                    cout << "[" << rank << "] send out an update message" << endl;
 #endif
                     pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
                 }
             }
-            std::remove_if(pending_requests.begin(), pending_requests.end(), [](mpi::request &req) { return req.test(); });
         } else {
             static const milliseconds nap(50);
             this_thread::sleep_for(nap);
