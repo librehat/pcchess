@@ -1,4 +1,4 @@
-function [simpr, speedup, winrate, avgscore] = AnalysePCC(outputfile)
+function [rounds, simpr, speedup, winrate, avgscore] = AnalysePCC(outputfile)
 % This function will calcuate the average simulations per round,
 % speed-up, winning rate, and average score, using given output file.
 
