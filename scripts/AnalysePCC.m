@@ -3,7 +3,7 @@ function [simpr, speedup, winrate, avgscore] = AnalysePCC(outputfile)
 % speed-up, winning rate, and average score, using given output file.
 
 data = load(outputfile);
-rounds = length(data);
+rounds = size(data)(1);
 simpr = 0;
 blacksims = 0;
 wins = 0;

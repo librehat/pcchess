@@ -20,6 +20,7 @@ public:
     void opponent_moved(const pos_move &m);
     void do_slave_job();
     inline const int &worker_size() const { return workers; }
+    int thread_size() { return thread_vec.size() + 1; }
 
 private:
     typedef lock_free_queue<treesplit_node::msg_type, 262144> lf_queue;
