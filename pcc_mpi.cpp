@@ -107,7 +107,7 @@ int main(int argc, char **argv)
                 g.print_board(chinese_print);
             }
 
-            cout << boost::format("  %-9d %-7d %=9d  %=11d   %-17u  %-17u\n") % i % g.get_rounds() % red_score % black_score % red->get_total_simulations() % black->get_total_simulations();
+            cout << boost::format("  %-9d %-7d %=9d  %=11d   %-17u  %-17u") % i % g.get_rounds() % red_score % black_score % red->get_total_simulations() % black->get_total_simulations() << endl;
         } else {
             red->do_slave_job();
         }
