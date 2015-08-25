@@ -87,8 +87,8 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             return x.size() < y.size();
         });
         if (!q->empty()) {
-            auto &omsg = q->front();
-            q->pop();//the queue won't delete the content, so it's still safe to access the omsg
+            auto omsg = q->front();
+            q->pop();
             if (get<0>(omsg) == -1) {
 #ifdef _DEBUG
                 cout << "[" << world_comm.rank() << "] send out a duplicate message" << endl;
@@ -126,20 +126,23 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
 
     _move = get<0>(*best_child);
     if (_move.is_valid()) {
-        for (int j = 1; j < world_size; ++j) {
-            world_comm.send(j, CHILD_SELEC, _move);
-        }
-        evolve_into_next_depth(_move);
+        opponent_moved(_move);
     }
     return _move.is_valid();
 }
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
-    static const int world_size = world_comm.size();
+    static int world_size = world_comm.size();
     for (int j = 1; j < world_size; ++j) {
-        world_comm.send(j, CHILD_SELEC, m);
+        pending_requests.push_back(world_comm.isend(j, CHILD_SELEC, m));
     }
+    for (auto &&req : pending_requests) {
+        if (!req.test()) {
+            req.wait();
+        }
+    }
+    pending_requests.clear();
     evolve_into_next_depth(m);
 }
 
@@ -235,7 +238,7 @@ void uct_treesplit_player::do_slave_job()
                 return x.size() < y.size();
             });
             if (!q->empty()) {
-                auto &omsg = q->front();
+                auto omsg = q->front();
                 q->pop();
                 if (get<0>(omsg) == -1) {
 #ifdef _DEBUG
