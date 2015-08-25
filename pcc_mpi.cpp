@@ -113,6 +113,7 @@ int main(int argc, char **argv)
         }
         delete red;
         delete black;
+        world_comm.barrier();
     }
 
     return 0;
