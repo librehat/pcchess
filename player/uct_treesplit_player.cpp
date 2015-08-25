@@ -257,7 +257,7 @@ void uct_treesplit_player::do_slave_job()
                     pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
                 }
             }
-        } else {
+        } else if (stop.load(std::memory_order_relaxed)) {//only sleep if TS is stopped
             static const milliseconds nap(50);
             this_thread::sleep_for(nap);
         }
@@ -279,5 +279,5 @@ void uct_treesplit_player::worker_thread(const int &id)
             treesplit_node::handle_message(local_iq_vec[id].front());
             local_iq_vec[id].pop();
         }
-    } while (!stop);
+    } while (!stop.load(std::memory_order_relaxed));
 }
