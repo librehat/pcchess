@@ -128,7 +128,9 @@ void root_uct_player::master_send_order(const TAG &tag) const
         pending_req.push_back(world_comm.isend(i, tag));
     }
     for (auto &req : pending_req) {
-        req.wait();
+        if (!req.test()) {
+            req.wait();
+        }
     }
 }
 
