@@ -123,8 +123,12 @@ void root_uct_player::master_send_order(const TAG &tag) const
     }
 
     static const int world_size = world_comm.size();
+    vector<mpi::request> pending_req;
     for (int i = 1; i < world_size; ++i) {
-        world_comm.send(i, tag);
+        pending_req.push_back(world_comm.isend(i, tag));
+    }
+    for (auto &req : pending_req) {
+        req.wait();
     }
 }
 
