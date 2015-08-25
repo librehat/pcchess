@@ -28,7 +28,7 @@ abstract_player::abstract_player(const abstract_player &b) :
     pking(nullptr)
 {
     pieces.reserve(16);
-	for (auto &&it : b.pieces) {
+    for (auto &it : b.pieces) {
         p_piece p = it->make_a_copy();
         pieces.push_back(p);
 	}
@@ -41,7 +41,7 @@ abstract_player::abstract_player(const abstract_player &b) :
 
 abstract_player::~abstract_player()
 {
-    for (auto &&p : pieces) {
+    for (auto &p : pieces) {
         delete p;
     }
 }
@@ -132,7 +132,7 @@ position abstract_player::get_king_position()
 vector<position> abstract_player::get_all_available_target_positions(const board &bd) const
 {
     vector<position> all_avail_pos;
-    for (auto &&p : pieces) {
+    for (auto &p : pieces) {
         p->update_moves(bd);
         auto& tp = p->get_avail_target_positions();
         all_avail_pos.insert(all_avail_pos.end(), tp.begin(), tp.end());
@@ -143,12 +143,12 @@ vector<position> abstract_player::get_all_available_target_positions(const board
 vector<pos_move> abstract_player::get_all_available_moves(const board &bd) const
 {
     vector<pos_move> all_avail_moves;
-    for (auto &&p : pieces) {
+    for (auto &p : pieces) {
         p->update_moves(bd);
         if (p->is_movable()) {
             auto& from = p->get_position();
             auto& tp = p->get_avail_target_positions();
-            for (auto &&m : tp) {
+            for (auto &m : tp) {
                 all_avail_moves.emplace_back(from, m);
             }
         }

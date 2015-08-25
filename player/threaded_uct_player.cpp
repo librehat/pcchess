@@ -31,7 +31,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
     }
 
     stop = false;
-    for (auto &&t : thread_vec) {
+    for (auto &t : thread_vec) {
         t = thread(&threaded_uct_player::worker_thread, this);
     }
     for (milliseconds elapsed = duration_cast<milliseconds>(steady_clock::now() - start);
@@ -42,7 +42,7 @@ bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint
         selects++;
     }
     stop = true;
-    for (auto &&t : thread_vec) {
+    for (auto &t : thread_vec) {
         t.join();
     }
 

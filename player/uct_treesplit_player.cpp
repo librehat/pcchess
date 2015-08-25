@@ -105,10 +105,10 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     }
     master_send_order(TS_STOP);
     stop = true;
-    for (auto &&t : thread_vec) {
+    for (auto &t : thread_vec) {
         t.join();
     }
-    for (auto &&req : pending_requests) {
+    for (auto &req : pending_requests) {
         if (!req.test()) {
             req.cancel();
         }
@@ -136,7 +136,7 @@ void uct_treesplit_player::opponent_moved(const pos_move &m)
     for (int j = 1; j < world_size; ++j) {
         pending_requests.push_back(world_comm.isend(j, CHILD_SELEC, m));
     }
-    for (auto &&req : pending_requests) {
+    for (auto &req : pending_requests) {
         if (!req.test()) {
             req.wait();
         }
@@ -206,10 +206,10 @@ void uct_treesplit_player::do_slave_job()
                     break;
                 case TS_STOP:
                     stop = true;
-                    for (auto &&t : thread_vec) {
+                    for (auto &t : thread_vec) {
                         t.join();
                     }
-                    for (auto &&req : pending_requests) {
+                    for (auto &req : pending_requests) {
                         if (!req.test()) {
                             req.cancel();
                         }

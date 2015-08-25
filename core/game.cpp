@@ -114,7 +114,7 @@ void game::setup_players()
     auto red_pieces = red->get_pieces();
     auto black_pieces = black->get_pieces();
 
-    for (auto&& it : red_pieces) {//access by reference
+    for (auto &it : red_pieces) {//access by reference
         position ipos = it->get_position();
         if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
@@ -122,7 +122,7 @@ void game::setup_players()
         m_board[ipos] = it;
     }
 
-    for (auto&& it : black_pieces) {//access by reference
+    for (auto &it : black_pieces) {//access by reference
         position ipos = it->get_position();
         if(m_board[ipos]) {
             throw runtime_error("Error. The position in the board is already taken.");
