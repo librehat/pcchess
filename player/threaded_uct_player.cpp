@@ -8,7 +8,8 @@ using namespace std;
 using namespace chrono;
 
 threaded_uct_player::threaded_uct_player(int threads, bool red) :
-    uct_player(red)
+    uct_player(red),
+    stop(false)
 {
     if (threads <= 0) {
         threads = thread::hardware_concurrency();
@@ -18,8 +19,6 @@ threaded_uct_player::threaded_uct_player(int threads, bool red) :
     }
     thread_vec.resize(threads - 1);
 }
-
-atomic_bool threaded_uct_player::stop(false);
 
 bool threaded_uct_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
 {
@@ -65,5 +64,5 @@ void threaded_uct_player::worker_thread()
     do {
         root->select();
         selects++;
-    } while (!stop);
+    } while (!stop.load(std::memory_order_relaxed));
 }

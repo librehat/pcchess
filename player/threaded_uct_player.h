@@ -19,7 +19,7 @@ public:
 
 private:
     std::vector<std::thread> thread_vec;
-    static std::atomic_bool stop;
+    std::atomic_bool stop;
     void worker_thread();
 
     friend class boost::serialization::access;
