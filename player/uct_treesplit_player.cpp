@@ -22,6 +22,9 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     thread_vec.resize(workers);
     local_iq_vec.resize(workers);
     local_oq_vec.resize(workers);
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] workers number: " << workers << endl;
+#endif
 }
 
 atomic_bool uct_treesplit_player::stop(false);
