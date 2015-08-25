@@ -22,7 +22,7 @@ public:
     inline const int &worker_size() const { return workers; }
 
 private:
-    typedef lock_free_queue<treesplit_node::msg_type, 65536> lf_queue;
+    typedef lock_free_queue<treesplit_node::msg_type, 262144> lf_queue;
 
     int workers;
     std::vector<boost::mpi::request> pending_requests;
