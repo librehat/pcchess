@@ -59,6 +59,10 @@ public:
         std::swap(queue_data, other.queue_data);
     }
 
+    void reset() {
+        std::queue<T>().swap(queue_data);
+    }
+
 private:
     std::queue<T> queue_data;
     std::mutex queue_mutex;
