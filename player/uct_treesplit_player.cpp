@@ -64,18 +64,12 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         if (probe) {
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
-#ifdef _DEBUG
-                cout << "[" << world_comm.rank() << "] received a treesplit message" << endl;
-#endif
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
                 auto q = min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
                     return x.size() < y.size();
                 });
                 q->push(imsg);
-#ifdef _DEBUG
-                cout << "[" << world_comm.rank() << "] received treesplit message rank: " << get<0>(imsg) << endl;
-#endif
             } else {
                 cerr << "unknown tag: " << status.tag() << endl;
                 throw invalid_argument("master node received unknown tag");
@@ -103,7 +97,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             }
         }
     }
-    //master_send_order(TS_STOP);
+    master_send_order(TS_STOP);
     stop = true;
     for (auto &t : thread_vec) {
         t.join();
@@ -115,7 +109,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     }
     pending_requests.clear();
 
-    //master_send_order(TS_BEST_CHILD);
+    master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
 #ifdef _DEBUG
     cout << "[" << world_comm.rank() << "] gathering best children" << endl;
@@ -162,24 +156,21 @@ void uct_treesplit_player::do_slave_job()
 {
     static const int rank = world_comm.rank();
     static const int world_size = world_comm.size();
-    steady_clock::time_point start = steady_clock::now();
-    static milliseconds think_time = milliseconds(game::step_time);
     do {
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
         if (probe) {
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
-#ifdef _DEBUG
-                cout << "[" << rank << "] received a treesplit message" << endl;
-#endif
                 treesplit_node::msg_type imsg;
-                world_comm.recv(status.source(), TS_MSG, imsg);
-                min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
-                    return x.size() < y.size();
-                })->push(imsg);
+                if (world_comm.iprobe(status.source(), status.tag())) {
+                    world_comm.recv(status.source(), TS_MSG, imsg);
+                    min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                        return x.size() < y.size();
+                    })->push(imsg);
 #ifdef _DEBUG
-                cout << "[" << rank << "] received treesplit message rank: " << get<0>(imsg) << endl;
+                    cout << "[" << rank << "] received a ts message" << endl;
 #endif
+                }
             } else if (status.tag() == CHILD_SELEC) {
                 pos_move m;
                 world_comm.recv(status.source(), CHILD_SELEC, m);
@@ -194,7 +185,6 @@ void uct_treesplit_player::do_slave_job()
                     slave_reduce_sims();
                     break;
                 case TS_START:
-                    start = steady_clock::now();
                     stop = false;
                     for (int i = 0; i < workers; ++i) {
                         local_oq_vec[i].reset();
@@ -207,7 +197,7 @@ void uct_treesplit_player::do_slave_job()
                         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
                     }
                     break;
-                /*case TS_STOP:
+                case TS_STOP:
                     stop = true;
                     for (auto &t : thread_vec) {
                         t.join();
@@ -224,7 +214,7 @@ void uct_treesplit_player::do_slave_job()
                     cout << "[" << rank << "] gathering best children" << endl;
 #endif
                     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
-                    break;*/
+                    break;
                 case EXIT:
                     return;
                 default:
@@ -258,19 +248,6 @@ void uct_treesplit_player::do_slave_job()
 #endif
                     pending_requests.push_back(world_comm.isend(get<0>(omsg), TS_MSG, omsg));
                 }
-            }
-            if (duration_cast<milliseconds>(steady_clock::now() - start) > think_time) {
-                stop = true;
-                for (auto &t : thread_vec) {
-                    t.join();
-                }
-                for (auto &req : pending_requests) {
-                    if (!req.test()) {
-                        req.cancel();
-                    }
-                }
-                pending_requests.clear();
-                mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
             }
         }
     } while (true);
