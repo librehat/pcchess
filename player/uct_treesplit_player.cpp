@@ -110,12 +110,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     for (auto &t : thread_vec) {
         t.join();
     }
-
-    master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
-#ifdef _DEBUG
-    cout << "[" << world_comm.rank() << "] gathering best children" << endl;
-#endif
     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), bchild_vec, 0);
     auto best_child = max_element(bchild_vec.begin(), bchild_vec.end(), [](const treesplit_node::child_type &x, const treesplit_node::child_type &y) { return get<1>(x) < get<1>(y); });
 
@@ -162,11 +157,32 @@ void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
     node::set_root_depth(root);
 }
 
+void uct_treesplit_player::slave_stop()
+{
+    stop = true;
+    for (auto &t : thread_vec) {
+        t.join();
+    }
+    slave_comm.barrier();
+    for (auto &req : pending_requests) {
+        if (!req.test()) {
+            req.cancel();
+        }
+    }
+    pending_requests.clear();
+    mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
+}
+
 void uct_treesplit_player::do_slave_job()
 {
     static const int rank = world_comm.rank();
     static const int world_size = world_comm.size();
     do {
+        auto stopprobe = world_comm.iprobe(0, TS_STOP);
+        if (stopprobe) {
+            world_comm.recv(0, TS_STOP);
+            slave_stop();
+        }
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
         if (probe) {
             mpi::status status = probe.get();
@@ -207,23 +223,7 @@ void uct_treesplit_player::do_slave_job()
                     slave_comm.barrier();
                     break;
                 case TS_STOP:
-                    stop = true;
-                    for (auto &t : thread_vec) {
-                        t.join();
-                    }
-                    slave_comm.barrier();
-                    for (auto &req : pending_requests) {
-                        if (!req.test()) {
-                            req.cancel();
-                        }
-                    }
-                    pending_requests.clear();
-                    break;
-                case TS_BEST_CHILD:
-#ifdef _DEBUG
-                    cout << "[" << rank << "] gathering best children" << endl;
-#endif
-                    mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), 0);
+                    slave_stop();
                     break;
                 case EXIT:
                     return;

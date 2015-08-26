@@ -34,6 +34,7 @@ private:
     std::vector<lf_queue> local_iq_vec;
 
     void evolve_into_next_depth(const pos_move &m);//can only be called by master
+    void slave_stop();
     void slave_select_child();
 
     void main_thread_start();//basically just reset the stop flag, create worker threads and start io work

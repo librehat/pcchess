@@ -16,7 +16,7 @@ public:
 
     virtual void do_slave_job();
 
-    enum TAG : int { GATHER_TREE, COMP_LOOP, COMP_FINISH, BROADCAST_TREE, REDUCE_SIMS, SYNC, OPP_MOVE, CHILD_SELEC, TS_INIT, TS_MSG, TS_START, TS_STOP, TS_BEST_CHILD, EXIT };
+    enum TAG : int { GATHER_TREE, COMP_LOOP, COMP_FINISH, BROADCAST_TREE, REDUCE_SIMS, SYNC, OPP_MOVE, CHILD_SELEC, TS_INIT, TS_MSG, TS_START, TS_STOP, EXIT };
 
 protected:
     void master_send_order(const TAG &tag) const;
