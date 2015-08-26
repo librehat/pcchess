@@ -25,6 +25,8 @@ public:
 private:
     typedef lock_free_queue<treesplit_node::msg_type, 262144> lf_queue;
 
+    boost::mpi::communicator slave_comm;
+
     int workers;
     std::vector<boost::mpi::request> pending_requests;
     std::vector<std::thread> thread_vec;

@@ -4,6 +4,7 @@
 #include <chrono>
 #include <algorithm>
 #include <boost/mpi/collectives.hpp>
+#include <boost/mpi/group.hpp>
 
 using namespace std;
 using namespace chrono;
@@ -23,6 +24,14 @@ uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
     thread_vec.resize(workers);
     local_iq_vec.resize(workers);
     local_oq_vec.resize(workers);
+
+    int size = world_comm.size();
+    vector<int> group_rank;
+    for (int i = 1; i < size; ++i) {
+        group_rank.push_back(i);
+    }
+    mpi::group slaves = world_comm.group().include(group_rank.begin(), group_rank.end());
+    slave_comm = mpi::communicator(world_comm, slaves);
 }
 
 bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uint8_t no_eat_half_rounds, const vector<pos_move> &)
@@ -38,12 +47,6 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     }
 
     stop = false;
-    for (auto &req : pending_requests) {
-        if (!req.test()) {
-            req.cancel();
-        }
-    }
-    pending_requests.clear();
     master_send_order(TS_START);
     for (int i = 0; i < workers; ++i) {
         local_oq_vec[i].reset();
@@ -116,6 +119,13 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     mpi::gather(world_comm, dynamic_pointer_cast<treesplit_node>(root)->get_best_child_msg(), bchild_vec, 0);
     auto best_child = max_element(bchild_vec.begin(), bchild_vec.end(), [](const treesplit_node::child_type &x, const treesplit_node::child_type &y) { return get<1>(x) < get<1>(y); });
 
+    for (auto &req : pending_requests) {
+        if (!req.test()) {
+            req.cancel();
+        }
+    }
+    pending_requests.clear();
+
     _move = get<0>(*best_child);
     if (_move.is_valid()) {
         opponent_moved(_move);
@@ -184,12 +194,6 @@ void uct_treesplit_player::do_slave_job()
                     break;
                 case TS_START:
                     stop = false;
-                    for (auto &req : pending_requests) {
-                        if (!req.test()) {
-                            req.cancel();
-                        }
-                    }
-                    pending_requests.clear();
                     for (int i = 0; i < workers; ++i) {
                         local_oq_vec[i].reset();
                         local_iq_vec[i].reset();
@@ -200,12 +204,20 @@ void uct_treesplit_player::do_slave_job()
                     for (int i = 0; i < workers; ++i) {
                         thread_vec[i] = thread(&uct_treesplit_player::worker_thread, this, i);
                     }
+                    slave_comm.barrier();
                     break;
                 case TS_STOP:
                     stop = true;
                     for (auto &t : thread_vec) {
                         t.join();
                     }
+                    slave_comm.barrier();
+                    for (auto &req : pending_requests) {
+                        if (!req.test()) {
+                            req.cancel();
+                        }
+                    }
+                    pending_requests.clear();
                     break;
                 case TS_BEST_CHILD:
 #ifdef _DEBUG
