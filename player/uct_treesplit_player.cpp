@@ -73,7 +73,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             if (status.tag() == TS_MSG) {
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
-                auto q = min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                auto q = min_element(local_iq_vec.begin(), local_iq_vec.end(), [](lf_queue &x, lf_queue &y){
                     return x.size() < y.size();
                 });
                 q->push(imsg);
@@ -83,7 +83,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
             }
         }
 
-        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+        auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
             return x.size() < y.size();
         });
         if (!q->empty()) {
@@ -183,7 +183,7 @@ void uct_treesplit_player::do_slave_job()
             if (status.tag() == TS_MSG) {
                 treesplit_node::msg_type imsg;
                 world_comm.recv(status.source(), TS_MSG, imsg);
-                min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                min_element(local_iq_vec.begin(), local_iq_vec.end(), [](lf_queue &x, lf_queue &y){
                     return x.size() < y.size();
                 })->push(imsg);
 #ifdef _DEBUG
@@ -230,7 +230,7 @@ void uct_treesplit_player::do_slave_job()
             static const milliseconds nap(50);
             this_thread::sleep_for(nap);*/
         } else {//do IO job
-            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+            auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](lf_queue &x, lf_queue &y){
                 return x.size() < y.size();
             });
             if (!q->empty()) {
