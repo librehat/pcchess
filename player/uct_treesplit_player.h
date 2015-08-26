@@ -4,7 +4,6 @@
 #include "root_uct_player.h"
 #include "treesplit_node.h"
 #include "utils/lock_free_queue.hpp"
-#include "utils/thread_safe_queue.hpp"
 #include <thread>
 
 class uct_treesplit_player : public root_uct_player
@@ -24,8 +23,7 @@ public:
     int thread_size() { return thread_vec.size() + 1; }
 
 private:
-    //typedef lock_free_queue<treesplit_node::msg_type, 262144> lf_queue;
-    typedef thread_safe_queue<treesplit_node::msg_type> lf_queue;
+    typedef lock_free_queue<treesplit_node::msg_type, 262144> lf_queue;
 
     boost::mpi::communicator slave_comm;
 
