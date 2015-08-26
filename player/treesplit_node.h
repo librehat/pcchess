@@ -9,6 +9,7 @@
 #include <boost/serialization/deque.hpp>
 #include "utils/serialization_tuple.hpp"
 #include "utils/fast_ptr_hashtable.hpp"
+#include "utils/thread_safe_queue.hpp"
 
 class treesplit_node : public threaded_node
 {
@@ -55,7 +56,8 @@ private:
     static boost::mpi::communicator world_comm;
     static fast_ptr_hashtable<node, 1048576, true> transtable;//2 ^ 20
 
-    static thread_local std::queue<msg_type> output_queue;//thread_local so we don't need to use thread_safe_queue
+    //static thread_local std::queue<msg_type> output_queue;//thread_local so we don't need to use thread_safe_queue
+    static thread_local thread_safe_queue<msg_type> output_queue;
 
     static void handle_message(const msg_type &msg);
 

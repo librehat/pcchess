@@ -23,7 +23,8 @@ treesplit_node::treesplit_node(const string &fen, bool is_red_side, uint8_t noea
 
 mpi::communicator treesplit_node::world_comm;
 fast_ptr_hashtable<node, 1048576, true> treesplit_node::transtable;
-thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
+//thread_local queue<treesplit_node::msg_type> treesplit_node::output_queue;
+thread_local thread_safe_queue<treesplit_node::msg_type> treesplit_node::output_queue;
 const int treesplit_node::n_update = 5;
 const int treesplit_node::n_duplicate = 5;
 
