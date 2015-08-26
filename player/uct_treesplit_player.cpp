@@ -38,8 +38,13 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     }
 
     stop = false;
+    for (auto &req : pending_requests) {
+        if (!req.test()) {
+            req.cancel();
+        }
+    }
+    pending_requests.clear();
     master_send_order(TS_START);
-
     for (int i = 0; i < workers; ++i) {
         local_oq_vec[i].reset();
         local_iq_vec[i].reset();
@@ -102,12 +107,6 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     for (auto &t : thread_vec) {
         t.join();
     }
-    for (auto &req : pending_requests) {
-        if (!req.test()) {
-            req.cancel();
-        }
-    }
-    pending_requests.clear();
 
     master_send_order(TS_BEST_CHILD);
     vector<treesplit_node::child_type> bchild_vec;
@@ -121,21 +120,22 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
     if (_move.is_valid()) {
         opponent_moved(_move);
     }
+
     return _move.is_valid();
 }
 
 void uct_treesplit_player::opponent_moved(const pos_move &m)
 {
     static int world_size = world_comm.size();
+    vector<mpi::request> requests;
     for (int j = 1; j < world_size; ++j) {
-        pending_requests.push_back(world_comm.isend(j, CHILD_SELEC, m));
+        requests.push_back(world_comm.isend(j, CHILD_SELEC, m));
     }
-    for (auto &req : pending_requests) {
+    for (auto &req : requests) {
         if (!req.test()) {
             req.wait();
         }
     }
-    pending_requests.clear();
     evolve_into_next_depth(m);
 }
 
@@ -162,15 +162,13 @@ void uct_treesplit_player::do_slave_job()
             mpi::status status = probe.get();
             if (status.tag() == TS_MSG) {
                 treesplit_node::msg_type imsg;
-                if (world_comm.iprobe(status.source(), status.tag())) {
-                    world_comm.recv(status.source(), TS_MSG, imsg);
-                    min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
-                        return x.size() < y.size();
-                    })->push(imsg);
+                world_comm.recv(status.source(), TS_MSG, imsg);
+                min_element(local_iq_vec.begin(), local_iq_vec.end(), [](const lf_queue &x, const lf_queue &y){
+                    return x.size() < y.size();
+                })->push(imsg);
 #ifdef _DEBUG
-                    cout << "[" << rank << "] received a ts message" << endl;
+                cout << "[" << rank << "] received a ts message" << endl;
 #endif
-                }
             } else if (status.tag() == CHILD_SELEC) {
                 pos_move m;
                 world_comm.recv(status.source(), CHILD_SELEC, m);
@@ -186,6 +184,12 @@ void uct_treesplit_player::do_slave_job()
                     break;
                 case TS_START:
                     stop = false;
+                    for (auto &req : pending_requests) {
+                        if (!req.test()) {
+                            req.cancel();
+                        }
+                    }
+                    pending_requests.clear();
                     for (int i = 0; i < workers; ++i) {
                         local_oq_vec[i].reset();
                         local_iq_vec[i].reset();
@@ -202,12 +206,6 @@ void uct_treesplit_player::do_slave_job()
                     for (auto &t : thread_vec) {
                         t.join();
                     }
-                    for (auto &req : pending_requests) {
-                        if (!req.test()) {
-                            req.cancel();
-                        }
-                    }
-                    pending_requests.clear();
                     break;
                 case TS_BEST_CHILD:
 #ifdef _DEBUG
