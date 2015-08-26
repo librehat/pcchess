@@ -259,8 +259,7 @@ void uct_treesplit_player::do_slave_job()
 
 void uct_treesplit_player::worker_thread(const int &id)
 {
-    //queue<treesplit_node::msg_type>().swap(treesplit_node::output_queue);
-    treesplit_node::output_queue.reset();
+    queue<treesplit_node::msg_type>().swap(treesplit_node::output_queue);
     do {
         if (local_iq_vec[id].empty()) {
             root->select();
