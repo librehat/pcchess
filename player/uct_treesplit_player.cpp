@@ -178,11 +178,6 @@ void uct_treesplit_player::do_slave_job()
     static const int rank = world_comm.rank();
     static const int world_size = world_comm.size();
     do {
-        auto stopprobe = world_comm.iprobe(0, TS_STOP);
-        if (stopprobe) {
-            world_comm.recv(0, TS_STOP);
-            slave_stop();
-        }
         auto probe = world_comm.iprobe(mpi::any_source, mpi::any_tag);
         if (probe) {
             mpi::status status = probe.get();
