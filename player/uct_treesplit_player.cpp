@@ -11,8 +11,7 @@ using namespace chrono;
 namespace mpi = boost::mpi;
 
 uct_treesplit_player::uct_treesplit_player(int cpu_cores, bool red) :
-    root_uct_player(red),
-    stop(false)
+    root_uct_player(red)
 {
     if (cpu_cores <= 0) {
         cpu_cores = thread::hardware_concurrency();
@@ -46,7 +45,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         mpi::broadcast(world_comm, root, 0);
     }
 
-    stop = false;
+    compute_flag.test_and_set();
     master_send_order(TS_START);
     for (int i = 0; i < workers; ++i) {
         local_oq_vec[i].reset();
@@ -106,7 +105,7 @@ bool uct_treesplit_player::think_next_move(pos_move &_move, const board &bd, uin
         }
     }
     master_send_order(TS_STOP);
-    stop = true;
+    compute_flag.clear();
     for (auto &t : thread_vec) {
         t.join();
     }
@@ -159,7 +158,7 @@ void uct_treesplit_player::evolve_into_next_depth(const pos_move &m)
 
 void uct_treesplit_player::slave_stop()
 {
-    stop = true;
+    compute_flag.clear();
     for (auto &t : thread_vec) {
         t.join();
     }
@@ -204,7 +203,7 @@ void uct_treesplit_player::do_slave_job()
                     slave_reduce_sims();
                     break;
                 case TS_START:
-                    stop = false;
+                    compute_flag.test_and_set();
                     for (int i = 0; i < workers; ++i) {
                         local_oq_vec[i].reset();
                         local_iq_vec[i].reset();
@@ -227,9 +226,9 @@ void uct_treesplit_player::do_slave_job()
                     throw invalid_argument("received an invalid mpi tag in do_slave_job()");
                 }
             }
-        } else if (stop.load(std::memory_order_relaxed)) {//only sleep if TS is stopped
+        /*} else if (stop.load(std::memory_order_relaxed)) {//only sleep if TS is stopped
             static const milliseconds nap(50);
-            this_thread::sleep_for(nap);
+            this_thread::sleep_for(nap);*/
         } else {//do IO job
             auto q = max_element(local_oq_vec.begin(), local_oq_vec.end(), [](const lf_queue &x, const lf_queue &y){
                 return x.size() < y.size();
@@ -273,5 +272,9 @@ void uct_treesplit_player::worker_thread(const int &id)
             treesplit_node::handle_message(local_iq_vec[id].front());
             local_iq_vec[id].pop();
         }
-    } while (!stop.load(std::memory_order_relaxed));
+    } while (compute_flag.test_and_set());
+    compute_flag.clear();
+#ifdef _DEBUG
+    cout << "[" << world_comm.rank() << "] a thread finished" << endl;
+#endif
 }

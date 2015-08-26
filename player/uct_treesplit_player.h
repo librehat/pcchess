@@ -40,7 +40,7 @@ private:
     void main_thread_start();//basically just reset the stop flag, create worker threads and start io work
     void worker_thread(const int &id);
 
-    std::atomic_bool stop;
+    std::atomic_flag compute_flag;
 
     friend class boost::serialization::access;
     template<class Archive>
