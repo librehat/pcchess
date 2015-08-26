@@ -25,46 +25,46 @@ public:
     {}
 
     lock_free_queue(const lock_free_queue &q) :
-        read_loc(q.read_loc.load()),
-        write_loc(q.write_loc.load())
+        read_loc(q.read_loc.load(std::memory_order_relaxed)),
+        write_loc(q.write_loc.load(std::memory_order_relaxed))
     {
-        int uplim = write_loc.load();
-        for (int i = read_loc.load(); i < uplim; ++i) {
+        int uplim = write_loc.load(std::memory_order_relaxed);
+        for (int i = read_loc.load(std::memory_order_relaxed); i < uplim; ++i) {
             data[i % num] = q.data[i % num];
         }
     }
 
-    bool empty() const { return read_loc.load() >= write_loc.load(); }
+    bool empty() const { return read_loc.load(std::memory_order_relaxed) >= write_loc.load(std::memory_order_relaxed); }
 
     /*
      * front() won't check location validity but assume this is not empty()
      */
-    const T& front() const { return data[read_loc.load() % num]; }
-    T& front() { return data[read_loc.load() % num]; }
+    const T& front() const { return data[read_loc.load(std::memory_order_relaxed) % num]; }
+    T& front() { return data[read_loc.load(std::memory_order_relaxed) % num]; }
 
     void push(const T &t) {
-        if (write_loc - read_loc >= num) {
+        if (write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed) >= num) {
             throw std::range_error(std::string("underlying data is used up. can't write new data. read_loc: ") + std::to_string(read_loc.load()) + std::string("write_loc: ") + std::to_string(write_loc.load()));
         }
-        data[write_loc.load() % num] = t;
+        data[write_loc.load(std::memory_order_relaxed) % num] = t;
         write_loc++;
     }
 
     void push(T &&t) {
-        if (write_loc - read_loc >= num) {
+        if (write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed) >= num) {
             throw std::range_error(std::string("underlying data is used up. can't write new data. read_loc: ") + std::to_string(read_loc.load()) + std::string("write_loc: ") + std::to_string(write_loc.load()));
         }
-        data[write_loc.load() % num] = t;
+        data[write_loc.load(std::memory_order_relaxed) % num] = t;
         write_loc++;
     }
 
-    std::size_t size() const { return write_loc.load() - read_loc.load(); }
+    std::size_t size() const { return write_loc.load(std::memory_order_relaxed) - read_loc.load(std::memory_order_relaxed); }
 
     void pop() { read_loc++; }
 
     void reset() {
-        read_loc = 0;
-        write_loc = 0;
+        read_loc.store(0, std::memory_order_relaxed);
+        write_loc.store(0, std::memory_order_relaxed);
         //data.fill(T());//don't really need to do this
     }
 
