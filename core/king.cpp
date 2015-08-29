@@ -28,6 +28,45 @@ int king::value() const
     return 8;
 }
 
+bool king::is_flying_king(const position &proposed, const board &m_board) const
+{
+    int8_t king_rank = -1;
+
+    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
+        auto p = m_board.at(proposed.file, irank);
+        if (p) {
+            if (p->is_king()) {
+                king_rank = irank;
+                break;
+            }
+        }
+    }
+
+    if (king_rank == -1) {//there is no king, don't bother the flying king rule
+        return false;
+    }
+
+    bool triggered = true;
+
+    if (red_side) {
+        for (int8_t irank = proposed.rank + 1; irank < king_rank; irank++) {//proposed.rank is equal to current position's rank
+            if (m_board.at(proposed.file, irank)) {
+                triggered = false;
+                break;
+            }
+        }
+    } else {
+        for (int8_t irank = proposed.rank - 1; irank > king_rank; irank--) {
+            if (m_board.at(proposed.file, irank)) {
+                triggered = false;
+                break;
+            }
+        }
+    }
+
+    return triggered;
+}
+
 void king::gen_moves(const board &m_board)
 {
     avail_pos.push_back(pos + up);
@@ -36,42 +75,12 @@ void king::gen_moves(const board &m_board)
     position pos_left = pos + left;
     position pos_right = pos + right;
     
-    /* 
-     * if there is only one (enemy) king on the left,
-     * then our king can't move to the left.
-     * the same applies to right.
-     */
-    bool found_king = false;
-    bool other_piece_between = false;
-    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
-        if (m_board.at(pos_left.file, irank)) {
-            if (found_king) {
-                other_piece_between = true;
-                break;
-            } else if (m_board.at(pos_left.file, irank)->is_king()) {
-                found_king = true;
-            }
-        }
-    }
     
-    if (other_piece_between || !found_king) {
+    if (!is_flying_king(pos_left, m_board)) {
         avail_pos.push_back(pos_left);
     }
     
-    found_king = false;
-    other_piece_between = false;
-    for (int8_t irank = 0; irank < board::RANK_NUM; irank++) {
-        if (m_board.at(pos_right.file, irank)) {
-            if (found_king) {
-                other_piece_between = true;
-                break;
-            } else if (m_board.at(pos_right.file, irank)->is_king()) {
-                found_king = true;
-            }
-        }
-    }
-    
-    if (other_piece_between || !found_king) {
+    if (!is_flying_king(pos_right, m_board)) {
         avail_pos.push_back(pos_right);
     }
     

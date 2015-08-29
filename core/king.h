@@ -31,6 +31,8 @@ private:
     static const position left;
     static const position right;
 
+    bool is_flying_king(const position &, const board &) const;
+
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive &ar, const unsigned int)

@@ -34,19 +34,19 @@ int horse::value() const
 
 void horse::gen_moves(const board &m_board)
 {
-    if(pos.file == 0 || !m_board.at(pos.file - 1, pos.rank)) {
+    if(!m_board.at(pos.file - 1, pos.rank)) {
         avail_pos.push_back(pos + l2u1);
         avail_pos.push_back(pos + l2d1);
     }
-    if(pos.file == 8 || !m_board.at(pos.file + 1, pos.rank)) {
+    if(!m_board.at(pos.file + 1, pos.rank)) {
         avail_pos.push_back(pos + r2u1);
         avail_pos.push_back(pos + r2d1);
     }
-    if(pos.rank == 0 || !m_board.at(pos.file, pos.rank + 1)) {
+    if(!m_board.at(pos.file, pos.rank + 1)) {
         avail_pos.push_back(pos + l1u2);
         avail_pos.push_back(pos + r1u2);
     }
-    if(pos.rank == 9 || !m_board.at(pos.file, pos.rank - 1)) {
+    if(!m_board.at(pos.file, pos.rank - 1)) {
         avail_pos.push_back(pos + l1d2);
         avail_pos.push_back(pos + r1d2);
     }
